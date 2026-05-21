@@ -137,7 +137,7 @@ let controlsVisible =
 let fontSize =
   Number(
     localStorage.getItem(
-      "fontSize"
+      "beta-fontSize"
     )
   ) || 100;
 
