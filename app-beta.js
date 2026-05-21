@@ -226,7 +226,7 @@ async function startReader() {
 
   const savedLocation =
     localStorage.getItem(
-      "epub-location"
+      "beta-epub-location"
     );
 
   try {
@@ -317,7 +317,7 @@ async function startReader() {
       try {
 
         localStorage.setItem(
-          "epub-location",
+          "beta-epub-location",
           location.start.cfi
         );
 
@@ -554,7 +554,7 @@ function applyTheme() {
 
   const darkMode =
     localStorage.getItem(
-      "darkMode"
+      "beta-darkMode"
     ) === "true";
 
   document.body.classList.toggle(
@@ -792,11 +792,11 @@ themeBtn.addEventListener(
 
     const darkMode =
       localStorage.getItem(
-        "darkMode"
+        "beta-darkMode"
       ) === "true";
 
     localStorage.setItem(
-      "darkMode",
+      "beta-darkMode",
       (!darkMode).toString()
     );
 
@@ -834,7 +834,7 @@ increaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "beta-fontSize",
       fontSize
     );
 
@@ -855,7 +855,7 @@ decreaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "beta-fontSize",
       fontSize
     );
 
