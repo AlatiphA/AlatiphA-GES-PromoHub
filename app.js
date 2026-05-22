@@ -141,6 +141,11 @@ let fontSize =
     )
   ) || 100;
 
+
+/* ==============
+   LOAD BOOK
+============== */
+
 async function loadBook() {
 
   try {
@@ -179,6 +184,11 @@ async function loadBook() {
 
 }
 
+
+/* =====================
+   START Reader & THEME
+===================== */
+
 function startReader() {
 
   rendition =
@@ -194,9 +204,9 @@ function startReader() {
       }
     );
 
-  /* =========================
+  /* ================
      FONT & THEME
-  ========================= */
+  ================ */
 
   rendition.themes.fontSize(
     fontSize + "%"
@@ -212,9 +222,9 @@ function startReader() {
 
   rendition.display();
 
-  /* =========================
+  /* ===================
      BACKGROUND SETUP
-  ========================= */
+  =================== */
 
   book.ready
     .then(async () => {
@@ -301,9 +311,9 @@ function startReader() {
 
     });
 
-  /* =========================
+  /* ==================
      SAVE LOCATION
-  ========================= */
+  ================== */
 
   rendition.on(
     "relocated",
@@ -385,6 +395,11 @@ function toggleControls() {
   }
 
 }
+
+
+/* =========================
+   GESTURES (Swipe Next/Prev)
+========================= */
 
 function sidebarIsOpen() {
 
@@ -551,6 +566,10 @@ function setupNavigationZones() {
 
 }
 
+/* ==============
+   THEME
+============== */
+
 function applyTheme() {
 
   const darkMode =
@@ -593,6 +612,11 @@ function applyTheme() {
   }
 
 }
+
+
+/* ============
+   SEARCH
+============ */
 
 async function searchBook(
   query
@@ -775,6 +799,11 @@ function renderSearchResults(
   );
 
 }
+
+
+/* =============
+   EVENTS
+============= */
 
 menuBtn.addEventListener(
   "click",
@@ -964,6 +993,11 @@ searchInput.addEventListener(
 
   }
 );
+
+
+/* ==================
+   SERVICE WORKER
+================== */
 
 if (
   "serviceWorker" in navigator
