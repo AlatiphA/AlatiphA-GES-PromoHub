@@ -1,6 +1,7 @@
 {
   "name": "AlatiphA GES Pasco Beta",
   "short_name": "GES Pasco Beta",
+  "description": "Offline EPUB reader for GES Pasco",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
