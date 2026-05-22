@@ -179,7 +179,7 @@ async function loadBook() {
 
 }
 
-async function startReader() {
+function startReader() {
 
   rendition =
     book.renderTo(
@@ -195,7 +195,7 @@ async function startReader() {
     );
 
   /* =========================
-     THEMES & FONT
+     FONT & THEME
   ========================= */
 
   rendition.themes.fontSize(
@@ -207,104 +207,99 @@ async function startReader() {
   setupNavigationZones();
 
   /* =========================
-     WAIT FOR BOOK
+     FAST INITIAL DISPLAY
   ========================= */
 
-  await book.ready;
+  rendition.display();
 
   /* =========================
-     GENERATE LOCATIONS
+     BACKGROUND SETUP
   ========================= */
 
-  await book.locations.generate(
-    1000
-  );
+  book.ready
+    .then(async () => {
 
-  /* =========================
-     RESTORE LAST LOCATION
-  ========================= */
+      /* TOC */
 
-  const savedLocation =
-    localStorage.getItem(
-      "epub-location"
-    );
+      toc.innerHTML = "";
 
-  try {
+      const navigation =
+        book.navigation;
 
-    if (savedLocation) {
+      navigation.toc.forEach(
+        chapter => {
 
-      await rendition.display(
-        savedLocation
-      );
+          const link =
+            document.createElement(
+              "a"
+            );
 
-    }
+          link.textContent =
+            chapter.label;
 
-    else {
+          link.href = "#";
 
-      await rendition.display();
+          link.addEventListener(
+            "click",
+            e => {
 
-    }
+              e.preventDefault();
 
-  }
+              rendition.display(
+                chapter.href
+              );
 
-  catch (error) {
+              sidebar.classList.remove(
+                "active"
+              );
 
-    console.error(
-      "Failed to restore location:",
-      error
-    );
+              showControls();
 
-    await rendition.display();
-
-  }
-
-  /* =========================
-     BUILD TOC
-  ========================= */
-
-  toc.innerHTML = "";
-
-  const navigation =
-    book.navigation;
-
-  navigation.toc.forEach(
-    chapter => {
-
-      const link =
-        document.createElement(
-          "a"
-        );
-
-      link.textContent =
-        chapter.label;
-
-      link.href = "#";
-
-      link.addEventListener(
-        "click",
-        e => {
-
-          e.preventDefault();
-
-          rendition.display(
-            chapter.href
+            }
           );
 
-          sidebar.classList.remove(
-            "active"
+          toc.appendChild(
+            link
           );
-
-          showControls();
 
         }
       );
 
-      toc.appendChild(
-        link
+      /* GENERATE LOCATIONS */
+
+      await book.locations.generate(
+        1000
       );
 
-    }
-  );
+      /* RESTORE POSITION */
+
+      const savedLocation =
+        localStorage.getItem(
+          "epub-location"
+        );
+
+      if (savedLocation) {
+
+        try {
+
+          await rendition.display(
+            savedLocation
+          );
+
+        }
+
+        catch (error) {
+
+          console.error(
+            "Restore failed:",
+            error
+          );
+
+        }
+
+      }
+
+    });
 
   /* =========================
      SAVE LOCATION
@@ -321,22 +316,28 @@ async function startReader() {
           location.start.cfi
         );
 
-        const percentage =
-          book.locations
-            .percentageFromCfi(
-              location.start.cfi
+        if (
+          book.locations.length()
+        ) {
+
+          const percentage =
+            book.locations
+              .percentageFromCfi(
+                location.start.cfi
+              );
+
+          const percent =
+            Math.floor(
+              percentage * 100
             );
 
-        const percent =
-          Math.floor(
-            percentage * 100
-          );
+          progressText.textContent =
+            percent + "%";
 
-        progressText.textContent =
-          percent + "%";
+          progressFill.style.width =
+            percent + "%";
 
-        progressFill.style.width =
-          percent + "%";
+        }
 
       }
 
