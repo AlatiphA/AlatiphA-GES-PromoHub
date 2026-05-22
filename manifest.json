@@ -1,6 +1,6 @@
 {
-  "name": "AlatiphA GES Pasco",
-  "short_name": "GES Pasco",
+  "name": "AlatiphA GES Pasco Beta",
+  "short_name": "GES Pasco Beta",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
