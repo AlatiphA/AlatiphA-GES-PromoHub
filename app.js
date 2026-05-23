@@ -756,7 +756,7 @@ function renderSearchResults(
 
 /* =============
    EVENTS
-============= */
+
 
 menuBtn.addEventListener(
   "click",
@@ -765,6 +765,35 @@ menuBtn.addEventListener(
     sidebar.classList.toggle(
       "active"
     );
+
+  }
+);
+
+============= */
+menuBtn.addEventListener(
+  "click",
+  () => {
+
+    sidebar.classList.toggle(
+      "active"
+    );
+
+    const isOpen =
+      sidebar.classList.contains(
+        "active"
+      );
+
+    menuBtn.textContent =
+      isOpen
+        ? "✕"
+        : "☰";
+
+    bottomMenuBtn.textContent =
+      isOpen
+        ? "✕"
+        : "☰";
+
+    showControls();
 
   }
 );
