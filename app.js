@@ -214,7 +214,7 @@ function startReader() {
 
   applyTheme();
 
-  setupNavigationZones();
+  setupTapGestures();
 
   /* =========================
      FAST INITIAL DISPLAY
@@ -413,112 +413,121 @@ function sidebarIsOpen() {
 }
 
 
-/* ==============
-   NAVIGATION 
-============== */
+/* =========================
+   EPUB TAP GESTURES
+========================= */
 
-function setupNavigationZones() {
+function setupTapGestures() {
 
-  const leftZone =
-    document.getElementById(
-      "leftZone"
-    );
-
-  const rightZone =
-    document.getElementById(
-      "rightZone"
-    );
-
-  const centerZone =
-    document.getElementById(
-      "centerZone"
-    );
-
-  /* =========================
-     PREV PAGE
-  ========================= */
-
-  leftZone.addEventListener(
-    "click",
-    e => {
-
-      /* Ignore links/images */
-
-      if (
-        e.target.closest("a") ||
-        e.target.closest("img")
-      ) {
-
-        return;
-
-      }
-
-      rendition.prev();
-
-      showControls();
-
-    }
-  );
-
-  /* =========================
-     NEXT PAGE
-  ========================= */
-
-  rightZone.addEventListener(
-    "click",
-    e => {
-
-      /* Ignore links/images */
-
-      if (
-        e.target.closest("a") ||
-        e.target.closest("img")
-      ) {
-
-        return;
-
-      }
-
-      rendition.next();
-
-      showControls();
-
-    }
-  );
-
-  /* =========================
-     CENTER TAP
-  ========================= */
-
-  centerZone.addEventListener(
-    "click",
+  rendition.on(
+    "rendered",
     () => {
 
+      const iframe =
+        viewer.querySelector(
+          "iframe"
+        );
+
+      if (!iframe) return;
+
+      const doc =
+        iframe.contentDocument;
+
+      if (!doc) return;
+
+      /* Prevent duplicate listeners */
+
       if (
-        controlsVisible
+        doc.body.dataset
+          .gesturesReady
       ) {
 
-        clearTimeout(
-          controlsTimer
-        );
-
-        header.classList.add(
-          "hideControls"
-        );
-
-        footer.classList.add(
-          "hideControls"
-        );
-
-        controlsVisible = false;
+        return;
 
       }
 
-      else {
+      doc.body.dataset
+        .gesturesReady =
+        "true";
 
-        showControls();
+      doc.addEventListener(
+        "click",
+        e => {
 
-      }
+          /* =========================
+             ALLOW REAL LINKS
+          ========================= */
+
+          const link =
+            e.target.closest("a");
+
+          if (link) {
+
+            return;
+
+          }
+
+          /* =========================
+             IGNORE IMAGES
+          ========================= */
+
+          if (
+            e.target.closest("img")
+          ) {
+
+            return;
+
+          }
+
+          const width =
+            window.innerWidth;
+
+          const tapX =
+            e.clientX;
+
+          const leftZone =
+            width * 0.25;
+
+          const rightZone =
+            width * 0.75;
+
+          /* =========================
+             PREV
+          ========================= */
+
+          if (
+            tapX < leftZone
+          ) {
+
+            rendition.prev();
+
+            return;
+
+          }
+
+          /* =========================
+             NEXT
+          ========================= */
+
+          if (
+            tapX > rightZone
+          ) {
+
+            rendition.next();
+
+            return;
+
+          }
+
+          /* =========================
+             CENTER TAP
+          ========================= */
+
+          toggleControls();
+
+        },
+        false
+      );
 
     }
   );
