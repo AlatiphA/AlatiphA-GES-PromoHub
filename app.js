@@ -452,15 +452,19 @@ function setupTapGestures() {
 
       let startX = 0;
       let startY = 0;
-      let navigating = false;
-      
+
+      let navigating =
+        false;
 
       doc.addEventListener(
         "pointerdown",
         e => {
 
-          startX = e.clientX;
-          startY = e.clientY;         
+          startX =
+            e.clientX;
+
+          startY =
+            e.clientY;
 
         },
         false
@@ -491,12 +495,12 @@ function setupTapGestures() {
 
           }
 
-          /* =========================
-             ALLOW REAL LINKS
-          ========================= */
+          /* Allow links */
 
           const link =
-            e.target.closest("a");
+            e.target.closest(
+              "a"
+            );
 
           if (link) {
 
@@ -504,21 +508,19 @@ function setupTapGestures() {
 
           }
 
-          /* =========================
-             ALLOW IMAGES
-          ========================= */
+          /* Allow images */
 
           if (
-            e.target.closest("img")
+            e.target.closest(
+              "img"
+            )
           ) {
 
             return;
 
           }
 
-          /* =========================
-             ALLOW FORM ELEMENTS
-          ========================= */
+          /* Allow form elements */
 
           if (
             e.target.closest(
@@ -530,9 +532,32 @@ function setupTapGestures() {
 
           }
 
+          /* Prevent rapid double navigation */
+
+          if (
+            navigating
+          ) {
+
+            return;
+
+          }
+
+          navigating = true;
+
+          setTimeout(
+            () => {
+
+              navigating =
+                false;
+
+            },
+            400
+          );
+
           const width =
-            doc.documentElement.clientWidth;
-          
+            doc.documentElement
+              .clientWidth;
+
           const tapX =
             e.clientX;
 
@@ -541,60 +566,32 @@ function setupTapGestures() {
 
           const rightZone =
             width * 0.75;
-          
 
-          /* =========================
-   PREVENT DOUBLE NAVIGATION
-========================= */
+          /* PREV */
 
-if (navigating) {
+          if (
+            tapX < leftZone
+          ) {
 
-  return;
+            rendition.prev();
 
-}
+            return;
 
-navigating = true;
+          }
 
-setTimeout(
-  () => {
+          /* NEXT */
 
-    navigating = false;
+          if (
+            tapX > rightZone
+          ) {
 
-  },
-  400
-);
+            rendition.next();
 
-/* =========================
-   PREV
-========================= */
+            return;
 
-if (
-  tapX < leftZone
-) {
+          }
 
-  rendition.prev();
-
-  return;
-
-}
-
-/* =========================
-   NEXT
-========================= */
-
-if (
-  tapX > rightZone
-) {
-
-  rendition.next();
-
-  return;
-
-}
-
-          /* =========================
-             CENTER TAP
-          ========================= */
+          /* CENTER TAP */
 
           toggleControls();
 
@@ -606,6 +603,11 @@ if (
   );
 
 }
+
+
+
+
+
 
 
 /* ==============
