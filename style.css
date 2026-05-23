@@ -389,6 +389,9 @@ footer.hideControls {
   transform: translateY(100%);
 }
 
+
+
+
 /* =========================
    NAVIGATION OVERLAY
 ========================= */
@@ -400,28 +403,30 @@ footer.hideControls {
 
   display: flex;
 
-  z-index: 5000;
+  z-index: 10;
+
+  pointer-events: none;
 }
+
+/* ONLY EDGES RECEIVE TOUCHES */
 
 .navZone {
+  width: 25%;
   height: 100%;
+
+  pointer-events: auto;
 }
 
-#leftZone {
-  width: 30%;
-}
+/* CENTER PASSES THROUGH */
 
 #centerZone {
-  width: 40%;
+  flex: 1;
+
+  pointer-events: none;
 }
 
-#rightZone {
-  width: 30%;
-}
 
-button {
-  touch-action: manipulation;
-}
+
 
 /* =========================
    SEARCH MODAL
