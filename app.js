@@ -365,6 +365,9 @@ function startReader() {
 }
 
 
+/* ==================
+     TOGGLE CONTROL 
+  ================ */
 function toggleControls() {
 
   controlsVisible =
@@ -523,8 +526,6 @@ function setupNavigationZones() {
 }
 
 
-
-
 /* ==============
    THEME
 ============== */
@@ -603,9 +604,8 @@ function applyTheme() {
 }
 
 
-
 /* ============
-   SEARCH
+   SEARCH BOOK
 ============ */
 
 async function searchBook(
@@ -720,6 +720,10 @@ async function searchBook(
 
 }
 
+/* ============
+   SEARCH RESULTS 
+============ */
+
 function renderSearchResults(
   results
 ) {
@@ -793,19 +797,6 @@ function renderSearchResults(
 
 /* =============
    EVENTS
-
-
-menuBtn.addEventListener(
-  "click",
-  () => {
-
-    sidebar.classList.toggle(
-      "active"
-    );
-
-  }
-);
-
 ============= */
 menuBtn.addEventListener(
   "click",
@@ -820,7 +811,7 @@ menuBtn.addEventListener(
         "active"
       );
 
-    menuBtn.textContent =
+    menuBtn.textConten =
       isOpen
         ? "✕"
         : "☰";
