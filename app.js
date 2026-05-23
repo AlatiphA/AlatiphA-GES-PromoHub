@@ -860,6 +860,7 @@ function renderSearchResults(
 /* =============
    EVENTS
 ============= */
+
 menuBtn.addEventListener(
   "click",
   () => {
@@ -873,7 +874,7 @@ menuBtn.addEventListener(
         "active"
       );
 
-    menuBtn.textConten =
+    menuBtn.textContent =
       isOpen
         ? "✕"
         : "☰";
