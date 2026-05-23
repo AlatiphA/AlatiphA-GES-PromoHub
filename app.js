@@ -417,6 +417,10 @@ function sidebarIsOpen() {
    EPUB TAP GESTURES
 ========================= */
 
+/* =========================
+   EPUB TAP GESTURES
+========================= */
+
 function setupTapGestures() {
 
   rendition.on(
@@ -439,7 +443,7 @@ function setupTapGestures() {
 
       if (
         doc.body.dataset
-          .gesturesReady
+          .gestureReady
       ) {
 
         return;
@@ -447,12 +451,47 @@ function setupTapGestures() {
       }
 
       doc.body.dataset
-        .gesturesReady =
+        .gestureReady =
         "true";
 
+      let startX = 0;
+      let startY = 0;
+
       doc.addEventListener(
-        "click",
+        "pointerdown",
         e => {
+
+          startX = e.clientX;
+          startY = e.clientY;
+
+        },
+        false
+      );
+
+      doc.addEventListener(
+        "pointerup",
+        e => {
+
+          const deltaX =
+            Math.abs(
+              e.clientX - startX
+            );
+
+          const deltaY =
+            Math.abs(
+              e.clientY - startY
+            );
+
+          /* Ignore swipes */
+
+          if (
+            deltaX > 10 ||
+            deltaY > 10
+          ) {
+
+            return;
+
+          }
 
           /* =========================
              ALLOW REAL LINKS
@@ -468,11 +507,25 @@ function setupTapGestures() {
           }
 
           /* =========================
-             IGNORE IMAGES
+             ALLOW IMAGES
           ========================= */
 
           if (
             e.target.closest("img")
+          ) {
+
+            return;
+
+          }
+
+          /* =========================
+             ALLOW FORM ELEMENTS
+          ========================= */
+
+          if (
+            e.target.closest(
+              "button, input, textarea, select"
+            )
           ) {
 
             return;
