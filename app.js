@@ -431,9 +431,24 @@ function setupNavigationZones() {
       "centerZone"
     );
 
+  /* =========================
+     PREV PAGE
+  ========================= */
+
   leftZone.addEventListener(
     "click",
-    () => {
+    e => {
+
+      /* Ignore links/images */
+
+      if (
+        e.target.closest("a") ||
+        e.target.closest("img")
+      ) {
+
+        return;
+
+      }
 
       rendition.prev();
 
@@ -442,9 +457,24 @@ function setupNavigationZones() {
     }
   );
 
+  /* =========================
+     NEXT PAGE
+  ========================= */
+
   rightZone.addEventListener(
     "click",
-    () => {
+    e => {
+
+      /* Ignore links/images */
+
+      if (
+        e.target.closest("a") ||
+        e.target.closest("img")
+      ) {
+
+        return;
+
+      }
 
       rendition.next();
 
@@ -453,6 +483,10 @@ function setupNavigationZones() {
     }
   );
 
+  /* =========================
+     CENTER TAP
+  ========================= */
+
   centerZone.addEventListener(
     "click",
     () => {
@@ -460,6 +494,10 @@ function setupNavigationZones() {
       if (
         controlsVisible
       ) {
+
+        clearTimeout(
+          controlsTimer
+        );
 
         header.classList.add(
           "hideControls"
@@ -483,7 +521,6 @@ function setupNavigationZones() {
   );
 
 }
-
 
 
 
