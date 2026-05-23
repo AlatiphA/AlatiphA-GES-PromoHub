@@ -409,162 +409,83 @@ function sidebarIsOpen() {
 
 }
 
+
+/* ==============
+   NAVIGATION 
+============== */
+
 function setupNavigationZones() {
 
-  function zonesDisabled() {
+  const leftZone =
+    document.getElementById(
+      "leftZone"
+    );
 
-    if (
-      sidebarIsOpen()
-    ) {
+  const rightZone =
+    document.getElementById(
+      "rightZone"
+    );
 
-      return true;
-
-    }
-
-    const iframe =
-      viewer.querySelector(
-        "iframe"
-      );
-
-    if (!iframe) {
-
-      return false;
-
-    }
-
-    try {
-
-      const active =
-        iframe.contentDocument
-          .activeElement;
-
-      if (!active) {
-
-        return false;
-
-      }
-
-      const tag =
-        active.tagName;
-
-      return (
-        tag === "A" ||
-        tag === "BUTTON" ||
-        tag === "INPUT"
-      );
-
-    }
-
-    catch {
-
-      return false;
-
-    }
-
-  }
+  const centerZone =
+    document.getElementById(
+      "centerZone"
+    );
 
   leftZone.addEventListener(
     "click",
-    e => {
-
-      if (
-        zonesDisabled()
-      ) return;
-
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
-
-      if (!iframe) return;
-
-      try {
-
-        const doc =
-          iframe.contentDocument;
-
-        const selection =
-          doc.getSelection();
-
-        if (
-          selection &&
-          selection.toString()
-        ) {
-
-          return;
-
-        }
-
-      }
-
-      catch {}
-
-      e.stopPropagation();
+    () => {
 
       rendition.prev();
+
+      showControls();
 
     }
   );
 
   rightZone.addEventListener(
     "click",
-    e => {
-
-      if (
-        zonesDisabled()
-      ) return;
-
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
-
-      if (!iframe) return;
-
-      try {
-
-        const doc =
-          iframe.contentDocument;
-
-        const selection =
-          doc.getSelection();
-
-        if (
-          selection &&
-          selection.toString()
-        ) {
-
-          return;
-
-        }
-
-      }
-
-      catch {}
-
-      e.stopPropagation();
+    () => {
 
       rendition.next();
+
+      showControls();
 
     }
   );
 
   centerZone.addEventListener(
     "click",
-    e => {
+    () => {
 
       if (
-        zonesDisabled()
-      ) return;
+        controlsVisible
+      ) {
 
-      e.stopPropagation();
+        header.classList.add(
+          "hideControls"
+        );
 
-      toggleControls();
+        footer.classList.add(
+          "hideControls"
+        );
+
+        controlsVisible = false;
+
+      }
+
+      else {
+
+        showControls();
+
+      }
 
     }
   );
 
 }
+
+
+
 
 
 /* ==============
