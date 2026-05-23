@@ -417,10 +417,6 @@ function sidebarIsOpen() {
    EPUB TAP GESTURES
 ========================= */
 
-/* =========================
-   EPUB TAP GESTURES
-========================= */
-
 function setupTapGestures() {
 
   rendition.on(
@@ -456,13 +452,15 @@ function setupTapGestures() {
 
       let startX = 0;
       let startY = 0;
+      let navigating = false;
+      
 
       doc.addEventListener(
         "pointerdown",
         e => {
 
           startX = e.clientX;
-          startY = e.clientY;
+          startY = e.clientY;         
 
         },
         false
@@ -533,8 +531,8 @@ function setupTapGestures() {
           }
 
           const width =
-            window.innerWidth;
-
+            doc.documentElement.clientWidth;
+          
           const tapX =
             e.clientX;
 
@@ -543,34 +541,56 @@ function setupTapGestures() {
 
           const rightZone =
             width * 0.75;
+          
 
           /* =========================
-             PREV
-          ========================= */
+   PREVENT DOUBLE NAVIGATION
+========================= */
 
-          if (
-            tapX < leftZone
-          ) {
+if (navigating) {
 
-            rendition.prev();
+  return;
 
-            return;
+}
 
-          }
+navigating = true;
 
-          /* =========================
-             NEXT
-          ========================= */
+setTimeout(
+  () => {
 
-          if (
-            tapX > rightZone
-          ) {
+    navigating = false;
 
-            rendition.next();
+  },
+  400
+);
 
-            return;
+/* =========================
+   PREV
+========================= */
 
-          }
+if (
+  tapX < leftZone
+) {
+
+  rendition.prev();
+
+  return;
+
+}
+
+/* =========================
+   NEXT
+========================= */
+
+if (
+  tapX > rightZone
+) {
+
+  rendition.next();
+
+  return;
+
+}
 
           /* =========================
              CENTER TAP
