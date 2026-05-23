@@ -390,45 +390,6 @@ footer.hideControls {
 }
 
 
-
-
-/* =========================
-   NAVIGATION OVERLAY
-========================= */
-
-#navOverlay {
-  position: absolute;
-
-  inset: 0;
-
-  display: flex;
-
-  z-index: 10;
-}
-
-/* SMALLER EDGE ZONES */
-
-.navZone {
-  width: 18%;
-  height: 100%;
-}
-
-/* CENTER ZONE */
-
-#centerZone {
-  flex: 1;
-}
-
-/* TRANSPARENT */
-
-.navZone,
-#centerZone {
-  background: transparent;
-}
-
-
-
-
 /* =========================
    SEARCH MODAL
 ========================= */
