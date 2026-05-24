@@ -554,6 +554,13 @@ function setupTapGestures() {
           const rightZone =
             width * 0.75;
 
+
+          if (navigationLocked) {
+
+  return;
+
+}
+
           /* =========================
              PREV
           ========================= */
