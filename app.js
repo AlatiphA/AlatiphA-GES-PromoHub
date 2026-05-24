@@ -231,8 +231,6 @@ function startReader() {
         
         gap: 0,                  // reduce gaps
         minSpreadWidth: 0
-        
-        snap: true
       }
     );
 
