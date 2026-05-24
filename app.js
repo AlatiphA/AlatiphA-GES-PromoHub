@@ -227,10 +227,10 @@ function startReader() {
         spread: "none",
         manager: "default",   // or keep "continuous"
         flow: "paginated",
-        snap: true
+        snap: True, 
         
-        // gap: 0,                  // reduce gaps
-        // minSpreadWidth: 0
+        gap: 0,                  // reduce gaps
+        minSpreadWidth: 0
       }
     );
 
