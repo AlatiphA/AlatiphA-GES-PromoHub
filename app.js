@@ -459,59 +459,7 @@ function sidebarIsOpen() {
 /* =========================
    EPUB TAP GESTURES
 ========================= */
-/*
-function setupTapGestures() {
-  rendition.on("rendered", (section) => {
-    const iframe = viewer.querySelector("iframe");
-    if (!iframe) return;
 
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!doc) return;
-
-    // Prevent duplicate listeners
-    if (doc.body.dataset.gestureReady === "true") return;
-    doc.body.dataset.gestureReady = "true";
-
-    let startX = 0;
-    let startY = 0;
-
-    doc.addEventListener("pointerdown", e => {
-      startX = e.clientX;
-      startY = e.clientY;
-    }, { passive: true });
-
-    doc.addEventListener("pointerup", e => {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
-
-      // Ignore if it was a swipe / drag
-      if (deltaX > 15 || deltaY > 15) return;
-
-      // Ignore links, images, form elements
-      if (e.target.closest("a, img, button, input, textarea, select")) return;
-
-      // === CRITICAL: Use iframe dimensions ===
-      const rect = iframe.getBoundingClientRect();
-      const tapX = e.clientX - rect.left;   // relative to iframe
-
-      const zoneWidth = rect.width;         // ← Use iframe width!
-      const leftZone  = zoneWidth * 0.25;
-      const rightZone = zoneWidth * 0.75;
-
-      if (tapX < leftZone) {
-        safePrev();
-      } 
-      else if (tapX > rightZone) {
-        safeNext();
-      } 
-      else {
-        toggleControls();
-      }
-    }, { passive: true });
-  });
-}
-
-*/
 
 function setupTapGestures() {
 
