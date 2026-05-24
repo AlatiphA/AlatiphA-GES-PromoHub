@@ -1,5 +1,5 @@
 <script>
-// All your element declarations (unchanged)
+// ==================== ELEMENT DECLARATIONS ====================
 const viewer = document.getElementById("viewer");
 const toc = document.getElementById("toc");
 const progressText = document.getElementById("progressText");
@@ -24,42 +24,29 @@ const searchResults = document.getElementById("searchResults");
 const header = document.querySelector("header");
 const footer = document.querySelector("footer");
 
-// Removed unused zone elements: leftZone, centerZone, rightZone
-
 let rendition;
 let book;
-
 let controlsVisible = true;
 let fontSize = Number(localStorage.getItem("fontSize")) || 100;
 
-/* ==============
-   DEBOUNCE NAVIGATION
-============== */
+// ==================== DEBOUNCED NAVIGATION ====================
 let isNavigating = false;
 
 async function safePrev() {
   if (isNavigating) return;
   isNavigating = true;
-  try {
-    await rendition.prev();
-  } finally {
-    setTimeout(() => { isNavigating = false; }, 350);
-  }
+  try { await rendition.prev(); }
+  finally { setTimeout(() => { isNavigating = false; }, 350); }
 }
 
 async function safeNext() {
   if (isNavigating) return;
   isNavigating = true;
-  try {
-    await rendition.next();
-  } finally {
-    setTimeout(() => { isNavigating = false; }, 350);
-  }
+  try { await rendition.next(); }
+  finally { setTimeout(() => { isNavigating = false; }, 350); }
 }
 
-/* ==============
-   LOAD BOOK
-============== */
+// ==================== LOAD BOOK ====================
 async function loadBook() {
   try {
     const response = await fetch("./library/sample.epub");
@@ -74,9 +61,7 @@ async function loadBook() {
   }
 }
 
-/* =====================
-   START Reader
-===================== */
+// ==================== START READER ====================
 function startReader() {
   rendition = book.renderTo("viewer", {
     width: "100%",
@@ -91,12 +76,12 @@ function startReader() {
 
   rendition.themes.fontSize(fontSize + "%");
   applyTheme();
-  setupGestures();           // ← Updated name for clarity
+  setupGestures();
 
   rendition.display();
 
   book.ready.then(async () => {
-    // TOC code (unchanged)
+    // TOC
     toc.innerHTML = "";
     const navigation = book.navigation;
     navigation.toc.forEach(chapter => {
@@ -116,11 +101,8 @@ function startReader() {
 
     const savedLocation = localStorage.getItem("epub-location");
     if (savedLocation) {
-      try {
-        await rendition.display(savedLocation);
-      } catch (error) {
-        console.error("Restore failed:", error);
-      }
+      try { await rendition.display(savedLocation); }
+      catch (error) { console.error("Restore failed:", error); }
     }
   });
 
@@ -139,9 +121,7 @@ function startReader() {
   });
 }
 
-/* ==================
-   CONTROLS
-================== */
+// ==================== CONTROLS ====================
 function hideControls() {
   controlsVisible = false;
   header.classList.add("hideControls");
@@ -154,13 +134,7 @@ function showControls() {
   footer.classList.remove("hideControls");
 }
 
-function toggleControls() {
-  controlsVisible ? hideControls() : showControls();
-}
-
-/* =========================
-   GESTURES - Swipe Only
-========================= */
+// ==================== GESTURES (Swipe Only) ====================
 function setupGestures() {
   rendition.on("rendered", () => {
     const iframe = viewer.querySelector("iframe");
@@ -186,10 +160,10 @@ function setupGestures() {
       const absDeltaX = Math.abs(deltaX);
       const absDeltaY = Math.abs(deltaY);
 
-      // Ignore tiny movements
+      // Ignore tiny taps
       if (absDeltaX < 10 && absDeltaY < 10) return;
 
-      // Horizontal Swipe - Page Navigation
+      // Horizontal Swipe - Page Turn
       if (absDeltaX > 50 && absDeltaX > absDeltaY * 1.2) {
         if (deltaX < -50) safeNext();
         else if (deltaX > 50) safePrev();
@@ -197,23 +171,17 @@ function setupGestures() {
       }
 
       // Vertical Swipe - Controls
-      if (absDeltaY > 50 && absDeltaY > absDeltaX * 1.2) {
-        if (deltaY < 0) {
-          hideControls();   // Swipe Up   → Hide
-        } else {
-          showControls();   // Swipe Down → Show
-        }
+      if (absDeltaY > 60 && absDeltaY > absDeltaX * 1.2) {
+        if (deltaY < 0) hideControls();   // Swipe Up
+        else showControls();              // Swipe Down
       }
     }, { passive: true });
   });
 }
 
-/* ==============
-   THEME
-============== */
+// ==================== THEME ====================
 function applyTheme() {
   const darkMode = localStorage.getItem("darkMode") === "true";
-
   document.body.classList.toggle("dark", darkMode);
 
   themeBtn.textContent = darkMode ? "🌙" : "☀️";
@@ -229,24 +197,17 @@ function applyTheme() {
       "line-height": "1.7",
       "font-family": "Arial, sans-serif"
     },
-    a: {
-      color: darkMode ? "#4dabff" : "#1565c0"
-    }
+    a: { color: darkMode ? "#4dabff" : "#1565c0" }
   });
 
   rendition.themes.fontSize(fontSize + "%");
 }
 
-/* ============
-   SEARCH BOOK (unchanged)
-============ */
-async function searchBook(query) { /* ... your existing search code ... */ }
-function renderSearchResults(results) { /* ... your existing function ... */ }
+// ==================== SEARCH (unchanged) ====================
+async function searchBook(query) { /* your original searchBook function */ }
+function renderSearchResults(results) { /* your original renderSearchResults function */ }
 
-/* =============
-   EVENTS
-============= */
-// Menu Button
+// ==================== EVENT LISTENERS ====================
 menuBtn.addEventListener("click", () => {
   sidebar.classList.toggle("active");
   const isOpen = sidebar.classList.contains("active");
@@ -255,18 +216,15 @@ menuBtn.addEventListener("click", () => {
   showControls();
 });
 
-// Theme
 themeBtn.addEventListener("click", () => {
   const darkMode = localStorage.getItem("darkMode") === "true";
   localStorage.setItem("darkMode", (!darkMode).toString());
   applyTheme();
 });
 
-// Navigation Buttons
 nextPage.addEventListener("click", safeNext);
 prevPage.addEventListener("click", safePrev);
 
-// Font Size (unchanged)
 increaseFont.addEventListener("click", () => {
   fontSize += 10;
   rendition.themes.fontSize(fontSize + "%");
@@ -280,19 +238,27 @@ decreaseFont.addEventListener("click", () => {
   localStorage.setItem("fontSize", fontSize);
 });
 
-// Bottom buttons
 bottomThemeBtn.addEventListener("click", () => themeBtn.click());
 bottomDecreaseFont.addEventListener("click", () => decreaseFont.click());
 bottomIncreaseFont.addEventListener("click", () => increaseFont.click());
 bottomMenuBtn.addEventListener("click", () => menuBtn.click());
 
-// Other buttons (unchanged)
-closeAppBtn.addEventListener("click", () => { /* ... */ });
-searchBtn.addEventListener("click", () => { /* ... */ });
-closeSearch.addEventListener("click", () => { /* ... */ });
-searchInput.addEventListener("keydown", e => { /* ... */ });
+closeAppBtn.addEventListener("click", () => {
+  if (window.history.length > 1) history.back();
+  else window.close();
+});
 
-/* Service Worker */
+searchBtn.addEventListener("click", () => searchModal.classList.add("active"));
+closeSearch.addEventListener("click", () => searchModal.classList.remove("active"));
+
+searchInput.addEventListener("keydown", e => {
+  if (e.key === "Enter") {
+    const query = searchInput.value.trim();
+    if (query) searchBook(query);
+  }
+});
+
+// Service Worker
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", async () => {
     try {
