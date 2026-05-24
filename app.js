@@ -448,67 +448,146 @@ function sidebarIsOpen() {
 ========================= */
 
 function setupTapGestures() {
-  rendition.on("rendered", (section) => {
-    const iframe = viewer.querySelector("iframe");
-    if (!iframe) return;
 
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!doc) return;
-    
+  const attachedDocs =
+    new WeakSet();
 
-    // Remove old listeners by cloning body
-const newBody =
-  doc.body.cloneNode(true);
+  rendition.on(
+    "rendered",
+    () => {
 
-doc.body.parentNode.replaceChild(
-  newBody,
-  doc.body
-);
+      const iframe =
+        viewer.querySelector(
+          "iframe"
+        );
 
-    const activeBody =
-  doc.body;
+      if (!iframe) return;
 
-    
+      const doc =
+        iframe.contentDocument ||
+        iframe.contentWindow.document;
 
-    let startX = 0;
-    let startY = 0;
+      if (!doc) return;
 
-    activeBody.addEventListener("pointerdown", e => {
-      startX = e.clientX;
-      startY = e.clientY;
-    }, { passive: true });
+      /* Prevent duplicate listeners */
 
-    activeBody.addEventListener("pointerup", e => {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
+      if (
+        attachedDocs.has(doc)
+      ) {
 
-      // Ignore if it was a swipe / drag
-      if (deltaX > 15 || deltaY > 15) return;
+        return;
 
-      // Ignore links, images, form elements
-      if (e.target.closest("a, img, button, input, textarea, select")) return;
-
-      // === CRITICAL: Use iframe dimensions ===
-      const rect = iframe.getBoundingClientRect();
-      const tapX = e.clientX - rect.left;   // relative to iframe
-
-      const zoneWidth = rect.width;         // ← Use iframe width!
-      const leftZone  = zoneWidth * 0.25;
-      const rightZone = zoneWidth * 0.75;
-
-      if (tapX < leftZone) {
-        safePrev();
-      } 
-      else if (tapX > rightZone) {
-        safeNext();
-      } 
-      else {
-        toggleControls();
       }
-    }, { passive: true });
-  });
-}
 
+      attachedDocs.add(doc);
+
+      let startX = 0;
+      let startY = 0;
+
+      doc.addEventListener(
+        "pointerdown",
+        e => {
+
+          startX =
+            e.clientX;
+
+          startY =
+            e.clientY;
+
+        },
+        { passive: true }
+      );
+
+      doc.addEventListener(
+        "pointerup",
+        e => {
+
+          const deltaX =
+            Math.abs(
+              e.clientX - startX
+            );
+
+          const deltaY =
+            Math.abs(
+              e.clientY - startY
+            );
+
+          /* Ignore drag/swipe movement */
+
+          if (
+            deltaX > 15 ||
+            deltaY > 15
+          ) {
+
+            return;
+
+          }
+
+          /* Ignore links/images/forms */
+
+          if (
+            e.target.closest(
+              "a, img, button, input, textarea, select"
+            )
+          ) {
+
+            return;
+
+          }
+
+          /* iframe-relative zones */
+
+          const rect =
+            iframe.getBoundingClientRect();
+
+          const tapX =
+            e.clientX - rect.left;
+
+          const width =
+            rect.width;
+
+          const leftZone =
+            width * 0.25;
+
+          const rightZone =
+            width * 0.75;
+
+          /* PREV */
+
+          if (
+            tapX < leftZone
+          ) {
+
+            rendition.prev();
+
+            return;
+
+          }
+
+          /* NEXT */
+
+          if (
+            tapX > rightZone
+          ) {
+
+            rendition.next();
+
+            return;
+
+          }
+
+          /* CENTER */
+
+          toggleControls();
+
+        },
+        { passive: true }
+      );
+
+    }
+  );
+
+}
 
 
 
