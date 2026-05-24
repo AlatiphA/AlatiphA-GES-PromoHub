@@ -980,12 +980,12 @@ themeBtn.addEventListener(
 
 nextPage.addEventListener("click", () => {
   safeNext();
-  showControls();
+  // showControls();
 });
 
 prevPage.addEventListener("click", () => {
   safePrev();
-  showControls();
+  // showControls();
 });
 
 increaseFont.addEventListener(
