@@ -529,7 +529,7 @@ function setupTapGestures() {
           }
 
           const width =
-            window.innerWidth;
+            doc.documentElement.clientWidth;
 
           const tapX =
             e.clientX;
