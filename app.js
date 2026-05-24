@@ -429,6 +429,19 @@ function toggleControls() {
 
 }
 
+function hideControls() {
+  controlsVisible = false;
+  header.classList.add("hideControls");
+  footer.classList.add("hideControls");
+}
+
+function showControls() {
+  controlsVisible = true;
+  header.classList.remove("hideControls");
+  footer.classList.remove("hideControls");
+}
+
+
 
 /* =========================
    GESTURES (Swipe Next/Prev)
@@ -446,7 +459,7 @@ function sidebarIsOpen() {
 /* =========================
    EPUB TAP GESTURES
 ========================= */
-
+/*
 function setupTapGestures() {
   rendition.on("rendered", (section) => {
     const iframe = viewer.querySelector("iframe");
@@ -498,9 +511,64 @@ function setupTapGestures() {
   });
 }
 
+*/
 
+function setupTapGestures() {
 
+  rendition.on("rendered", () => {
 
+    const iframe = viewer.querySelector("iframe");
+    if (!iframe) return;
+
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc) return;
+
+    if (doc.body.dataset.gestureReady === "true") return;
+    doc.body.dataset.gestureReady = "true";
+
+    let startX = 0;
+    let startY = 0;
+
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
+    }, { passive: true });
+
+    doc.addEventListener("pointerup", e => {
+      const endX = e.clientX;
+      const endY = e.clientY;
+
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
+
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(deltaY);
+
+      // Ignore very small movements (accidental taps)
+      if (absDeltaX < 10 && absDeltaY < 10) return;
+
+      // ==================== HORIZONTAL SWIPE ====================
+      if (absDeltaX > 50 && absDeltaX > absDeltaY * 1.2) {
+        if (deltaX < -50) {
+          safeNext();      // Swipe Left  → Next Page
+        } else if (deltaX > 50) {
+          safePrev();      // Swipe Right → Previous Page
+        }
+        return;
+      }
+
+      // ==================== VERTICAL SWIPE ====================
+      if (absDeltaY > 50 && absDeltaY > absDeltaX * 1.2) {
+        if (deltaY < 0) {
+          hideControls();   // Swipe Up   → Hide Controls
+        } else {
+          showControls();   // Swipe Down → Show Controls
+        }
+      }
+
+    }, { passive: true });
+  });
+}
             
 
 
