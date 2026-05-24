@@ -130,6 +130,7 @@ const rightZone =
 
 let rendition;
 let book;
+let navigationLocked = false;
 
 let controlsVisible =
   true;
@@ -255,9 +256,22 @@ function startReader() {
 
               e.preventDefault();
 
-              rendition.display(
-                chapter.href
-              );
+              navigationLocked = true;
+
+rendition.display(
+  chapter.href
+);
+
+setTimeout(
+  () => {
+
+    navigationLocked = false;
+
+  },
+  700
+);
+
+              
 
               sidebar.classList.remove(
                 "active"
