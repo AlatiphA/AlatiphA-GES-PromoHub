@@ -448,7 +448,9 @@ function sidebarIsOpen() {
 ========================= */
 
 function setupTapGestures() {
-  rendition.on("rendered", (section) => {
+
+  rendition.on("rendered", () => {
+
     const iframe = viewer.querySelector("iframe");
     if (!iframe) return;
 
@@ -471,33 +473,38 @@ function setupTapGestures() {
       const deltaX = Math.abs(e.clientX - startX);
       const deltaY = Math.abs(e.clientY - startY);
 
-      // Ignore if it was a swipe / drag
+      // Ignore swipes/drags
       if (deltaX > 15 || deltaY > 15) return;
 
-      // Ignore links, images, form elements
+      // Ignore interactive elements
       if (e.target.closest("a, img, button, input, textarea, select")) return;
 
-      // === CRITICAL: Use iframe dimensions ===
+      // Use iframe coordinates (this fixes the main bug)
       const rect = iframe.getBoundingClientRect();
-      const tapX = e.clientX - rect.left;   // relative to iframe
+      const tapX = e.clientX - rect.left;        // relative X inside iframe
+      const zoneWidth = rect.width;
 
-      const zoneWidth = rect.width;         // ← Use iframe width!
       const leftZone  = zoneWidth * 0.25;
       const rightZone = zoneWidth * 0.75;
 
+      /* PREV */
       if (tapX < leftZone) {
         safePrev();
-      } 
-      else if (tapX > rightZone) {
-        safeNext();
-      } 
-      else {
-        toggleControls();
+        return;
       }
+
+      /* NEXT */
+      if (tapX > rightZone) {
+        safeNext();
+        return;
+      }
+
+      /* CENTER TAP - Toggle controls */
+      toggleControls();
+
     }, { passive: true });
   });
 }
-
 
 
 
