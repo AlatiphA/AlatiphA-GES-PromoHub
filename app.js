@@ -199,9 +199,9 @@ function setupTapGestures() {
       // Swipe gestures (> 60px horizontal)
       if (absDeltaX > 60) {
         if (deltaX < 0) {
-          rendition.next();
+          safeNext();
         } else {
-          rendition.prev();
+          safePrev();
         }
         showControls();
         return;
@@ -213,10 +213,10 @@ function setupTapGestures() {
         const tapX = e.changedTouches[0].clientX;
 
         if (tapX < width * 0.25) {
-          rendition.prev();
+          safePrev();
           showControls();
         } else if (tapX > width * 0.75) {
-          rendition.next();
+          safeNext();
           showControls();
         } else {
           toggleControls();
@@ -338,8 +338,15 @@ themeBtn.addEventListener("click", () => {
   applyTheme();
 });
 
-nextPage.addEventListener("click", () => { rendition.next(); showControls(); });
-prevPage.addEventListener("click", () => { rendition.prev(); showControls(); });
+nextPage.addEventListener("click", () => {
+  safeNext();
+  showControls();
+});
+
+prevPage.addEventListener("click", () => {
+  safePrev();
+  showControls();
+});
 
 increaseFont.addEventListener("click", () => {
   fontSize += 10;
