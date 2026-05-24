@@ -449,9 +449,6 @@ function sidebarIsOpen() {
 
 function setupTapGestures() {
 
-  const attachedDocs =
-    new WeakSet();
-
   rendition.on(
     "rendered",
     () => {
@@ -464,28 +461,14 @@ function setupTapGestures() {
       if (!iframe) return;
 
       const doc =
-        iframe.contentDocument ||
-        iframe.contentWindow.document;
+        iframe.contentDocument;
 
       if (!doc) return;
-
-      /* Prevent duplicate listeners */
-
-      if (
-        attachedDocs.has(doc)
-      ) {
-
-        return;
-
-      }
-
-      attachedDocs.add(doc);
 
       let startX = 0;
       let startY = 0;
 
-      doc.addEventListener(
-        "pointerdown",
+      doc.onpointerdown =
         e => {
 
           startX =
@@ -494,12 +477,9 @@ function setupTapGestures() {
           startY =
             e.clientY;
 
-        },
-        { passive: true }
-      );
+        };
 
-      doc.addEventListener(
-        "pointerup",
+      doc.onpointerup =
         e => {
 
           const deltaX =
@@ -512,7 +492,7 @@ function setupTapGestures() {
               e.clientY - startY
             );
 
-          /* Ignore drag/swipe movement */
+          /* Ignore movement */
 
           if (
             deltaX > 15 ||
@@ -535,8 +515,6 @@ function setupTapGestures() {
 
           }
 
-          /* iframe-relative zones */
-
           const rect =
             iframe.getBoundingClientRect();
 
@@ -546,16 +524,10 @@ function setupTapGestures() {
           const width =
             rect.width;
 
-          const leftZone =
-            width * 0.25;
-
-          const rightZone =
-            width * 0.75;
-
           /* PREV */
 
           if (
-            tapX < leftZone
+            tapX < width * 0.25
           ) {
 
             rendition.prev();
@@ -567,7 +539,7 @@ function setupTapGestures() {
           /* NEXT */
 
           if (
-            tapX > rightZone
+            tapX > width * 0.75
           ) {
 
             rendition.next();
@@ -580,15 +552,12 @@ function setupTapGestures() {
 
           toggleControls();
 
-        },
-        { passive: true }
-      );
+        };
 
     }
   );
 
 }
-
 
 
             
