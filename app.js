@@ -175,50 +175,55 @@ function setupTapGestures() {
     let startY = 0;
 
     // touchstart/touchend are more reliable than pointer events inside epub iframes
+    doc.addEventListener("touchstart", e => {
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
+    }, { passive: true });
+
     doc.addEventListener("touchend", e => {
-  if (!e.changedTouches?.length) return;
+      if (!e.changedTouches?.length) return;
 
-  const endX = e.changedTouches[0].clientX;
-  const endY = e.changedTouches[0].clientY;
-  const deltaX = endX - startX;
-  const deltaY = endY - startY;
+      const endX = e.changedTouches[0].clientX;
+      const endY = e.changedTouches[0].clientY;
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
 
-  const absDeltaX = Math.abs(deltaX);
-  const absDeltaY = Math.abs(deltaY);
+      // Ignore if vertical scroll dominated
+      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) return;
 
-  // Ignore mostly vertical movement (scrolling)
-  if (absDeltaY > absDeltaX && absDeltaY > 15) return;
+      // Ignore links, images, form elements
+      if (e.target.closest("a, img, button, input, textarea, select")) return;
 
-  // Ignore taps on interactive elements
-  if (e.target.closest("a, img, button, input, textarea, select, [role='button']")) return;
+      const absDeltaX = Math.abs(deltaX);
 
-  const width = doc.documentElement.clientWidth;
+      // Swipe gestures (> 60px horizontal)
+      if (absDeltaX > 60) {
+        if (deltaX < 0) {
+          safeNext();
+        } else {
+          safePrev();
+        }
+        showControls();
+        return;
+      }
 
-  // === NEW COMBINED LOGIC (replaces both old swipe and tap) ===
-  const startZone = startX / width;   // Using start position feels more natural
+      // Tap (< 10px movement) — zone-based
+      if (absDeltaX < 10 && Math.abs(deltaY) < 10) {
+        const width = doc.documentElement.clientWidth;
+        const tapX = e.changedTouches[0].clientX;
 
-  if (absDeltaX > 45) {
-    // Swipe detected
-    if (deltaX < 0) {
-      safeNext();
-    } else {
-      safePrev();
-    }
-    showControls();
-  } 
-  else if (absDeltaX < 12 && absDeltaY < 12) {
-    // Clean tap (very little movement)
-    if (startZone < 0.25) {
-      safePrev();
-      showControls();
-    } else if (startZone > 0.75) {
-      safeNext();
-      showControls();
-    } else {
-      toggleControls();
-    }
-  }
-}, { passive: true });
+        if (tapX < width * 0.25) {
+          safePrev();
+          showControls();
+        } else if (tapX > width * 0.75) {
+          safeNext();
+          showControls();
+        } else {
+          toggleControls();
+        }
+      }
+
+    }, { passive: true });
 
   });
 
