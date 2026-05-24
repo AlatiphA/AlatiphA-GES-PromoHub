@@ -148,24 +148,62 @@ let fontSize =
 
 let isNavigating = false;
 
-async function safePrev() {
+async function safeNext() {
+
   if (isNavigating) return;
+
   isNavigating = true;
+
   try {
-    await rendition.prev();
-  } finally {
-    setTimeout(() => { isNavigating = false; }, 300);
+
+    await rendition.next();
+
   }
+
+  catch (error) {
+
+    console.error(error);
+
+  }
+
+  setTimeout(
+    () => {
+
+      isNavigating = false;
+
+    },
+    350
+  );
+
 }
 
-async function safeNext() {
+async function safePrev() {
+
   if (isNavigating) return;
+
   isNavigating = true;
+
   try {
-    await rendition.next();
-  } finally {
-    setTimeout(() => { isNavigating = false; }, 300);
+
+    await rendition.prev();
+
   }
+
+  catch (error) {
+
+    console.error(error);
+
+  }
+
+  setTimeout(
+    () => {
+
+      isNavigating = false;
+
+    },
+    350
+  );
+
 }
 
 
@@ -225,12 +263,13 @@ function startReader() {
         width: "100%",
         height: "100%",
         spread: "none",
-        manager: "continuous",   // or keep "default"
+        manager: "default",   // or keep "continuous"
         flow: "paginated",
-        snap: true,
         
-        gap: 0,                  // reduce gaps
-        minSpreadWidth: 0
+       // gap: 0,                  // reduce gaps
+       // minSpreadWidth: 0, 
+        
+        snap: true
       }
     );
 
@@ -430,45 +469,6 @@ function toggleControls() {
 }
 
 
-function handleCenterTap(endX, iframe) {
-  const rect = iframe.getBoundingClientRect();
-  const tapX = endX - rect.left;        // X position inside iframe
-  const zoneWidth = rect.width;
-
-  const leftZone = zoneWidth * 0.25;
-  const rightZone = zoneWidth * 0.75;
-
-  if (tapX < leftZone) {
-    safePrev();
-  } 
-  else if (tapX > rightZone) {
-    safeNext();
-  } 
-  else {
-    toggleControls();     // Center tap
-  }
-}
-
-
-function hideControls() {
-  controlsVisible = false;
-  header.classList.add("hideControls");
-  footer.classList.add("hideControls");
-}
-
-function showControls() {
-  controlsVisible = true;
-  header.classList.remove("hideControls");
-  footer.classList.remove("hideControls");
-}
-
-function toggleControls() {
-  if (controlsVisible) {
-    hideControls();
-  } else {
-    showControls();
-  }
-}
 
 
 /* =========================
@@ -490,69 +490,169 @@ function sidebarIsOpen() {
 
 function setupTapGestures() {
 
-  // Remove any previous listeners when a new section renders
-  rendition.on("rendered", () => {
+  rendition.on(
+    "rendered",
+    () => {
 
-    const iframe = viewer.querySelector("iframe");
-    if (!iframe) return;
+      const iframe =
+        viewer.querySelector(
+          "iframe"
+        );
 
-    const doc = iframe.contentDocument || iframe.contentWindow.document;
-    if (!doc) return;
+      if (!iframe) return;
 
-    // Clear previous gesture data
-    if (doc.body.dataset.gestureReady) {
-      return; // already set up
+      const doc =
+        iframe.contentDocument;
+
+      if (!doc) return;
+
+      /* Prevent duplicate listeners */
+
+      if (
+        doc.body.dataset
+          .gestureReady
+      ) {
+
+        return;
+
+      }
+
+      doc.body.dataset
+        .gestureReady =
+        "true";
+
+      let startX = 0;
+      let startY = 0;
+
+      doc.addEventListener(
+        "pointerdown",
+        e => {
+
+          startX = e.clientX;
+          startY = e.clientY;
+
+        },
+        false
+      );
+
+      doc.addEventListener(
+        "pointerup",
+        e => {
+
+          const deltaX =
+            Math.abs(
+              e.clientX - startX
+            );
+
+          const deltaY =
+            Math.abs(
+              e.clientY - startY
+            );
+
+          /* Ignore swipes */
+
+          if (
+            deltaX > 10 ||
+            deltaY > 10
+          ) {
+
+            return;
+
+          }
+
+          /* =========================
+             ALLOW REAL LINKS
+          ========================= */
+
+          const link =
+            e.target.closest("a");
+
+          if (link) {
+
+            return;
+
+          }
+
+          /* =========================
+             ALLOW IMAGES
+          ========================= */
+
+          if (
+            e.target.closest("img")
+          ) {
+
+            return;
+
+          }
+
+          /* =========================
+             ALLOW FORM ELEMENTS
+          ========================= */
+
+          if (
+            e.target.closest(
+              "button, input, textarea, select"
+            )
+          ) {
+
+            return;
+
+          }
+
+          const width =
+            doc.documentElement.clientWidth;
+
+          const tapX =
+            e.clientX;
+
+          const leftZone =
+            width * 0.25;
+
+          const rightZone =
+            width * 0.75;
+
+          /* =========================
+             PREV
+          ========================= */
+
+          if (
+            tapX < leftZone
+          ) {
+
+            safePrev();
+
+            return;
+
+          }
+
+          /* =========================
+             NEXT
+          ========================= */
+
+          if (
+            tapX > rightZone
+          ) {
+
+            safeNext();
+
+            return;
+
+          }
+
+          /* =========================
+             CENTER TAP
+          ========================= */
+
+          toggleControls();
+
+        },
+        false
+      );
+
     }
+  );
 
-    doc.body.dataset.gestureReady = "true";
-
-    let startX = 0;
-    let startY = 0;
-
-    const handlePointerUp = (e) => {
-      const endX = e.clientX;
-      const endY = e.clientY;
-
-      const deltaX = endX - startX;
-      const deltaY = endY - startY;
-
-      const absDeltaX = Math.abs(deltaX);
-      const absDeltaY = Math.abs(deltaY);
-
-      // === TAP ===
-      if (absDeltaX < 15 && absDeltaY < 15) {
-        handleCenterTap(endX, iframe);
-        return;
-      }
-
-      // === HORIZONTAL SWIPE ===
-      if (absDeltaX > 60 && absDeltaX > absDeltaY * 1.3) {
-        if (deltaX < -50) safeNext();
-        else if (deltaX > 50) safePrev();
-        return;
-      }
-
-      // === VERTICAL SWIPE ===
-      if (absDeltaY > 60 && absDeltaY > absDeltaX * 1.3) {
-        if (deltaY < -50) {
-          hideControls();   // Swipe Up
-        } else if (deltaY > 50) {
-          showControls();   // Swipe Down
-        }
-      }
-    };
-
-    doc.addEventListener("pointerdown", e => {
-      startX = e.clientX;
-      startY = e.clientY;
-    }, { passive: true });
-
-    doc.addEventListener("pointerup", handlePointerUp, { passive: true });
-
-  });
 }
-            
-
 
 
 
@@ -880,10 +980,12 @@ themeBtn.addEventListener(
 
 nextPage.addEventListener("click", () => {
   safeNext();
+  showControls();
 });
 
 prevPage.addEventListener("click", () => {
   safePrev();
+  showControls();
 });
 
 increaseFont.addEventListener(
