@@ -225,12 +225,12 @@ function startReader() {
         width: "100%",
         height: "100%",
         spread: "none",
-        manager: "continuous",   // or keep "default"
+        manager: "default",   // or keep "continuous"
         flow: "paginated",
-        snap: true,
+        snap: true
         
-        gap: 0,                  // reduce gaps
-        minSpreadWidth: 0
+        // gap: 0,                  // reduce gaps
+        // minSpreadWidth: 0
       }
     );
 
@@ -454,20 +454,31 @@ function setupTapGestures() {
 
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     if (!doc) return;
+    
 
-    // Prevent duplicate listeners
-    if (doc.body.dataset.gestureReady === "true") return;
-    doc.body.dataset.gestureReady = "true";
+    // Remove old listeners by cloning body
+const newBody =
+  doc.body.cloneNode(true);
+
+doc.body.parentNode.replaceChild(
+  newBody,
+  doc.body
+);
+
+    const activeBody =
+  doc.body;
+
+    
 
     let startX = 0;
     let startY = 0;
 
-    doc.addEventListener("pointerdown", e => {
+    activeBody.addEventListener("pointerdown", e => {
       startX = e.clientX;
       startY = e.clientY;
     }, { passive: true });
 
-    doc.addEventListener("pointerup", e => {
+    activeBody.addEventListener("pointerup", e => {
       const deltaX = Math.abs(e.clientX - startX);
       const deltaY = Math.abs(e.clientY - startY);
 
