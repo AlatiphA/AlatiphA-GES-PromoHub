@@ -448,115 +448,54 @@ function sidebarIsOpen() {
 ========================= */
 
 function setupTapGestures() {
+  rendition.on("rendered", (section) => {
+    const iframe = viewer.querySelector("iframe");
+    if (!iframe) return;
 
-  rendition.on(
-    "rendered",
-    () => {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc) return;
 
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
+    // Prevent duplicate listeners
+    if (doc.body.dataset.gestureReady === "true") return;
+    doc.body.dataset.gestureReady = "true";
 
-      if (!iframe) return;
+    let startX = 0;
+    let startY = 0;
 
-      const doc =
-        iframe.contentDocument;
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
+    }, { passive: true });
 
-      if (!doc) return;
+    doc.addEventListener("pointerup", e => {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
 
-      let startX = 0;
-      let startY = 0;
+      // Ignore if it was a swipe / drag
+      if (deltaX > 15 || deltaY > 15) return;
 
-      doc.onpointerdown =
-        e => {
+      // Ignore links, images, form elements
+      if (e.target.closest("a, img, button, input, textarea, select")) return;
 
-          startX =
-            e.clientX;
+      // === CRITICAL: Use iframe dimensions ===
+      const rect = iframe.getBoundingClientRect();
+      const tapX = e.clientX - rect.left;   // relative to iframe
 
-          startY =
-            e.clientY;
+      const zoneWidth = rect.width;         // ← Use iframe width!
+      const leftZone  = zoneWidth * 0.25;
+      const rightZone = zoneWidth * 0.75;
 
-        };
-
-      doc.onpointerup =
-        e => {
-
-          const deltaX =
-            Math.abs(
-              e.clientX - startX
-            );
-
-          const deltaY =
-            Math.abs(
-              e.clientY - startY
-            );
-
-          /* Ignore movement */
-
-          if (
-            deltaX > 15 ||
-            deltaY > 15
-          ) {
-
-            return;
-
-          }
-
-          /* Ignore links/images/forms */
-
-          if (
-            e.target.closest(
-              "a, img, button, input, textarea, select"
-            )
-          ) {
-
-            return;
-
-          }
-
-          const rect =
-            iframe.getBoundingClientRect();
-
-          const tapX =
-            e.clientX - rect.left;
-
-          const width =
-            rect.width;
-
-          /* PREV */
-
-          if (
-            tapX < width * 0.25
-          ) {
-
-            rendition.prev();
-
-            return;
-
-          }
-
-          /* NEXT */
-
-          if (
-            tapX > width * 0.75
-          ) {
-
-            rendition.next();
-
-            return;
-
-          }
-
-          /* CENTER */
-
-          toggleControls();
-
-        };
-
-    }
-  );
-
+      if (tapX < leftZone) {
+        safePrev();
+      } 
+      else if (tapX > rightZone) {
+        safeNext();
+      } 
+      else {
+        toggleControls();
+      }
+    }, { passive: true });
+  });
 }
 
 
