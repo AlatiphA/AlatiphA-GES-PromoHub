@@ -828,23 +828,13 @@ themeBtn.addEventListener(
   }
 );
 
-nextPage.addEventListener(
-  "click",
-  () => {
+nextPage.addEventListener("click", () => {
+  safeNext();
+});
 
-    rendition.next();
-
-  }
-);
-
-prevPage.addEventListener(
-  "click",
-  () => {
-
-    rendition.prev();
-
-  }
-);
+prevPage.addEventListener("click", () => {
+  safePrev();
+});
 
 increaseFont.addEventListener(
   "click",
