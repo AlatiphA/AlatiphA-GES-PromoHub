@@ -199,9 +199,9 @@ function setupTapGestures() {
       // Swipe gestures (> 60px horizontal)
       if (absDeltaX > 60) {
         if (deltaX < 0) {
-          safeNext();
+          rendition.next();
         } else {
-          safePrev();
+          rendition.prev();
         }
         showControls();
         return;
@@ -213,10 +213,10 @@ function setupTapGestures() {
         const tapX = e.changedTouches[0].clientX;
 
         if (tapX < width * 0.25) {
-          safePrev();
+          rendition.prev();
           showControls();
         } else if (tapX > width * 0.75) {
-          safeNext();
+          rendition.next();
           showControls();
         } else {
           toggleControls();
