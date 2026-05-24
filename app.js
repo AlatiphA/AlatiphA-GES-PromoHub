@@ -453,18 +453,12 @@ function setupTapGestures() {
       let startX = 0;
       let startY = 0;
 
-      let navigating =
-        false;
-
       doc.addEventListener(
         "pointerdown",
         e => {
 
-          startX =
-            e.clientX;
-
-          startY =
-            e.clientY;
+          startX = e.clientX;
+          startY = e.clientY;
 
         },
         false
@@ -495,12 +489,12 @@ function setupTapGestures() {
 
           }
 
-          /* Allow links */
+          /* =========================
+             ALLOW REAL LINKS
+          ========================= */
 
           const link =
-            e.target.closest(
-              "a"
-            );
+            e.target.closest("a");
 
           if (link) {
 
@@ -508,19 +502,21 @@ function setupTapGestures() {
 
           }
 
-          /* Allow images */
+          /* =========================
+             ALLOW IMAGES
+          ========================= */
 
           if (
-            e.target.closest(
-              "img"
-            )
+            e.target.closest("img")
           ) {
 
             return;
 
           }
 
-          /* Allow form elements */
+          /* =========================
+             ALLOW FORM ELEMENTS
+          ========================= */
 
           if (
             e.target.closest(
@@ -532,31 +528,8 @@ function setupTapGestures() {
 
           }
 
-          /* Prevent rapid double navigation */
-
-          if (
-            navigating
-          ) {
-
-            return;
-
-          }
-
-          navigating = true;
-
-          setTimeout(
-            () => {
-
-              navigating =
-                false;
-
-            },
-            400
-          );
-
           const width =
-            doc.documentElement
-              .clientWidth;
+            window.innerWidth;
 
           const tapX =
             e.clientX;
@@ -567,7 +540,9 @@ function setupTapGestures() {
           const rightZone =
             width * 0.75;
 
-          /* PREV */
+          /* =========================
+             PREV
+          ========================= */
 
           if (
             tapX < leftZone
@@ -579,7 +554,9 @@ function setupTapGestures() {
 
           }
 
-          /* NEXT */
+          /* =========================
+             NEXT
+          ========================= */
 
           if (
             tapX > rightZone
@@ -591,7 +568,9 @@ function setupTapGestures() {
 
           }
 
-          /* CENTER TAP */
+          /* =========================
+             CENTER TAP
+          ========================= */
 
           toggleControls();
 
@@ -604,6 +583,10 @@ function setupTapGestures() {
 
 }
 
+
+
+
+            
 
 
 
