@@ -174,43 +174,28 @@ async function safeNext() {
 ============== */
 
 async function loadBook() {
-
   try {
+    const url = "./library/sample.epub";
+    
+    console.log("Trying to load EPUB from:", url);
 
-    const response =
-      await fetch(
-        "./library/sample.epub"
-      );
+    const response = await fetch(url);
 
     if (!response.ok) {
-
-      throw new Error(
-        "EPUB file not found."
-      );
-
+      throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
     }
 
-    const blob =
-      await response.blob();
+    const blob = await response.blob();
+    console.log("EPUB file loaded successfully, size:", blob.size, "bytes");
 
     book = ePub(blob);
-
     startReader();
 
+  } catch (error) {
+    console.error("EPUB Load Error:", error);
+    alert("Failed to load EPUB.\n\nError: " + error.message);
   }
-
-  catch (error) {
-
-    console.error(error);
-
-    alert(
-      "Failed to load EPUB."
-    );
-
-  }
-
 }
-
 
 /* =====================
    START Reader & THEME
