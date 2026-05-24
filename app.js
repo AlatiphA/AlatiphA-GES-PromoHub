@@ -175,55 +175,52 @@ function setupTapGestures() {
     let startY = 0;
 
     // touchstart/touchend are more reliable than pointer events inside epub iframes
-    doc.addEventListener("touchstart", e => {
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    }, { passive: true });
-
     doc.addEventListener("touchend", e => {
-      if (!e.changedTouches?.length) return;
+  if (!e.changedTouches?.length) return;
 
-      const endX = e.changedTouches[0].clientX;
-      const endY = e.changedTouches[0].clientY;
-      const deltaX = endX - startX;
-      const deltaY = endY - startY;
+  const endX = e.changedTouches[0].clientX;
+  const endY = e.changedTouches[0].clientY;
+  const deltaX = endX - startX;
+  const deltaY = endY - startY;
 
-      // Ignore if vertical scroll dominated
-      if (Math.abs(deltaY) > Math.abs(deltaX) && Math.abs(deltaY) > 10) return;
+  const absDeltaX = Math.abs(deltaX);
+  const absDeltaY = Math.abs(deltaY);
 
-      // Ignore links, images, form elements
-      if (e.target.closest("a, img, button, input, textarea, select")) return;
+  // Ignore vertical scrolls
+  if (absDeltaY > absDeltaX && absDeltaY > 15) return;
 
-      const absDeltaX = Math.abs(deltaX);
+  // Ignore interactive elements
+  if (e.target.closest("a, img, button, input, textarea, select, [role='button']")) return;
 
-      // Swipe gestures (> 60px horizontal)
-      if (absDeltaX > 60) {
-        if (deltaX < 0) {
-          safeNext();
-        } else {
-          safePrev();
-        }
-        showControls();
-        return;
-      }
+  const width = doc.documentElement.clientWidth;
 
-      // Tap (< 10px movement) — zone-based
-      if (absDeltaX < 10 && Math.abs(deltaY) < 10) {
-        const width = doc.documentElement.clientWidth;
-        const tapX = e.changedTouches[0].clientX;
+  // === PRIORITY 1: Swipe (more lenient threshold) ===
+  if (absDeltaX > 45) {                    // Lowered from 60 → feels better
+    if (deltaX < 0) {
+      safeNext();
+    } else {
+      safePrev();
+    }
+    showControls();
+    return;
+  }
 
-        if (tapX < width * 0.25) {
-          safePrev();
-          showControls();
-        } else if (tapX > width * 0.75) {
-          safeNext();
-          showControls();
-        } else {
-          toggleControls();
-        }
-      }
+  // === PRIORITY 2: Tap (only if very little movement) ===
+  if (absDeltaX < 12 && absDeltaY < 12) {
+    const tapX = endX; // or use startX for more stability
 
-    }, { passive: true });
+    if (tapX < width * 0.25) {
+      safePrev();
+      showControls();
+    } else if (tapX > width * 0.75) {
+      safeNext();
+      showControls();
+    } else {
+      // Center tap
+      toggleControls();
+    }
+  }
+}, { passive: true });
 
   });
 
