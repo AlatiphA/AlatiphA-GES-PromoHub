@@ -200,6 +200,12 @@ function startReader() {
         spread: "none",
         manager: "default",
         flow: "paginated",
+
+  
+  snap: true,
+  gap: 0,                  // reduce gaps
+  minSpreadWidth: 0
+        
         snap: true
       }
     );
@@ -418,169 +424,54 @@ function sidebarIsOpen() {
 ========================= */
 
 function setupTapGestures() {
+  rendition.on("rendered", (section) => {
+    const iframe = viewer.querySelector("iframe");
+    if (!iframe) return;
 
-  rendition.on(
-    "rendered",
-    () => {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc) return;
 
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
+    // Prevent duplicate listeners
+    if (doc.body.dataset.gestureReady === "true") return;
+    doc.body.dataset.gestureReady = "true";
 
-      if (!iframe) return;
+    let startX = 0;
+    let startY = 0;
 
-      const doc =
-        iframe.contentDocument;
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
+    }, { passive: true });
 
-      if (!doc) return;
+    doc.addEventListener("pointerup", e => {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
 
-      /* Prevent duplicate listeners */
+      // Ignore if it was a swipe / drag
+      if (deltaX > 15 || deltaY > 15) return;
 
-      if (
-        doc.body.dataset
-          .gestureReady
-      ) {
+      // Ignore links, images, form elements
+      if (e.target.closest("a, img, button, input, textarea, select")) return;
 
-        return;
+      // === CRITICAL: Use iframe dimensions ===
+      const rect = iframe.getBoundingClientRect();
+      const tapX = e.clientX - rect.left;   // relative to iframe
 
+      const zoneWidth = rect.width;         // ← Use iframe width!
+      const leftZone  = zoneWidth * 0.25;
+      const rightZone = zoneWidth * 0.75;
+
+      if (tapX < leftZone) {
+        rendition.prev();
+      } 
+      else if (tapX > rightZone) {
+        rendition.next();
+      } 
+      else {
+        toggleControls();
       }
-
-      doc.body.dataset
-        .gestureReady =
-        "true";
-
-      let startX = 0;
-      let startY = 0;
-
-      doc.addEventListener(
-        "pointerdown",
-        e => {
-
-          startX = e.clientX;
-          startY = e.clientY;
-
-        },
-        false
-      );
-
-      doc.addEventListener(
-        "pointerup",
-        e => {
-
-          const deltaX =
-            Math.abs(
-              e.clientX - startX
-            );
-
-          const deltaY =
-            Math.abs(
-              e.clientY - startY
-            );
-
-          /* Ignore swipes */
-
-          if (
-            deltaX > 10 ||
-            deltaY > 10
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW REAL LINKS
-          ========================= */
-
-          const link =
-            e.target.closest("a");
-
-          if (link) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW IMAGES
-          ========================= */
-
-          if (
-            e.target.closest("img")
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW FORM ELEMENTS
-          ========================= */
-
-          if (
-            e.target.closest(
-              "button, input, textarea, select"
-            )
-          ) {
-
-            return;
-
-          }
-
-          const width =
-            window.innerWidth;
-
-          const tapX =
-            e.clientX;
-
-          const leftZone =
-            width * 0.25;
-
-          const rightZone =
-            width * 0.75;
-
-          /* =========================
-             PREV
-          ========================= */
-
-          if (
-            tapX < leftZone
-          ) {
-
-            rendition.prev();
-
-            return;
-
-          }
-
-          /* =========================
-             NEXT
-          ========================= */
-
-          if (
-            tapX > rightZone
-          ) {
-
-            rendition.next();
-
-            return;
-
-          }
-
-          /* =========================
-             CENTER TAP
-          ========================= */
-
-          toggleControls();
-
-        },
-        false
-      );
-
-    }
-  );
-
+    }, { passive: true });
+  });
 }
 
 
