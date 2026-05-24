@@ -490,6 +490,7 @@ function sidebarIsOpen() {
 
 function setupTapGestures() {
 
+  // Remove any previous listeners when a new section renders
   rendition.on("rendered", () => {
 
     const iframe = viewer.querySelector("iframe");
@@ -498,18 +499,17 @@ function setupTapGestures() {
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     if (!doc) return;
 
-    if (doc.body.dataset.gestureReady === "true") return;
+    // Clear previous gesture data
+    if (doc.body.dataset.gestureReady) {
+      return; // already set up
+    }
+
     doc.body.dataset.gestureReady = "true";
 
     let startX = 0;
     let startY = 0;
 
-    doc.addEventListener("pointerdown", e => {
-      startX = e.clientX;
-      startY = e.clientY;
-    }, { passive: true });
-
-    doc.addEventListener("pointerup", e => {
+    const handlePointerUp = (e) => {
       const endX = e.clientX;
       const endY = e.clientY;
 
@@ -519,33 +519,36 @@ function setupTapGestures() {
       const absDeltaX = Math.abs(deltaX);
       const absDeltaY = Math.abs(deltaY);
 
-      // ==================== TAP (Center / Left / Right) ====================
-      if (absDeltaX < 12 && absDeltaY < 12) {
+      // === TAP ===
+      if (absDeltaX < 15 && absDeltaY < 15) {
         handleCenterTap(endX, iframe);
         return;
       }
 
-      // ==================== SWIPES ====================
-      // Horizontal swipe (Next / Prev)
-      if (absDeltaX > 50 && absDeltaX > absDeltaY * 1.2) {
-        if (deltaX < -40) {
-          safeNext();      // Swipe Left
-        } else if (deltaX > 40) {
-          safePrev();      // Swipe Right
-        }
+      // === HORIZONTAL SWIPE ===
+      if (absDeltaX > 60 && absDeltaX > absDeltaY * 1.3) {
+        if (deltaX < -50) safeNext();
+        else if (deltaX > 50) safePrev();
         return;
       }
 
-      // Vertical swipe (Show / Hide Controls)
-      if (absDeltaY > 50 && absDeltaY > absDeltaX * 1.2) {
-        if (deltaY < -40) {
-          hideControls();  // Swipe Up
-        } else if (deltaY > 40) {
-          showControls();  // Swipe Down
+      // === VERTICAL SWIPE ===
+      if (absDeltaY > 60 && absDeltaY > absDeltaX * 1.3) {
+        if (deltaY < -50) {
+          hideControls();   // Swipe Up
+        } else if (deltaY > 50) {
+          showControls();   // Swipe Down
         }
       }
+    };
 
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
     }, { passive: true });
+
+    doc.addEventListener("pointerup", handlePointerUp, { passive: true });
+
   });
 }
             
