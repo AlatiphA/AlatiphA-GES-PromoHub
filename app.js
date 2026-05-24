@@ -148,62 +148,24 @@ let fontSize =
 
 let isNavigating = false;
 
-async function safeNext() {
-
+async function safePrev() {
   if (isNavigating) return;
-
   isNavigating = true;
-
   try {
-
-    await rendition.next();
-
+    await rendition.prev();
+  } finally {
+    setTimeout(() => { isNavigating = false; }, 350);
   }
-
-  catch (error) {
-
-    console.error(error);
-
-  }
-
-  setTimeout(
-    () => {
-
-      isNavigating = false;
-
-    },
-    350
-  );
-
 }
 
-async function safePrev() {
-
+async function safeNext() {
   if (isNavigating) return;
-
   isNavigating = true;
-
   try {
-
-    await rendition.prev();
-
+    await rendition.next();
+  } finally {
+    setTimeout(() => { isNavigating = false; }, 350);
   }
-
-  catch (error) {
-
-    console.error(error);
-
-  }
-
-  setTimeout(
-    () => {
-
-      isNavigating = false;
-
-    },
-    350
-  );
-
 }
 
 
@@ -490,168 +452,61 @@ function sidebarIsOpen() {
 
 function setupTapGestures() {
 
-  rendition.on(
-    "rendered",
-    () => {
+  rendition.on("rendered", () => {
 
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
+    const iframe = viewer.querySelector("iframe");
+    if (!iframe) return;
 
-      if (!iframe) return;
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc) return;
 
-      const doc =
-        iframe.contentDocument;
+    // Prevent duplicate listeners
+    if (doc.body.dataset.gestureReady === "true") return;
+    doc.body.dataset.gestureReady = "true";
 
-      if (!doc) return;
+    let startX = 0;
+    let startY = 0;
 
-      /* Prevent duplicate listeners */
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
+    }, { passive: true });
 
-      if (
-        doc.body.dataset
-          .gestureReady
-      ) {
+    doc.addEventListener("pointerup", e => {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
 
+      // Ignore swipes/drags
+      if (deltaX > 15 || deltaY > 15) return;
+
+      // Ignore interactive elements
+      if (e.target.closest("a, img, button, input, textarea, select")) return;
+
+      // Use iframe coordinates (this fixes the main bug)
+      const rect = iframe.getBoundingClientRect();
+      const tapX = e.clientX - rect.left;        // relative X inside iframe
+      const zoneWidth = rect.width;
+
+      const leftZone  = zoneWidth * 0.25;
+      const rightZone = zoneWidth * 0.75;
+
+      /* PREV */
+      if (tapX < leftZone) {
+        safePrev();
         return;
-
       }
 
-      doc.body.dataset
-        .gestureReady =
-        "true";
+      /* NEXT */
+      if (tapX > rightZone) {
+        safeNext();
+        return;
+      }
 
-      let startX = 0;
-      let startY = 0;
+      /* CENTER TAP - Toggle controls */
+      toggleControls();
 
-      doc.addEventListener(
-        "pointerdown",
-        e => {
-
-          startX = e.clientX;
-          startY = e.clientY;
-
-        },
-        false
-      );
-
-      doc.addEventListener(
-        "pointerup",
-        e => {
-
-          const deltaX =
-            Math.abs(
-              e.clientX - startX
-            );
-
-          const deltaY =
-            Math.abs(
-              e.clientY - startY
-            );
-
-          /* Ignore swipes */
-
-          if (
-            deltaX > 10 ||
-            deltaY > 10
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW REAL LINKS
-          ========================= */
-
-          const link =
-            e.target.closest("a");
-
-          if (link) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW IMAGES
-          ========================= */
-
-          if (
-            e.target.closest("img")
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW FORM ELEMENTS
-          ========================= */
-
-          if (
-            e.target.closest(
-              "button, input, textarea, select"
-            )
-          ) {
-
-            return;
-
-          }
-
-          const width =
-            doc.documentElement.clientWidth;
-
-          const tapX =
-            e.clientX;
-
-          const leftZone =
-            width * 0.25;
-
-          const rightZone =
-            width * 0.75;
-
-          /* =========================
-             PREV
-          ========================= */
-
-          if (
-            tapX < leftZone
-          ) {
-
-            safePrev();
-
-            return;
-
-          }
-
-          /* =========================
-             NEXT
-          ========================= */
-
-          if (
-            tapX > rightZone
-          ) {
-
-            safeNext();
-
-            return;
-
-          }
-
-          /* =========================
-             CENTER TAP
-          ========================= */
-
-          toggleControls();
-
-        },
-        false
-      );
-
-    }
-  );
-
+    }, { passive: true });
+  });
 }
 
 
@@ -980,12 +835,10 @@ themeBtn.addEventListener(
 
 nextPage.addEventListener("click", () => {
   safeNext();
-  // showControls();
 });
 
 prevPage.addEventListener("click", () => {
   safePrev();
-  // showControls();
 });
 
 increaseFont.addEventListener(
