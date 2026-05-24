@@ -186,37 +186,35 @@ function setupTapGestures() {
   const absDeltaX = Math.abs(deltaX);
   const absDeltaY = Math.abs(deltaY);
 
-  // Ignore vertical scrolls
+  // Ignore mostly vertical movement (scrolling)
   if (absDeltaY > absDeltaX && absDeltaY > 15) return;
 
-  // Ignore interactive elements
+  // Ignore taps on interactive elements
   if (e.target.closest("a, img, button, input, textarea, select, [role='button']")) return;
 
   const width = doc.documentElement.clientWidth;
 
-  // === PRIORITY 1: Swipe (more lenient threshold) ===
-  if (absDeltaX > 45) {                    // Lowered from 60 → feels better
+  // === NEW COMBINED LOGIC (replaces both old swipe and tap) ===
+  const startZone = startX / width;   // Using start position feels more natural
+
+  if (absDeltaX > 45) {
+    // Swipe detected
     if (deltaX < 0) {
       safeNext();
     } else {
       safePrev();
     }
     showControls();
-    return;
-  }
-
-  // === PRIORITY 2: Tap (only if very little movement) ===
-  if (absDeltaX < 12 && absDeltaY < 12) {
-    const tapX = endX; // or use startX for more stability
-
-    if (tapX < width * 0.25) {
+  } 
+  else if (absDeltaX < 12 && absDeltaY < 12) {
+    // Clean tap (very little movement)
+    if (startZone < 0.25) {
       safePrev();
       showControls();
-    } else if (tapX > width * 0.75) {
+    } else if (startZone > 0.75) {
       safeNext();
       showControls();
     } else {
-      // Center tap
       toggleControls();
     }
   }
