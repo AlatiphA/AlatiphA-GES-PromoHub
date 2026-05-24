@@ -430,8 +430,29 @@ function toggleControls() {
 }
 
 
+function hideControls() {
+  controlsVisible = false;
+  header.classList.add("hideControls");
+  footer.classList.add("hideControls");
+}
+
+function showControls() {
+  controlsVisible = true;
+  header.classList.remove("hideControls");
+  footer.classList.remove("hideControls");
+}
+
+function toggleControls() {
+  if (controlsVisible) {
+    hideControls();
+  } else {
+    showControls();
+  }
+}
+
+
 /* =========================
-   GESTURES (Swipe Next/Prev)
+   GESTURES (Sidebar)
 ========================= */
 
 function sidebarIsOpen() {
@@ -457,7 +478,6 @@ function setupTapGestures() {
     const doc = iframe.contentDocument || iframe.contentWindow.document;
     if (!doc) return;
 
-    // Prevent duplicate listeners
     if (doc.body.dataset.gestureReady === "true") return;
     doc.body.dataset.gestureReady = "true";
 
@@ -470,42 +490,44 @@ function setupTapGestures() {
     }, { passive: true });
 
     doc.addEventListener("pointerup", e => {
-      const deltaX = Math.abs(e.clientX - startX);
-      const deltaY = Math.abs(e.clientY - startY);
+      const endX = e.clientX;
+      const endY = e.clientY;
 
-      // Ignore swipes/drags
-      if (deltaX > 15 || deltaY > 15) return;
+      const deltaX = endX - startX;
+      const deltaY = endY - startY;
 
-      // Ignore interactive elements
-      if (e.target.closest("a, img, button, input, textarea, select")) return;
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(deltaY);
 
-      // Use iframe coordinates (this fixes the main bug)
-      const rect = iframe.getBoundingClientRect();
-      const tapX = e.clientX - rect.left;        // relative X inside iframe
-      const zoneWidth = rect.width;
-
-      const leftZone  = zoneWidth * 0.25;
-      const rightZone = zoneWidth * 0.75;
-
-      /* PREV */
-      if (tapX < leftZone) {
-        safePrev();
+      // Ignore very small movements (taps)
+      if (absDeltaX < 10 && absDeltaY < 10) {
+        handleTap(endX, iframe);
         return;
       }
 
-      /* NEXT */
-      if (tapX > rightZone) {
-        safeNext();
-        return;
+      // === SWIPE DETECTION ===
+      if (absDeltaX > 50 && absDeltaX > absDeltaY) {
+        // Horizontal swipe
+        if (deltaX < 0) {
+          safeNext();        // Swipe Left  → Next Page
+        } else {
+          safePrev();        // Swipe Right → Previous Page
+        }
+      } 
+      else if (absDeltaY > 50 && absDeltaY > absDeltaX) {
+        // Vertical swipe
+        if (deltaY < 0) {
+          // Swipe Up → Hide Controls
+          hideControls();
+        } else {
+          // Swipe Down → Show Controls
+          showControls();
+        }
       }
-
-      /* CENTER TAP - Toggle controls */
-      toggleControls();
 
     }, { passive: true });
   });
 }
-
 
 
             
