@@ -1,4 +1,4 @@
-const CACHE_NAME = "alatipha-ges-pasco-beta-v6";
+const CACHE_NAME = "alatipha-ges-pasco-beta-v7";
 
 const FILES_TO_CACHE = [
 
