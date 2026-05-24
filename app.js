@@ -143,6 +143,33 @@ let fontSize =
 
 
 /* ==============
+   DEBOUNCE NAVIGATION (helps with cycling)
+============== */
+
+let isNavigating = false;
+
+async function safePrev() {
+  if (isNavigating) return;
+  isNavigating = true;
+  try {
+    await rendition.prev();
+  } finally {
+    setTimeout(() => { isNavigating = false; }, 300);
+  }
+}
+
+async function safeNext() {
+  if (isNavigating) return;
+  isNavigating = true;
+  try {
+    await rendition.next();
+  } finally {
+    setTimeout(() => { isNavigating = false; }, 300);
+  }
+}
+
+
+/* ==============
    LOAD BOOK
 ============== */
 
@@ -198,13 +225,12 @@ function startReader() {
         width: "100%",
         height: "100%",
         spread: "none",
-        manager: "default",
+        manager: "continuous",   // or keep "default"
         flow: "paginated",
-
-  
-  snap: true,
-  gap: 0,                  // reduce gaps
-  minSpreadWidth: 0
+        snap: true,
+        
+        gap: 0,                  // reduce gaps
+        minSpreadWidth: 0
         
         snap: true
       }
@@ -462,10 +488,10 @@ function setupTapGestures() {
       const rightZone = zoneWidth * 0.75;
 
       if (tapX < leftZone) {
-        rendition.prev();
+        safePrev();
       } 
       else if (tapX > rightZone) {
-        rendition.next();
+        safeNext();
       } 
       else {
         toggleControls();
