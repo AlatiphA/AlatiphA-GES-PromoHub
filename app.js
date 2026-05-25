@@ -1,4 +1,3 @@
-<script>
 // ==================== ELEMENT DECLARATIONS ====================
 const viewer = document.getElementById("viewer");
 const toc = document.getElementById("toc");
@@ -270,4 +269,3 @@ if ("serviceWorker" in navigator) {
 }
 
 loadBook();
-</script>
