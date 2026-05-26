@@ -916,9 +916,14 @@ prevPage.addEventListener(
   }
 );
 
+bottomThemeBtn.addEventListener(
+  "click",
+  () => {
 
+    themeBtn.click();
 
-
+  }
+);
 
 bottomDecreaseFont.addEventListener(
   "click",
