@@ -171,10 +171,10 @@ async function loadBook() {
 
 
 /* =====================
-   START Reader & THEME
+   START Reader
 ===================== */
 
-function startReader() {
+async function startReader() {
 
   rendition =
     book.renderTo(
@@ -189,10 +189,6 @@ function startReader() {
       }
     );
 
-  /* ================
-     FONT & THEME
-  ================ */
-
   rendition.themes.fontSize(
     fontSize + "%"
   );
@@ -201,104 +197,84 @@ function startReader() {
 
   setupTapGestures();
 
-  /* =========================
-     FAST INITIAL DISPLAY
-  ========================= */
+  await rendition.display();
 
-  rendition.display();
+  await book.ready;
 
-  /* ===================
-     BACKGROUND SETUP
-  =================== */
+  await book.locations.generate(
+    1000
+  );
 
-  book.ready
-    .then(async () => {
+  /* RESTORE LOCATION */
 
-      /* TOC */
+  const savedLocation =
+    localStorage.getItem(
+      "epub-beta-location"
+    );
 
-      toc.innerHTML = "";
+  if (savedLocation) {
 
-      const navigation =
-        book.navigation;
+    try {
 
-      navigation.toc.forEach(
-        chapter => {
-
-          const link =
-            document.createElement(
-              "a"
-            );
-
-          link.textContent =
-            chapter.label;
-
-          link.href = "#";
-
-          link.addEventListener(
-            "click",
-            e => {
-
-              e.preventDefault();
-
-              rendition.display(
-                chapter.href
-              );
-
-              sidebar.classList.remove(
-                "active"
-              );
-
-              showControls();
-
-            }
-          );
-
-          toc.appendChild(
-            link
-          );
-
-        }
+      await rendition.display(
+        savedLocation
       );
 
-      /* GENERATE LOCATIONS */
+    }
 
-      await book.locations.generate(
-        1000
+    catch (error) {
+
+      console.error(
+        "Restore failed:",
+        error
       );
 
-      /* RESTORE POSITION */
+    }
 
-      const savedLocation =
-        localStorage.getItem(
-          "epub-location"
+  }
+
+  /* TOC */
+
+  toc.innerHTML = "";
+
+  book.navigation.toc.forEach(
+    chapter => {
+
+      const link =
+        document.createElement(
+          "a"
         );
 
-      if (savedLocation) {
+      link.textContent =
+        chapter.label;
 
-        try {
+      link.href = "#";
 
-          await rendition.display(
-            savedLocation
+      link.addEventListener(
+        "click",
+        e => {
+
+          e.preventDefault();
+
+          rendition.display(
+            chapter.href
+          );
+
+          sidebar.classList.remove(
+            "active"
           );
 
         }
+      );
 
-        catch (error) {
+      toc.appendChild(
+        link
+      );
 
-          console.error(
-            "Restore failed:",
-            error
-          );
+    }
+  );
 
-        }
-
-      }
-
-    });
-
-  /* ==================
-     SAVE LOCATION
-  ================== */
+  /* SAVE LOCATION */
 
   rendition.on(
     "relocated",
@@ -307,40 +283,32 @@ function startReader() {
       try {
 
         localStorage.setItem(
-          "epub-location",
+          "epub-beta-location",
           location.start.cfi
         );
 
-        if (
-          book.locations.length()
-        ) {
-
-          const percentage =
-            book.locations
-              .percentageFromCfi(
-                location.start.cfi
-              );
-
-          const percent =
-            Math.floor(
-              percentage * 100
+        const percentage =
+          book.locations
+            .percentageFromCfi(
+              location.start.cfi
             );
 
-          progressText.textContent =
-            percent + "%";
+        const percent =
+          Math.floor(
+            percentage * 100
+          );
 
-          progressFill.style.width =
-            percent + "%";
+        progressText.textContent =
+          percent + "%";
 
-        }
+        progressFill.style.width =
+          percent + "%";
 
       }
 
       catch (error) {
 
-        console.error(
-          error
-        );
+        console.error(error);
 
       }
 
@@ -348,7 +316,6 @@ function startReader() {
   );
 
 }
-
 
 /* ==================
      TOGGLE CONTROL 
