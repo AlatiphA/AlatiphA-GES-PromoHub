@@ -8,8 +8,8 @@ const FILES_TO_CACHE = [
   "./app.js",
   "./manifest-beta.json",
   "./library/sample.epub",
-  "./icon-192.png",
-  "./icon-512.png"
+  "./icon-beta-192.png",
+  "./icon-beta-512.png"
 ];
 
 /* =========================
