@@ -183,18 +183,15 @@ function startReader() {
         width: "100%",
         height: "100%",
         spread: "none",
-        manager: "continuous",   // or keep "default"
+        manager: "default",
         flow: "paginated",
-        snap: true,
-        
-        gap: 0,                  // reduce gaps
-        minSpreadWidth: 0
+        snap: true
       }
     );
 
-  /* ================
+  /* ==================
      FONT & THEME
-  ================ */
+  ================== */
 
   rendition.themes.fontSize(
     fontSize + "%"
@@ -202,17 +199,24 @@ function startReader() {
 
   applyTheme();
 
-  setupTapGestures();
+  setupNavigationZones();
 
   /* =========================
-     FAST INITIAL DISPLAY
+     RESTORE SAVED LOCATION
   ========================= */
 
-  rendition.display();
+  const savedLocation =
+    localStorage.getItem(
+      "epub-location"
+    );
 
-  /* ===================
+  rendition.display(
+    savedLocation || undefined
+  );
+
+  /* ====================
      BACKGROUND SETUP
-  =================== */
+  ==================== */
 
   book.ready
     .then(async () => {
@@ -268,34 +272,6 @@ function startReader() {
       await book.locations.generate(
         1000
       );
-
-      /* RESTORE POSITION */
-
-      const savedLocation =
-        localStorage.getItem(
-          "epub-location"
-        );
-
-      if (savedLocation) {
-
-        try {
-
-          await rendition.display(
-            savedLocation
-          );
-
-        }
-
-        catch (error) {
-
-          console.error(
-            "Restore failed:",
-            error
-          );
-
-        }
-
-      }
 
     });
 
@@ -353,6 +329,12 @@ function startReader() {
 }
 
 
+
+
+
+
+
+  
 /* ==================
      TOGGLE CONTROL 
   ================ */
