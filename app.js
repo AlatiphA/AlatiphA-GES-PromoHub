@@ -207,7 +207,7 @@ function startReader() {
 
   const savedLocation =
     localStorage.getItem(
-      "epub-location"
+      "epub-beta-location"
     );
 
   rendition.display(
@@ -286,7 +286,7 @@ function startReader() {
       try {
 
         localStorage.setItem(
-          "epub-location",
+          "epub-beta-location",
           location.start.cfi
         );
 
