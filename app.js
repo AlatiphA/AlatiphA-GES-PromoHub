@@ -174,7 +174,7 @@ async function loadBook() {
    START Reader
 ===================== */
 
-async function startReader() {
+function startReader() {
 
   rendition =
     book.renderTo(
@@ -183,11 +183,18 @@ async function startReader() {
         width: "100%",
         height: "100%",
         spread: "none",
-        manager: "default",
+        manager: "continuous",   // or keep "default"
         flow: "paginated",
-        snap: true
+        snap: true,
+        
+        gap: 0,                  // reduce gaps
+        minSpreadWidth: 0
       }
     );
+
+  /* ================
+     FONT & THEME
+  ================ */
 
   rendition.themes.fontSize(
     fontSize + "%"
@@ -197,84 +204,104 @@ async function startReader() {
 
   setupTapGestures();
 
-  await rendition.display();
+  /* =========================
+     FAST INITIAL DISPLAY
+  ========================= */
 
-  await book.ready;
+  rendition.display();
 
-  await book.locations.generate(
-    1000
-  );
+  /* ===================
+     BACKGROUND SETUP
+  =================== */
 
-  /* RESTORE LOCATION */
+  book.ready
+    .then(async () => {
 
-  const savedLocation =
-    localStorage.getItem(
-      "epub-beta-location"
-    );
+      /* TOC */
 
-  if (savedLocation) {
+      toc.innerHTML = "";
 
-    try {
+      const navigation =
+        book.navigation;
 
-      await rendition.display(
-        savedLocation
-      );
+      navigation.toc.forEach(
+        chapter => {
 
-    }
+          const link =
+            document.createElement(
+              "a"
+            );
 
-    catch (error) {
+          link.textContent =
+            chapter.label;
 
-      console.error(
-        "Restore failed:",
-        error
-      );
+          link.href = "#";
 
-    }
+          link.addEventListener(
+            "click",
+            e => {
 
-  }
+              e.preventDefault();
 
-  /* TOC */
+              rendition.display(
+                chapter.href
+              );
 
-  toc.innerHTML = "";
+              sidebar.classList.remove(
+                "active"
+              );
 
-  book.navigation.toc.forEach(
-    chapter => {
+              showControls();
 
-      const link =
-        document.createElement(
-          "a"
-        );
-
-      link.textContent =
-        chapter.label;
-
-      link.href = "#";
-
-      link.addEventListener(
-        "click",
-        e => {
-
-          e.preventDefault();
-
-          rendition.display(
-            chapter.href
+            }
           );
 
-          sidebar.classList.remove(
-            "active"
+          toc.appendChild(
+            link
           );
 
         }
       );
 
-      toc.appendChild(
-        link
+      /* GENERATE LOCATIONS */
+
+      await book.locations.generate(
+        1000
       );
 
-    }
-  );
+      /* RESTORE POSITION */
 
-  /* SAVE LOCATION */
+      const savedLocation =
+        localStorage.getItem(
+          "epub-location"
+        );
+
+      if (savedLocation) {
+
+        try {
+
+          await rendition.display(
+            savedLocation
+          );
+
+        }
+
+        catch (error) {
+
+          console.error(
+            "Restore failed:",
+            error
+          );
+
+        }
+
+      }
+
+    });
+
+  /* ==================
+     SAVE LOCATION
+  ================== */
 
   rendition.on(
     "relocated",
@@ -283,32 +310,40 @@ async function startReader() {
       try {
 
         localStorage.setItem(
-          "epub-beta-location",
+          "epub-location",
           location.start.cfi
         );
 
-        const percentage =
-          book.locations
-            .percentageFromCfi(
-              location.start.cfi
+        if (
+          book.locations.length()
+        ) {
+
+          const percentage =
+            book.locations
+              .percentageFromCfi(
+                location.start.cfi
+              );
+
+          const percent =
+            Math.floor(
+              percentage * 100
             );
 
-        const percent =
-          Math.floor(
-            percentage * 100
-          );
+          progressText.textContent =
+            percent + "%";
 
-        progressText.textContent =
-          percent + "%";
+          progressFill.style.width =
+            percent + "%";
 
-        progressFill.style.width =
-          percent + "%";
+        }
 
       }
 
       catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
 
       }
 
@@ -316,6 +351,7 @@ async function startReader() {
   );
 
 }
+
 
 /* ==================
      TOGGLE CONTROL 
@@ -370,175 +406,55 @@ function sidebarIsOpen() {
 ========================= */
 
 function setupTapGestures() {
+  rendition.on("rendered", (section) => {
+    const iframe = viewer.querySelector("iframe");
+    if (!iframe) return;
 
-  rendition.on(
-    "rendered",
-    () => {
+    const doc = iframe.contentDocument || iframe.contentWindow.document;
+    if (!doc) return;
 
-      const iframe =
-        viewer.querySelector(
-          "iframe"
-        );
+    // Prevent duplicate listeners
+    if (doc.body.dataset.gestureReady === "true") return;
+    doc.body.dataset.gestureReady = "true";
 
-      if (!iframe) return;
+    let startX = 0;
+    let startY = 0;
 
-      const doc =
-        iframe.contentDocument;
+    doc.addEventListener("pointerdown", e => {
+      startX = e.clientX;
+      startY = e.clientY;
+    }, { passive: true });
 
-      if (!doc) return;
+    doc.addEventListener("pointerup", e => {
+      const deltaX = Math.abs(e.clientX - startX);
+      const deltaY = Math.abs(e.clientY - startY);
 
-      /* Prevent duplicate listeners */
+      // Ignore if it was a swipe / drag
+      if (deltaX > 15 || deltaY > 15) return;
 
-      if (
-        doc.body.dataset
-          .gestureReady
-      ) {
+      // Ignore links, images, form elements
+      if (e.target.closest("a, img, button, input, textarea, select")) return;
 
-        return;
+      // === CRITICAL: Use iframe dimensions ===
+      const rect = iframe.getBoundingClientRect();
+      const tapX = e.clientX - rect.left;   // relative to iframe
 
+      const zoneWidth = rect.width;         // ← Use iframe width!
+      const leftZone  = zoneWidth * 0.25;
+      const rightZone = zoneWidth * 0.75;
+
+      if (tapX < leftZone) {
+        safePrev();
+      } 
+      else if (tapX > rightZone) {
+        safeNext();
+      } 
+      else {
+        toggleControls();
       }
-
-      doc.body.dataset
-        .gestureReady =
-        "true";
-
-      let startX = 0;
-      let startY = 0;
-
-      doc.addEventListener(
-        "pointerdown",
-        e => {
-
-          startX = e.clientX;
-          startY = e.clientY;
-
-        },
-        false
-      );
-
-      doc.addEventListener(
-        "pointerup",
-        e => {
-
-          const deltaX =
-            Math.abs(
-              e.clientX - startX
-            );
-
-          const deltaY =
-            Math.abs(
-              e.clientY - startY
-            );
-
-          /* Ignore swipes */
-
-          if (
-            deltaX > 10 ||
-            deltaY > 10
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW REAL LINKS
-          ========================= */
-
-          const link =
-            e.target.closest("a");
-
-          if (link) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW IMAGES
-          ========================= */
-
-          if (
-            e.target.closest("img")
-          ) {
-
-            return;
-
-          }
-
-          /* =========================
-             ALLOW FORM ELEMENTS
-          ========================= */
-
-          if (
-            e.target.closest(
-              "button, input, textarea, select"
-            )
-          ) {
-
-            return;
-
-          }
-
-          const width =
-            window.innerWidth;
-
-          const tapX =
-            e.clientX;
-
-          const leftZone =
-            width * 0.25;
-
-          const rightZone =
-            width * 0.75;
-
-          /* =========================
-             PREV
-          ========================= */
-
-          if (
-            tapX < leftZone
-          ) {
-
-            rendition.prev();
-
-            return;
-
-          }
-
-          /* =========================
-             NEXT
-          ========================= */
-
-          if (
-            tapX > rightZone
-          ) {
-
-            rendition.next();
-
-            return;
-
-          }
-
-          /* =========================
-             CENTER TAP
-          ========================= */
-
-          toggleControls();
-
-        },
-        false
-      );
-
-    }
-  );
-
+    }, { passive: true });
+  });
 }
-
-
-
-
-            
 
 
 
