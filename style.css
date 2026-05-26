@@ -319,31 +319,6 @@ body.dark .sidebar {
   color: white;
 }
 
-/* =========================
-   CONTROLS
-========================= */
-
-.controls {
-  display: flex;
-
-  gap: 10px;
-
-  margin-bottom: 20px;
-}
-
-.controls button {
-  flex: 1;
-
-  height: 38px;
-
-  border: none;
-
-  border-radius: 10px;
-
-  font-size: 15px;
-
-  cursor: pointer;
-}
 
 /* =========================
    TOC
