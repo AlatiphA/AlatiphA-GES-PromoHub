@@ -43,16 +43,6 @@ const prevPage =
     "prevPage"
   );
 
-const increaseFont =
-  document.getElementById(
-    "increaseFont"
-  );
-
-const decreaseFont =
-  document.getElementById(
-    "decreaseFont"
-  );
-
 const bottomThemeBtn =
   document.getElementById(
     "bottomThemeBtn"
@@ -71,11 +61,6 @@ const bottomIncreaseFont =
 const bottomMenuBtn =
   document.getElementById(
     "bottomMenuBtn"
-  );
-
-const closeAppBtn =
-  document.getElementById(
-    "closeAppBtn"
   );
 
 const searchBtn =
@@ -931,25 +916,11 @@ prevPage.addEventListener(
   }
 );
 
-increaseFont.addEventListener(
-  "click",
-  () => {
 
-    fontSize += 10;
 
-    rendition.themes.fontSize(
-      fontSize + "%"
-    );
 
-    localStorage.setItem(
-      "fontSize",
-      fontSize
-    );
 
-  }
-);
-
-decreaseFont.addEventListener(
+bottomDecreaseFont.addEventListener(
   "click",
   () => {
 
@@ -970,29 +941,20 @@ decreaseFont.addEventListener(
   }
 );
 
-bottomThemeBtn.addEventListener(
-  "click",
-  () => {
-
-    themeBtn.click();
-
-  }
-);
-
-bottomDecreaseFont.addEventListener(
-  "click",
-  () => {
-
-    decreaseFont.click();
-
-  }
-);
-
 bottomIncreaseFont.addEventListener(
   "click",
   () => {
 
-    increaseFont.click();
+    fontSize += 10;
+
+    rendition.themes.fontSize(
+      fontSize + "%"
+    );
+
+    localStorage.setItem(
+      "fontSize",
+      fontSize
+    );
 
   }
 );
@@ -1002,27 +964,6 @@ bottomMenuBtn.addEventListener(
   () => {
 
     menuBtn.click();
-
-  }
-);
-
-closeAppBtn.addEventListener(
-  "click",
-  () => {
-
-    if (
-      window.history.length > 1
-    ) {
-
-      history.back();
-
-    }
-
-    else {
-
-      window.close();
-
-    }
 
   }
 );
