@@ -122,7 +122,7 @@ let controlsVisible =
 let fontSize =
   Number(
     localStorage.getItem(
-      "fontSize"
+      "fontSize-beta"
     )
   ) || 100;
 
@@ -451,7 +451,7 @@ function applyTheme() {
 
   const darkMode =
     localStorage.getItem(
-      "darkMode"
+      "darkMode-beta"
     ) === "true";
 
   document.body.classList.toggle(
@@ -777,11 +777,11 @@ themeBtn.addEventListener(
 
     const darkMode =
       localStorage.getItem(
-        "darkMode"
+        "darkMode-beta"
       ) === "true";
 
     localStorage.setItem(
-      "darkMode",
+      "darkMode-beta",
       (!darkMode).toString()
     );
 
@@ -831,7 +831,7 @@ bottomDecreaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "fontSize-beta",
       fontSize
     );
 
@@ -849,7 +849,7 @@ bottomIncreaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "fontSize-beta",
       fontSize
     );
 
