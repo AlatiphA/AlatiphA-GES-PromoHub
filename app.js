@@ -821,7 +821,7 @@ activeSearchHighlight =
 searchModal.classList.remove(
   "active"
 );
-            );
+           
 
           }
 
