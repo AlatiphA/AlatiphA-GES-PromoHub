@@ -63,11 +63,6 @@ const bottomMenuBtn =
     "bottomMenuBtn"
   );
 
-/* const closeAppBtn =
-  document.getElementById(
-    "closeAppBtn"
-  ); */
-
 const searchBtn =
   document.getElementById(
     "searchBtn"
@@ -127,7 +122,7 @@ let controlsVisible =
 let fontSize =
   Number(
     localStorage.getItem(
-      "fontSize-ict"
+      "fontSize-beta"
     )
   ) || 100;
 
@@ -212,7 +207,7 @@ function startReader() {
 
   const savedLocation =
     localStorage.getItem(
-      "epub-ict-location"
+      "epub-beta-location"
     );
 
   rendition.display(
@@ -291,7 +286,7 @@ function startReader() {
       try {
 
         localStorage.setItem(
-          "epub-ict-location",
+          "epub-beta-location",
           location.start.cfi
         );
 
@@ -371,9 +366,10 @@ function toggleControls() {
 
 
 /* =========================
- GESTURES (Swipe Next/Prev)
+ GESTURES (Tap Next/Prev)
 ========================= */
 
+/* GESTURES (Sidebar) */
 function sidebarIsOpen() {
 
   return sidebar.classList.contains(
@@ -382,6 +378,7 @@ function sidebarIsOpen() {
 
 }
 
+/* GESTURES (Navigation) */
 function setupNavigationZones() {
 
   function zonesDisabled() {
@@ -548,7 +545,7 @@ function applyTheme() {
 
   const darkMode =
     localStorage.getItem(
-      "darkMode-ict"
+      "darkMode-beta"
     ) === "true";
 
   document.body.classList.toggle(
@@ -861,37 +858,8 @@ bottomMenuBtn.addEventListener(
 
 
 /* ==========
-   EVENTS
+   OTHER EVENTS
 ========== */
-
-/* menuBtn.addEventListener(
-  "click",
-  () => {
-
-    sidebar.classList.toggle(
-      "active"
-    );
-
-    const isOpen =
-      sidebar.classList.contains(
-        "active"
-      );
-
-    menuBtn.textContent =
-      isOpen
-        ? "✕"
-        : "☰";
-
-    bottomMenuBtn.textContent =
-      isOpen
-        ? "✕"
-        : "☰";
-
-    showControls();
-
-  }
-); */
-
 
 themeBtn.addEventListener(
   "click",
@@ -899,11 +867,11 @@ themeBtn.addEventListener(
 
     const darkMode =
       localStorage.getItem(
-        "darkMode-ict"
+        "darkMode-beta"
       ) === "true";
 
     localStorage.setItem(
-      "darkMode-ict",
+      "darkMode-beta",
       (!darkMode).toString()
     );
 
@@ -911,9 +879,6 @@ themeBtn.addEventListener(
 
   }
 );
-
-
-
 
 nextPage.addEventListener(
   "click",
@@ -956,7 +921,7 @@ bottomDecreaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "fontSize-beta",
       fontSize
     );
 
@@ -974,42 +939,12 @@ bottomIncreaseFont.addEventListener(
     );
 
     localStorage.setItem(
-      "fontSize",
+      "fontSize-beta",
       fontSize
     );
 
   }
 );
-
-/* bottomMenuBtn.addEventListener(
-  "click",
-  () => {
-
-    menuBtn.click();
-
-  }
-); */
-
-/* closeAppBtn.addEventListener(
-  "click",
-  () => {
-
-    if (
-      window.history.length > 1
-    ) {
-
-      history.back();
-
-    }
-
-    else {
-
-      window.close();
-
-    }
-
-  }
-); */
 
 searchBtn.addEventListener(
   "click",
@@ -1074,7 +1009,7 @@ if (
         await navigator
           .serviceWorker
           .register(
-            "./sw-ict.js"
+            "./sw-beta.js"
           );
 
       }
