@@ -189,10 +189,8 @@ function startReader() {
       }
     );
 
-  /* ==================
-     FONT & THEME
-  ================== */
-
+  /* FONT & THEME */
+  
   rendition.themes.fontSize(
     fontSize + "%"
   );
@@ -201,10 +199,8 @@ function startReader() {
 
   setupNavigationZones();
 
-  /* =========================
-     RESTORE SAVED LOCATION
-  ========================= */
-
+  /* RESTORE SAVED LOCATION */
+  
   const savedLocation =
     localStorage.getItem(
       "epub-beta-location"
@@ -214,15 +210,12 @@ function startReader() {
     savedLocation || undefined
   );
 
-  /* ====================
-     BACKGROUND SETUP
-  ==================== */
-
+  /* BACKGROUND SETUP */
+  
   book.ready
     .then(async () => {
 
       /* TOC */
-
       toc.innerHTML = "";
 
       const navigation =
@@ -268,17 +261,15 @@ function startReader() {
       );
 
       /* GENERATE LOCATIONS */
-
+      
       await book.locations.generate(
         1000
       );
 
     });
 
-  /* ==================
-     SAVE LOCATION
-  ================== */
-
+  /* SAVE LOCATION */
+  
   rendition.on(
     "relocated",
     location => {
@@ -370,6 +361,7 @@ function toggleControls() {
 ========================= */
 
 /* GESTURES (Sidebar) */
+
 function sidebarIsOpen() {
 
   return sidebar.classList.contains(
@@ -379,6 +371,7 @@ function sidebarIsOpen() {
 }
 
 /* GESTURES (Navigation) */
+
 function setupNavigationZones() {
 
   function zonesDisabled() {
@@ -616,7 +609,7 @@ function applyTheme() {
 
 
 /* =============
-   SEARCH
+   SEARCH BOOK
 ============= */
 
 async function searchBook(
@@ -730,6 +723,11 @@ async function searchBook(
   }
 
 }
+
+
+/* =============
+   SEARCH RESULTS 
+============= */ 
 
 function renderSearchResults(
   results
