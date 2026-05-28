@@ -126,6 +126,9 @@ let fontSize =
     )
   ) || 100;
 
+let activeSearchHighlight =
+  null;
+
 
 /* ==============
    LOAD BOOK
@@ -764,16 +767,66 @@ function renderSearchResults(
         async () => {
 
           try {
+          
 
             await rendition.display(
-              result.cfi
-            );
+  result.cfi
+);
 
-            searchModal.classList.remove(
-              "active"
+/* REMOVE OLD HIGHLIGHT */
+
+if (
+  activeSearchHighlight
+) {
+
+  rendition.annotations.remove(
+    activeSearchHighlight,
+    "highlight"
+  );
+
+}
+
+/* ADD NEW HIGHLIGHT */
+
+rendition.annotations.highlight(
+
+  result.cfi,
+
+  {},
+
+  null,
+
+  "search-highlight",
+
+  {
+
+    fill:
+      "yellow",
+
+    "fill-opacity":
+      "0.35",
+
+    "mix-blend-mode":
+      "multiply"
+
+  }
+
+);
+
+activeSearchHighlight =
+  result.cfi;
+
+/* CLOSE SEARCH */
+
+searchModal.classList.remove(
+  "active"
+);
             );
 
           }
+
+
+            
 
           catch (error) {
 
