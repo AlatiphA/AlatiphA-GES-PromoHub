@@ -115,6 +115,8 @@ const rightZone =
 
 let rendition;
 let book;
+let activeSearchHighlight =
+  null;
 
 let controlsVisible =
   true;
@@ -126,8 +128,6 @@ let fontSize =
     )
   ) || 100;
 
-let activeSearchHighlight =
-  null;
 
 
 /* ==============
@@ -762,86 +762,85 @@ function renderSearchResults(
       div.textContent =
         result.excerpt;
 
+
+
+
+      
+
       div.addEventListener(
-        "click",
-        async () => {
+  "click",
+  async () => {
 
-          try {
-          
+    try {
 
-            await rendition.display(
-  result.cfi
-);
+      /* OPEN LOCATION */
 
-/* REMOVE OLD HIGHLIGHT */
+      await rendition.display(
+        result.cfi
+      );
 
-if (
-  activeSearchHighlight
-) {
+      /* REMOVE OLD HIGHLIGHT */
 
-  rendition.annotations.remove(
-    activeSearchHighlight,
-    "highlight"
-  );
+      if (
+        activeSearchHighlight
+      ) {
 
-}
+        rendition.annotations.remove(
+          activeSearchHighlight,
+          "highlight"
+        );
 
-/* ADD NEW HIGHLIGHT */
+      }
 
-rendition.annotations.highlight(
+      /* ADD HIGHLIGHT */
 
-  result.cfi,
+      rendition.annotations.highlight(
 
-  {},
+        result.cfi,
 
-  null,
+        {},
 
-  "search-highlight",
+        null,
 
-  {
+        "search-highlight",
 
-    fill:
-      "yellow",
+        {
 
-    "fill-opacity":
-      "0.35",
+          fill: "yellow",
 
-    "mix-blend-mode":
-      "multiply"
-
-  }
-
-);
-
-activeSearchHighlight =
-  result.cfi;
-
-/* CLOSE SEARCH */
-
-searchModal.classList.remove(
-  "active"
-);
-           
-
-          }
-
-
-            
-
-          catch (error) {
-
-            console.error(
-              error
-            );
-
-            alert(
-              "Could not open result."
-            );
-
-          }
+          "fill-opacity": "0.35"
 
         }
+
       );
+
+      /* SAVE ACTIVE */
+
+      activeSearchHighlight =
+        result.cfi;
+
+      /* CLOSE SEARCH */
+
+      searchModal.classList.remove(
+        "active"
+      );
+
+    }
+
+    catch (error) {
+
+      console.error(
+        error
+      );
+
+      alert(
+        "Could not open result."
+      );
+
+    }
+
+  }
+);
 
       searchResults.appendChild(
         div
@@ -851,6 +850,11 @@ searchModal.classList.remove(
   );
 
 }
+
+
+
+
+
 
 
 /* =========================
