@@ -113,9 +113,8 @@ const rightZone =
     "rightZone"
   );
 
-const READER_DATA_KEY =
-  "epub-reader-data";
 
+/* OTHER GLOBALS */
 
 let rendition;
 let book;
@@ -133,6 +132,12 @@ let fontSize =
   ) || 100;
 
 
+const READER_DATA_KEY =
+  "epub-beta-reader-data";
+
+/* =========================
+   SAVE READER DATA
+========================= */
 
 function saveReaderData(
   data
@@ -152,11 +157,17 @@ function saveReaderData(
 
   catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
   }
 
 }
+
+/* =========================
+   LOAD READER DATA
+========================= */
 
 function loadReaderData() {
 
@@ -178,14 +189,15 @@ function loadReaderData() {
 
   catch (error) {
 
-    console.error(error);
+    console.error(
+      error
+    );
 
     return {};
 
   }
 
 }
-
 
 
 /* ==============
