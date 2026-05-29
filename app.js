@@ -113,6 +113,10 @@ const rightZone =
     "rightZone"
   );
 
+const READER_DATA_KEY =
+  "epub-reader-data";
+
+
 let rendition;
 let book;
 let activeSearchHighlight =
@@ -127,6 +131,60 @@ let fontSize =
       "fontSize-beta"
     )
   ) || 100;
+
+
+
+function saveReaderData(
+  data
+) {
+
+  try {
+
+    localStorage.setItem(
+
+      READER_DATA_KEY,
+
+      JSON.stringify(data)
+
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+  }
+
+}
+
+function loadReaderData() {
+
+  try {
+
+    const saved =
+      localStorage.getItem(
+        READER_DATA_KEY
+      );
+
+    if (!saved)
+      return {};
+
+    return JSON.parse(
+      saved
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(error);
+
+    return {};
+
+  }
+
+}
 
 
 
@@ -204,14 +262,15 @@ function startReader() {
 
   /* RESTORE SAVED LOCATION */
   
+  const readerData =
+   loadReaderData();
+
   const savedLocation =
-    localStorage.getItem(
-      "epub-beta-location"
-    );
+   readerData.location;
 
   rendition.display(
-    savedLocation || undefined
-  );
+   savedLocation || undefined
+);
 
   /* BACKGROUND SETUP */
   
@@ -270,57 +329,80 @@ function startReader() {
       );
 
     });
+  
 
   /* SAVE LOCATION */
-  
-  rendition.on(
-    "relocated",
-    location => {
 
-      try {
+rendition.on(
+  "relocated",
+  location => {
 
-        localStorage.setItem(
-          "epub-beta-location",
-          location.start.cfi
+    try {
+
+      /* =========================
+         CALCULATE PROGRESS
+      ========================= */
+
+      const percentage =
+        book.locations
+          .percentageFromCfi(
+            location.start.cfi
+          );
+
+      const percent =
+        Math.floor(
+          percentage * 100
         );
 
-        if (
-          book.locations.length()
-        ) {
+      /* =========================
+         SAVE READER DATA
+      ========================= */
 
-          const percentage =
-            book.locations
-              .percentageFromCfi(
-                location.start.cfi
-              );
+      const readerData = {
 
-          const percent =
-            Math.floor(
-              percentage * 100
-            );
+        location:
+          location.start.cfi,
 
-          progressText.textContent =
-            percent + "%";
+        progress:
+          percent,
 
-          progressFill.style.width =
-            percent + "%";
+        lastRead:
+          new Date()
+            .toISOString(),
 
-        }
+        chapter:
+          location.start.href
 
-      }
+      };
 
-      catch (error) {
+      saveReaderData(
+        readerData
+      );
 
-        console.error(
-          error
-        );
+      /* =========================
+         UPDATE UI
+      ========================= */
 
-      }
+      progressText.textContent =
+        percent + "%";
+
+      progressFill.style.width =
+        percent + "%";
 
     }
-  );
 
-}
+    catch (error) {
+
+      console.error(
+        error
+      );
+
+    }
+
+  }
+);
+
+  
 
 
 /* ===================
