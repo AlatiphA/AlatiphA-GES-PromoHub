@@ -413,11 +413,8 @@ rendition.on(
 
      readingStatus.textContent =
       "Last read: " +
-      percent + "%";
-
-
-       
-}
+      percent + "%";       
+     }
 
     }
 
