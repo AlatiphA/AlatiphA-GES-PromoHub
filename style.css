@@ -222,27 +222,6 @@ footer {
   text-align: center;
 }
 
-
-
-#readingStatus {
-
-  font-size: 11px;
-
-  color: #ccc;
-
-  margin-left: 8px;
-
-  white-space: nowrap;
-
-  overflow: hidden;
-
-  text-overflow: ellipsis;
-
-}
-
-
-
-
 .progressBar {
   flex: 1;
 
