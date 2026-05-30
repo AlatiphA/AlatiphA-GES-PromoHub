@@ -401,6 +401,24 @@ rendition.on(
       progressFill.style.width =
         percent + "%";
 
+
+
+
+     const readingStatus =
+      document.getElementById(
+      "readingStatus"
+     );
+
+     if (readingStatus) {
+
+     readingStatus.textContent =
+      "Last read: " +
+      percent + "%";
+
+
+       
+}
+
     }
 
     catch (error) {
