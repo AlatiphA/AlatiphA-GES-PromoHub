@@ -404,16 +404,25 @@ rendition.on(
 
 
 
-      const chapterName =
-  getCurrentChapter(
-    location.start.href
+      const readingInfo =
+  document.getElementById(
+    "readingInfo"
   );
 
-readingInfo.textContent =
-  chapterName +
-  " • " +
-  percent +
-  "%";
+if (readingInfo) {
+
+  const chapterName =
+    getCurrentChapter(
+      location.start.href
+    );
+
+  readingInfo.textContent =
+    chapterName +
+    " • " +
+    percent +
+    "%";
+
+}
 
 
 
