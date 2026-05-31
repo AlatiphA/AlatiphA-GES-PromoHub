@@ -404,7 +404,7 @@ rendition.on(
         percent + "%";
       
 
-      const readingInfo =
+   /*   const readingInfo =
   document.getElementById(
     "readingInfo"
   );
@@ -426,7 +426,19 @@ if (readingInfo) {
 
 
   
-   }
+   } */
+
+      const readingInfo =
+  document.getElementById(
+    "readingInfo"
+  );
+
+if (readingInfo) {
+
+  readingInfo.textContent =
+    "HELLO WORLD";
+
+}
       
  }
 
