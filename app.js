@@ -414,9 +414,8 @@ rendition.on(
 if (readingInfo) {
 
   readingInfo.textContent =
-    "TEST " +
-    percent +
-    "%";
+  percent +
+  "%";
 
    }
 
