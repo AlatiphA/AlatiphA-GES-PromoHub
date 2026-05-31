@@ -985,10 +985,10 @@ function renderSearchResults(
         "Could not open result."
       );
 
-    }
+     }
 
-  }
-);
+    }
+  );
 
       searchResults.appendChild(
         div
@@ -1000,20 +1000,9 @@ function renderSearchResults(
 }
 
 
-
-
-
-
-
 /* =========================
    UPDATE MENU ICONS
 ========================= */
-
-function closeSidebar() {
-  sidebar.classList.remove("active");
-  updateMenuButtons();
-  showControls();
-}
 
 function updateMenuButtons() {
 
@@ -1035,9 +1024,7 @@ function updateMenuButtons() {
 
 }
 
-/* =========================
-   TOGGLE SIDEBAR
-========================= */
+/* TOGGLE SIDEBAR */
 
 function toggleSidebar() {
 
@@ -1051,9 +1038,15 @@ function toggleSidebar() {
 
 }
 
-/* =========================
-   MENU EVENTS
-========================= */
+/* CLOSE SIDEBAR */
+
+function closeSidebar() {
+  sidebar.classList.remove("active");
+  updateMenuButtons();
+  showControls();
+}
+
+/* MENU EVENTS */
 
 menuBtn.addEventListener(
   "click",
