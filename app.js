@@ -402,27 +402,29 @@ rendition.on(
 
       progressFill.style.width =
         percent + "%";
-
-
-
+      
 
       const readingInfo =
-  docuconst readingInfo =
   document.getElementById(
     "readingInfo"
   );
 
 if (readingInfo) {
 
+  const chapterName =
+    getCurrentChapter(
+      location.start.href
+    );
+
   readingInfo.textContent =
-    "TEST " +
-    percent +
-    "%";
+  "Chapter: " +
+  chapterName +
+  " | " +
+  percent +
+  "%";
 
-  }
+   }
       
-  
-
  }
 
     catch (error) {
