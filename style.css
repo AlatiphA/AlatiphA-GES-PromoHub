@@ -523,9 +523,7 @@ body.dark .searchItem {
    READING INFO
 ========================= */
 
-  ##readingInfo {
-
-  display: none;
+  #readingInfo {
 
   position: fixed;
 
@@ -549,14 +547,7 @@ body.dark .searchItem {
 
   pointer-events: none;
 
-}
-  
-
-  body.readingMode
-#readingInfo {
-
-  opacity: 1;
-
-  }
+ }
+    
   
 }
