@@ -322,6 +322,8 @@ function startReader() {
                 "active"
               );
 
+              closeSidebar();
+
               showControls();
 
             }
@@ -1006,6 +1008,12 @@ function renderSearchResults(
 /* =========================
    UPDATE MENU ICONS
 ========================= */
+
+function closeSidebar() {
+  sidebar.classList.remove("active");
+  updateMenuButtons();
+  showControls();
+}
 
 function updateMenuButtons() {
 
