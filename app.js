@@ -437,29 +437,6 @@ rendition.on(
         percent + "%";
       
 
-   /*   const readingInfo =
-  document.getElementById(
-    "readingInfo"
-  );
-
-if (readingInfo) {
-
-  const chapterName =
-    getCurrentChapter(
-      location.start.href
-    );
-
-  readingInfo.textContent =
-  readingInfo.textContent =
-  "Chapter: " +
-  chapterName +
-  " | " +
-  percent +
-  "%";
-
-
-  
-   } */
 
       const readingInfo =
   document.getElementById(
@@ -473,13 +450,21 @@ if (readingInfo) {
       location.start.href
     );
 
+  /*
   readingInfo.textContent =
     chapterName +
     " • " +
     percent +
     "%";
+  */
 
-}
+  readingInfo.textContent =
+  "[" +
+  chapterName +
+  "] " +
+  location.start.href;
+
+ }
 
 
 
