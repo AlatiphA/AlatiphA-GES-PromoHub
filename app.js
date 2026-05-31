@@ -411,13 +411,18 @@ rendition.on(
     "readingInfo"
   );
 
-if (readingInfo) {
+const chapterName =
+  getCurrentChapter(
+    location.start.href
+  );
 
-  readingInfo.textContent =
+readingInfo.textContent =
+  chapterName +
+  " • " +
   percent +
   "%";
-
-   }
+      
+  }
 
  }
 
