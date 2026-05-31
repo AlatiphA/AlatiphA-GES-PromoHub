@@ -524,8 +524,23 @@ body.dark .searchItem {
 ========================= */
 
   #readingInfo {
+    position: fixed;
+bottom: 10px;
+left: 50%;
+transform: translateX(-50%);
+background: rgba(0,0,0,0.75);
+color: white;
+padding: 2px 8px;
+border-radius: 20px;
+font-size: 10px;
+z-index: 9000;
+pointer-events: none;
+opacity: 0;
+transition: opacity .25s ease;
+text-align: center;
+white-space: nowrap;
 
-  position: fixed;
+ /* position: fixed;
 
   bottom: 10px;
 
@@ -550,7 +565,7 @@ body.dark .searchItem {
   opacity: 0;
 
   transition: opacity .25s ease;
-
+*/
  }
 
   body.readingMode #readingInfo {
