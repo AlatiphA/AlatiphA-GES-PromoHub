@@ -404,6 +404,20 @@ rendition.on(
 
 
 
+      const chapterName =
+  getCurrentChapter(
+    location.start.href
+  );
+
+readingInfo.textContent =
+  chapterName +
+  " • " +
+  percent +
+  "%";
+
+
+
+
      const readingStatus =
       document.getElementById(
       "readingStatus"
