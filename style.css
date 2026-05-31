@@ -520,7 +520,7 @@ body.dark .searchItem {
 
 
 /* =========================
-   MOBILE
+   READING INFO
 ========================= */
 
   #readingInfo {
@@ -553,6 +553,15 @@ body.dark .searchItem {
     opacity 0.3s ease;
 
   pointer-events: none;
+
+  }
+
+  
+
+  body.readingMode
+#readingInfo {
+
+  opacity: 1;
 
   }
   
