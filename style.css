@@ -523,7 +523,9 @@ body.dark .searchItem {
    READING INFO
 ========================= */
 
-  #readingInfo {
+  ##readingInfo {
+
+  display: none;
 
   position: fixed;
 
@@ -533,13 +535,11 @@ body.dark .searchItem {
 
   transform: translateX(-50%);
 
-  background:
-    rgba(0,0,0,0.75);
+  background: rgba(0,0,0,0.75);
 
   color: white;
 
-  padding:
-    4px 12px;
+  padding: 4px 12px;
 
   border-radius: 20px;
 
@@ -547,15 +547,9 @@ body.dark .searchItem {
 
   z-index: 9000;
 
-  opacity: 0;
-
-  transition:
-    opacity 0.3s ease;
-
   pointer-events: none;
 
-  }
-
+}
   
 
   body.readingMode
