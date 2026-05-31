@@ -416,11 +416,13 @@ if (readingInfo) {
       location.start.href
     );
 
-  readingInfo.textContent =
-    chapterName +
-    " • " +
-    percent +
-    "%";
+  
+readingInfo.textContent =
+  "TEST • " +
+  percent +
+  "%";
+  
+  
 
 }
 
