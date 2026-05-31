@@ -413,37 +413,14 @@ rendition.on(
 
 if (readingInfo) {
 
-  const chapterName =
-    getCurrentChapter(
-      location.start.href
-    );
+  readingInfo.textContent =
+    "TEST " +
+    percent +
+    "%";
 
-  
-readingInfo.textContent =
-  "TEST • " +
-  percent +
-  "%";
-  
-  
+   }
 
-}
-
-
-
-
-     /* const readingStatus =
-      document.getElementById(
-      "readingStatus"
-     );
-
-     if (readingStatus) {
-
-     readingStatus.textContent =
-      "Last read: " +
-      percent + "%";       
-     } */
-
-    }
+ }
 
     catch (error) {
 
