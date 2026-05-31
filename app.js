@@ -407,20 +407,19 @@ rendition.on(
 
 
       const readingInfo =
+  docuconst readingInfo =
   document.getElementById(
     "readingInfo"
   );
 
-const chapterName =
-  getCurrentChapter(
-    location.start.href
-  );
+if (readingInfo) {
 
-readingInfo.textContent =
-  chapterName +
-  " • " +
-  percent +
-  "%";
+  readingInfo.textContent =
+    "TEST " +
+    percent +
+    "%";
+
+  }
       
   
 
