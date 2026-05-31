@@ -418,7 +418,7 @@ readingInfo.textContent =
 
 
 
-     const readingStatus =
+     /* const readingStatus =
       document.getElementById(
       "readingStatus"
      );
@@ -428,7 +428,7 @@ readingInfo.textContent =
      readingStatus.textContent =
       "Last read: " +
       percent + "%";       
-     }
+     } */
 
     }
 
