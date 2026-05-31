@@ -533,19 +533,15 @@ body.dark .searchItem {
 
   transform: translateX(-50%);
 
-  background: rgba(0,0,0,0.75);
+  background: red;
 
-  color: white;
+  color: yellow;
 
-  padding: 4px 12px;
+  padding: 10px;
 
-  border-radius: 20px;
-
-  font-size: 12px;
+  font-size: 20px;
 
   z-index: 9000;
-
-  pointer-events: none;
 
  }
     
