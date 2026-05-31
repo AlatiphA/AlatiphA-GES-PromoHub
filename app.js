@@ -417,11 +417,15 @@ if (readingInfo) {
     );
 
   readingInfo.textContent =
-    chapterName +
-    " • " +
-    percent +
-    "%";
+  readingInfo.textContent =
+  "Chapter: " +
+  chapterName +
+  " | " +
+  percent +
+  "%";
 
+
+  
    }
       
  }
