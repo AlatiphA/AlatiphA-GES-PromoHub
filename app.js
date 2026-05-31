@@ -243,6 +243,39 @@ async function loadBook() {
 }
 
 
+
+
+function getCurrentChapter(
+  href
+) {
+
+  if (
+    !book ||
+    !book.navigation ||
+    !book.navigation.toc
+  ) {
+
+    return "";
+
+  }
+
+  const item =
+    book.navigation.toc.find(
+      chapter =>
+        href.includes(
+          chapter.href.split("#")[0]
+        )
+    );
+
+  return item
+    ? item.label
+    : "";
+
+}
+
+
+
+
 /* =================
    START READER
 ================= */
@@ -435,10 +468,22 @@ if (readingInfo) {
 
 if (readingInfo) {
 
+  const chapterName =
+    getCurrentChapter(
+      location.start.href
+    );
+
   readingInfo.textContent =
-    "HELLO WORLD";
+    chapterName +
+    " • " +
+    percent +
+    "%";
 
 }
+
+
+
+ 
       
  }
 
