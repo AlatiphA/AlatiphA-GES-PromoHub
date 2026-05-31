@@ -422,7 +422,7 @@ readingInfo.textContent =
   percent +
   "%";
       
-  }
+  
 
  }
 
