@@ -465,6 +465,12 @@ function toggleControls() {
       "hideControls"
     );
 
+
+    document.body.classList.remove(
+  "readingMode"
+);
+    
+
   }
 
   else {
@@ -476,6 +482,12 @@ function toggleControls() {
     footer.classList.add(
       "hideControls"
     );
+
+
+    document.body.classList.add(
+  "readingMode"
+);
+    
 
   }
 
