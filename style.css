@@ -533,15 +533,29 @@ body.dark .searchItem {
 
   transform: translateX(-50%);
 
-  background: red;
+  background: rgba(0,0,0,0.75);
 
-  color: yellow;
+  color: white;
 
-  padding: 10px;
+  padding: 4px 12px;
 
-  font-size: 20px;
+  border-radius: 20px;
+
+  font-size: 12px;
 
   z-index: 9000;
+
+  pointer-events: none;
+
+  opacity: 0;
+
+  transition: opacity .25s ease;
+
+ }
+
+  body.readingMode #readingInfo {
+
+  opacity: 1;
 
  }
     
