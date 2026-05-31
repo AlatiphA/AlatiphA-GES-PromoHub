@@ -411,17 +411,15 @@ rendition.on(
 
 if (readingInfo) {
 
-  const chapterName =
-    getCurrentChapter(
-      location.start.href
-    );
+  const readingInfo =
+  document.getElementById(
+    "readingInfo"
+  );
+
+if (readingInfo) {
 
   readingInfo.textContent =
-  "Chapter: " +
-  chapterName +
-  " | " +
-  percent +
-  "%";
+    "HELLO WORLD";
 
    }
       
