@@ -243,7 +243,9 @@ async function loadBook() {
 }
 
 
-
+/* ==============
+   CHAPTERS 
+============== */
 
 function getCurrentChapter(
   href
@@ -272,8 +274,6 @@ function getCurrentChapter(
     : "";
 
 }
-
-
 
 
 /* =================
@@ -380,9 +380,9 @@ function startReader() {
 
   /* SAVE LOCATION */
 
-rendition.on(
-  "relocated",
-  location => {
+  rendition.on(
+    "relocated",
+    location => {
 
     try {
 
@@ -439,16 +439,16 @@ rendition.on(
 
 
       const readingInfo =
-  document.getElementById(
-    "readingInfo"
-  );
+        document.getElementById(
+        "readingInfo"
+      );
 
-if (readingInfo) {
+      if (readingInfo) {
 
-  const chapterName =
-    getCurrentChapter(
-      location.start.href
-    );
+      const chapterName =
+        getCurrentChapter(
+        location.start.href
+      );
 
   /*
   readingInfo.textContent =
@@ -458,18 +458,14 @@ if (readingInfo) {
     "%";
   */
 
-  readingInfo.textContent =
-  "[" +
-  chapterName +
-  "] " +
-  location.start.href;
+      readingInfo.textContent =
+       "[" +
+      chapterName +
+       "] " +
+      location.start.href;
 
- }
-
-
-
+     }      
  
-      
  }
 
     catch (error) {
@@ -525,10 +521,9 @@ function toggleControls() {
 
 
     document.body.classList.add(
-  "readingMode"
-);
+     "readingMode"
+    );
     
-
   }
 
 }
@@ -937,16 +932,11 @@ function renderSearchResults(
       div.textContent =
         result.excerpt;
 
-
-
-
-      
-
       div.addEventListener(
-  "click",
-  async () => {
+        "click",
+          async () => {
 
-    try {
+      try {
 
       /* OPEN LOCATION */
 
