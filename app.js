@@ -433,38 +433,6 @@ function buildTOC(
 
 
 /* =================
-   CHAPTERS
-================= */
-/* function getCurrentChapter(
-  href
-) {
-
-  if (
-    !book ||
-    !book.navigation ||
-    !book.navigation.toc
-  ) {
-
-    return "";
-
-  }
-
-  const item =
-    book.navigation.toc.find(
-      chapter =>
-        href.includes(
-          chapter.href.split("#")[0]
-        )
-    );
-
-  return item
-    ? item.label
-    : "";
-
-}
-*/
-
-/* =================
    START READER
 ================= */
 
@@ -515,71 +483,20 @@ function startReader() {
 
 
       /* TOC */
-toc.innerHTML = "";
-
-const navigation =
-  book.navigation;
-
-navigation.toc.forEach(
-  item => {
-
-    buildTOC(
-      item
-    );
-
-  }
-);
-
-
-
-     
-      /* TOC */
-      /* toc.innerHTML = "";
+      toc.innerHTML = "";
 
       const navigation =
         book.navigation;
 
       navigation.toc.forEach(
-        chapter => {
+        item => {
 
-          const link =
-            document.createElement(
-              "a"
-            );
-
-          link.textContent =
-            chapter.label;
-
-          link.href = "#";
-
-          link.addEventListener(
-            "click",
-            e => {
-
-              e.preventDefault();
-
-              rendition.display(
-                chapter.href
-              );
-
-              sidebar.classList.remove(
-                "active"
-              );
-
-              closeSidebar();
-
-              // showControls();
-
-            }
-          );
-
-          toc.appendChild(
-            link
+          buildTOC(
+            item
           );
 
         }
-      ); */
-      
+      );
 
       /* GENERATE LOCATIONS */
       
@@ -716,7 +633,6 @@ function toggleControls() {
       "readingMode"
     );
     
-
   }
 
   else {
