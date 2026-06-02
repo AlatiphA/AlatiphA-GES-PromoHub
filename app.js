@@ -311,8 +311,37 @@ function getCurrentChapter(
 
 function buildTOC(
   item,
-  level = 0
+  level = 0,
+  parent = toc
 ) {
+
+  const row =
+    document.createElement(
+      "div"
+    );
+
+  row.className =
+    "tocItem";
+
+  row.style.paddingLeft =
+    (level * 20) + "px";
+
+  const toggle =
+    document.createElement(
+      "span"
+    );
+
+  toggle.className =
+    "tocToggle";
+
+  const hasChildren =
+    item.subitems &&
+    item.subitems.length;
+
+  toggle.textContent =
+    hasChildren
+      ? "▶"
+      : "";
 
   const link =
     document.createElement(
@@ -323,10 +352,6 @@ function buildTOC(
     item.label;
 
   link.href = "#";
-
-  link.style.paddingLeft =
-    (10 + level * 20) +
-    "px";
 
   link.addEventListener(
     "click",
@@ -343,21 +368,59 @@ function buildTOC(
     }
   );
 
-  toc.appendChild(
+  row.appendChild(
+    toggle
+  );
+
+  row.appendChild(
     link
   );
 
-  if (
-    item.subitems &&
-    item.subitems.length
-  ) {
+  parent.appendChild(
+    row
+  );
+
+  if (hasChildren) {
+
+    const children =
+      document.createElement(
+        "div"
+      );
+
+    children.className =
+      "tocChildren";
+
+    parent.appendChild(
+      children
+    );
+
+    toggle.addEventListener(
+      "click",
+      e => {
+
+        e.stopPropagation();
+
+        children.classList.toggle(
+          "open"
+        );
+
+        toggle.textContent =
+          children.classList.contains(
+            "open"
+          )
+            ? "▼"
+            : "▶";
+
+      }
+    );
 
     item.subitems.forEach(
       child => {
 
         buildTOC(
           child,
-          level + 1
+          level + 1,
+          children
         );
 
       }
