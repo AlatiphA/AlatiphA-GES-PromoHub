@@ -364,6 +364,7 @@ function buildTOC(
       );
 
       closeSidebar();
+      hideControls();
 
     }
   );
