@@ -1331,6 +1331,7 @@ themeBtn.addEventListener(
     );
 
     applyTheme();
+    updateMenuButtons();
 
   }
 );
@@ -1362,6 +1363,7 @@ bottomThemeBtn.addEventListener(
   () => {
 
     themeBtn.click();
+    updateMenuButtons();
 
   }
 );
