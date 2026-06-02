@@ -305,6 +305,8 @@ function startReader() {
 
   setupNavigationZones();
 
+  hideControls();
+
   /* RESTORE SAVED LOCATION */
   
   const readerData =
@@ -435,8 +437,6 @@ function startReader() {
 
       progressFill.style.width =
         percent + "%";
-      
-
 
       const readingInfo =
         document.getElementById(
@@ -474,10 +474,11 @@ function startReader() {
         error
       );
 
-    }
+     }
 
-  }
-);
+   }
+    
+ );
 
 }  
 
@@ -528,6 +529,28 @@ function toggleControls() {
 
 }
 
+
+ HIDE CONTROLS 
+========================= */
+
+function hideControls() {
+
+  header.classList.add(
+    "hideControls"
+  );
+
+  footer.classList.add(
+    "hideControls"
+  );
+
+  controlsVisible = false;
+
+  document.body.classList.add(
+    "readingMode"
+  );
+
+}
+   
 
 /* =========================
  GESTURES (Tap Next/Prev)
@@ -639,6 +662,8 @@ function setupNavigationZones() {
 
       rendition.prev();
 
+      hideControls();
+
     }
   );
 
@@ -681,6 +706,8 @@ function setupNavigationZones() {
       e.stopPropagation();
 
       rendition.next();
+
+      hideControls();
 
     }
   );
@@ -1105,6 +1132,8 @@ nextPage.addEventListener(
 
     rendition.next();
 
+    hideControls();
+
   }
 );
 
@@ -1113,6 +1142,8 @@ prevPage.addEventListener(
   () => {
 
     rendition.prev();
+
+    hideControls();
 
   }
 );
