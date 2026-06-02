@@ -546,5 +546,41 @@ body.dark .searchItem {
   opacity: 1;
 
  }
+
+
+ /* =========================
+   TOC ITEMS
+========================= */
+  
+  .tocItem {
+
+  display: flex;
+
+  align-items: center;
+
+}
+
+.tocToggle {
+
+  width: 20px;
+
+  cursor: pointer;
+
+  user-select: none;
+
+}
+
+.tocChildren {
+
+  display: none;
+
+}
+
+.tocChildren.open {
+
+  display: block;
+
+ }
+  
       
 }
