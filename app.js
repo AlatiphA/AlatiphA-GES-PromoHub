@@ -246,7 +246,132 @@ async function loadBook() {
 /* =================
    CHAPTERS
 ================= */
+
 function getCurrentChapter(
+  href
+) {
+
+  if (
+    !book ||
+    !book.navigation ||
+    !book.navigation.toc
+  ) {
+
+    return "";
+
+  }
+
+  let result = "";
+
+  function search(
+    items
+  ) {
+
+    items.forEach(
+      item => {
+
+        if (
+          href.includes(
+            item.href.split("#")[0]
+          )
+        ) {
+
+          result =
+            item.label;
+
+        }
+
+        if (
+          item.subitems &&
+          item.subitems.length
+        ) {
+
+          search(
+            item.subitems
+          );
+
+        }
+
+      }
+    );
+
+  }
+
+  search(
+    book.navigation.toc
+  );
+
+  return result;
+
+}
+
+/* =================
+   BUILD TOC
+================= */
+
+function buildTOC(
+  item,
+  level = 0
+) {
+
+  const link =
+    document.createElement(
+      "a"
+    );
+
+  link.textContent =
+    item.label;
+
+  link.href = "#";
+
+  link.style.paddingLeft =
+    (10 + level * 20) +
+    "px";
+
+  link.addEventListener(
+    "click",
+    e => {
+
+      e.preventDefault();
+
+      rendition.display(
+        item.href
+      );
+
+      closeSidebar();
+
+    }
+  );
+
+  toc.appendChild(
+    link
+  );
+
+  if (
+    item.subitems &&
+    item.subitems.length
+  ) {
+
+    item.subitems.forEach(
+      child => {
+
+        buildTOC(
+          child,
+          level + 1
+        );
+
+      }
+    );
+
+  }
+
+}
+
+
+/* =================
+   CHAPTERS
+================= */
+/* function getCurrentChapter(
   href
 ) {
 
@@ -273,7 +398,7 @@ function getCurrentChapter(
     : "";
 
 }
-
+*/
 
 /* =================
    START READER
@@ -324,8 +449,28 @@ function startReader() {
   book.ready
     .then(async () => {
 
+
       /* TOC */
-      toc.innerHTML = "";
+toc.innerHTML = "";
+
+const navigation =
+  book.navigation;
+
+navigation.toc.forEach(
+  item => {
+
+    buildTOC(
+      item
+    );
+
+  }
+);
+
+
+
+     
+      /* TOC */
+      /* toc.innerHTML = "";
 
       const navigation =
         book.navigation;
@@ -369,7 +514,8 @@ function startReader() {
           );
 
         }
-      );
+      ); */
+      
 
       /* GENERATE LOCATIONS */
       
