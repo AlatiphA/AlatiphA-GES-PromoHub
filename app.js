@@ -481,7 +481,6 @@ function startReader() {
   book.ready
     .then(async () => {
 
-
       /* TOC */
       toc.innerHTML = "";
 
@@ -675,6 +674,35 @@ function hideControls() {
   );
 
 }
+
+
+
+
+
+function closeSidebar() {
+
+  sidebar.classList.remove(
+    "active"
+  );
+
+  updateMenuButtons();
+
+}
+
+function openSidebar() {
+
+  sidebar.classList.add(
+    "active"
+  );
+
+  updateMenuButtons();
+
+}
+
+
+
+
+
 
 
 /* =========================
@@ -1210,13 +1238,15 @@ function toggleSidebar() {
 /* CLOSE SIDEBAR */
 
 function closeSidebar() {
-  sidebar.classList.remove("active");
-  updateMenuButtons();
+  // sidebar.classList.remove("active");
+  // updateMenuButtons();
+
+  closeSidebar();
   showControls();
 }
 
 /* MENU EVENTS */
-
+/* 
 menuBtn.addEventListener(
   "click",
   toggleSidebar
@@ -1226,6 +1256,34 @@ bottomMenuBtn.addEventListener(
   "click",
   toggleSidebar
 );
+
+*/
+
+menuBtn.addEventListener(
+  "click",
+  () => {
+
+    if (
+      sidebar.classList.contains(
+        "active"
+      )
+    ) {
+
+      closeSidebar();
+
+    }
+
+    else {
+
+      openSidebar();
+
+    }
+
+  }
+);
+
+
+
 
 
 /* ==========
@@ -1274,6 +1332,18 @@ prevPage.addEventListener(
   }
 );
 
+
+
+bottomMenuBtn.addEventListener(
+  "click",
+  () => {
+
+    menuBtn.click();
+
+  }
+);
+
+/*
 bottomThemeBtn.addEventListener(
   "click",
   () => {
@@ -1283,6 +1353,14 @@ bottomThemeBtn.addEventListener(
 
   }
 );
+
+*/
+
+
+
+
+
+
 
 bottomDecreaseFont.addEventListener(
   "click",
