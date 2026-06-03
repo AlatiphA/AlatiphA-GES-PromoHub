@@ -658,6 +658,22 @@ function toggleControls() {
  HIDE CONTROLS 
 ========================= */
 
+function hideControlsHeader() {
+  header.classList.add("hideControls");
+}
+
+function hideControlsFooter() {
+  footer.classList.add("hideControls");
+  controlsVisible = false;
+  document.body.classList.add("readingMode");
+}
+
+function hideControls() {
+  hideControlsHeader();
+  hideControlsFooter();
+}
+
+/*
 function hideControls() {
 
   header.classList.add(
@@ -675,35 +691,7 @@ function hideControls() {
   );
 
 }
-
-
-
-/*
-
-function closeSidebar() {
-
-  sidebar.classList.remove(
-    "active"
-  );
-
-  updateMenuButtons();
-
-}
-
-function openSidebar() {
-
-  sidebar.classList.add(
-    "active"
-  );
-
-  updateMenuButtons();
-
-}
-
 */
-
-
-
 
 
 /* =========================
@@ -1320,9 +1308,7 @@ nextPage.addEventListener(
 
     // hideControls();
 
-    header.classList.remove(
-      "hideControls"
-    );
+    hideControlsHeader();
 
   }
 );
@@ -1335,9 +1321,7 @@ prevPage.addEventListener(
 
     //hideControls();
     
-    header.classList.remove(
-      "hideControls"
-    );
+    hideControlsHeader();
 
   }
 );
