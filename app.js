@@ -1318,7 +1318,11 @@ nextPage.addEventListener(
 
     rendition.next();
 
-    hideControls();
+    // hideControls();
+
+    header.classList.remove(
+      "hideControls"
+    );
 
   }
 );
@@ -1329,7 +1333,11 @@ prevPage.addEventListener(
 
     rendition.prev();
 
-    hideControls();
+    //hideControls();
+    
+    header.classList.remove(
+      "hideControls"
+    );
 
   }
 );
