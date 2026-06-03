@@ -558,11 +558,15 @@ body.dark .searchItem {
 
   align-items: center;
 
+  width: 100%;
+
 }
 
   .tocItem a {
 
   flex: 1;
+
+  display: block;
 
 }
 
@@ -571,6 +575,8 @@ body.dark .searchItem {
   width: 24px;
 
   min-width: 24px;
+
+  height: 24px;
 
   display: flex;
 
@@ -582,19 +588,19 @@ body.dark .searchItem {
 
   user-select: none;
 
- /* z-index: 1; */
-
- }
+}
 
  .tocChildren {
 
-   display: none;
+  display: none;
+
+  margin-left: 24px;
 
  }
 
- .tocChildren.open {
+.tocChildren.open {
 
-   display: block;
+  display: block;
 
  }
   
