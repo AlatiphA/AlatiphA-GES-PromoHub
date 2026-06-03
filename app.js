@@ -659,39 +659,29 @@ function toggleControls() {
 ========================= */
 
 function hideControlsHeader() {
-  header.classList.add("hideControls");
+  
+  header.classList.add(
+    "hideControls"
+  );
 }
 
 function hideControlsFooter() {
-  footer.classList.add("hideControls");
+  
+  footer.classList.add( 
+    "hideControls"
+  );
+  
   controlsVisible = false;
-  document.body.classList.add("readingMode");
+  
+  document.body.classList.add( 
+    "readingMode"
+  );
 }
 
 function hideControls() {
   hideControlsHeader();
   hideControlsFooter();
 }
-
-/*
-function hideControls() {
-
-  header.classList.add(
-    "hideControls"
-  );
-
-  footer.classList.add(
-    "hideControls"
-  );
-
-  controlsVisible = false;
-
-  document.body.classList.add(
-    "readingMode"
-  );
-
-}
-*/
 
 
 /* =========================
@@ -1220,8 +1210,6 @@ function toggleSidebar() {
 
   updateMenuButtons();
 
-  // showControls();
-
   hideControlsFooter();
 
 }
@@ -1232,7 +1220,6 @@ function closeSidebar() {
   sidebar.classList.remove("active");
   updateMenuButtons();
 
-  // closeSidebar();
   showControls();
 }
 
@@ -1320,8 +1307,6 @@ prevPage.addEventListener(
   () => {
 
     rendition.prev();
-
-    //hideControls();
     
     hideControlsHeader();
 
@@ -1340,6 +1325,8 @@ bottomMenuBtn.addEventListener(
 );
 
 */
+
+
 bottomThemeBtn.addEventListener(
   "click",
   () => {
@@ -1349,14 +1336,6 @@ bottomThemeBtn.addEventListener(
 
   }
 );
-
-
-
-
-
-
-
-
 
 bottomDecreaseFont.addEventListener(
   "click",
