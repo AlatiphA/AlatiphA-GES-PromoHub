@@ -1333,7 +1333,7 @@ prevPage.addEventListener(
 );
 
 
-
+/*
 bottomMenuBtn.addEventListener(
   "click",
   () => {
@@ -1343,7 +1343,7 @@ bottomMenuBtn.addEventListener(
   }
 );
 
-/*
+*/
 bottomThemeBtn.addEventListener(
   "click",
   () => {
@@ -1354,7 +1354,7 @@ bottomThemeBtn.addEventListener(
   }
 );
 
-*/
+
 
 
 
