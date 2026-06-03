@@ -592,7 +592,7 @@ body.dark .searchItem {
 
  .tocChildren {
 
-  display: none;
+  display: none !important;
 
   margin-left: 24px;
 
@@ -600,7 +600,7 @@ body.dark .searchItem {
 
 .tocChildren.open {
 
-  display: block;
+  display: block !important;
 
  }
   
