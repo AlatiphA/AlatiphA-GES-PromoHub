@@ -363,7 +363,7 @@ function buildTOC(
         item.href
       );
 
-      // closeSidebar();
+      closeSidebar();
       hideControls();
 
     }
@@ -678,8 +678,8 @@ function hideControls() {
 
 
 
-
 /*
+
 function closeSidebar() {
 
   sidebar.classList.remove(
@@ -699,8 +699,8 @@ function openSidebar() {
   updateMenuButtons();
 
 }
-*/
 
+*/
 
 
 
