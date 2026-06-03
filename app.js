@@ -576,19 +576,20 @@ function startReader() {
         location.start.href
       );
 
-  /*
+  
   readingInfo.textContent =
     chapterName +
     " • " +
     percent +
     "%";
-  */
-
+  
+/*
        readingInfo.textContent =
          "[" +
        chapterName +
          "] " +
        location.start.href;
+       */
 
     }
       
@@ -678,7 +679,7 @@ function hideControls() {
 
 
 
-
+/*
 function closeSidebar() {
 
   sidebar.classList.remove(
@@ -698,7 +699,7 @@ function openSidebar() {
   updateMenuButtons();
 
 }
-
+*/
 
 
 
@@ -1238,15 +1239,15 @@ function toggleSidebar() {
 /* CLOSE SIDEBAR */
 
 function closeSidebar() {
-  // sidebar.classList.remove("active");
-  // updateMenuButtons();
+  sidebar.classList.remove("active");
+  updateMenuButtons();
 
   closeSidebar();
   showControls();
 }
 
 /* MENU EVENTS */
-/* 
+
 menuBtn.addEventListener(
   "click",
   toggleSidebar
@@ -1257,7 +1258,6 @@ bottomMenuBtn.addEventListener(
   toggleSidebar
 );
 
-*/
 
 menuBtn.addEventListener(
   "click",
