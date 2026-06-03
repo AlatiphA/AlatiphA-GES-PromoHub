@@ -1220,7 +1220,9 @@ function toggleSidebar() {
 
   updateMenuButtons();
 
-  showControls();
+  // showControls();
+
+  hideControlsFooter();
 
 }
 
