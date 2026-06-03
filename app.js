@@ -363,7 +363,7 @@ function buildTOC(
         item.href
       );
 
-      closeSidebar();
+      // closeSidebar();
       hideControls();
 
     }
@@ -1242,7 +1242,7 @@ function closeSidebar() {
   sidebar.classList.remove("active");
   updateMenuButtons();
 
-  closeSidebar();
+  // closeSidebar();
   showControls();
 }
 
@@ -1259,6 +1259,8 @@ bottomMenuBtn.addEventListener(
 );
 
 
+
+/*
 menuBtn.addEventListener(
   "click",
   () => {
@@ -1281,7 +1283,7 @@ menuBtn.addEventListener(
 
   }
 );
-
+*/
 
 
 
