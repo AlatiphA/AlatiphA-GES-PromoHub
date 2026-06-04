@@ -340,7 +340,7 @@ function buildTOC(
 
   toggle.textContent =
     hasChildren
-      ? "▶"
+      ? "⟩"
       : "";
 
   const link =
@@ -409,8 +409,8 @@ function buildTOC(
           children.classList.contains(
             "open"
           )
-            ? "▼"
-            : "▶";
+            ? "⌵"
+            : "⟩";
 
       }
     );
