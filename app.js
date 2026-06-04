@@ -576,20 +576,13 @@ function startReader() {
         location.start.href
       );
 
-readingInfo.textContent =
-  (chapterName ? chapterName + " • " : "") +
-  "Section " + sectionNum +
-  " of " + totalSections +
-  " • " + percent + "%";
-
-      /*  
       readingInfo.textContent =
         chapterName +
-          " • " + sectionNum +
-          " of " + totalSections +
-          " • " + percent + "%";
+        " • " +
+        percent +
+        "%";
 
-  
+  /*
   readingInfo.textContent =
     chapterName +
     " • " +
