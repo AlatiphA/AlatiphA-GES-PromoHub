@@ -602,10 +602,6 @@ function startReader() {
 }  
 
 
-
-
-
-
 /* ===================
    CONTROLS
 =================== */
@@ -685,104 +681,6 @@ function toggleControls() {
     : showControls();
 
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-/* ===================
-   TOGGLE CONTROLS
-=================== */
-/*
-function toggleControls() {
-
-  controlsVisible =
-    !controlsVisible;
-
-  if (controlsVisible) {
-
-    header.classList.remove(
-      "hideControls"
-    );
-
-    footer.classList.remove(
-      "hideControls"
-    );
-
-    document.body.classList.remove(
-      "readingMode"
-    );
-    
-  }
-
-  else {
-
-    header.classList.add(
-      "hideControls"
-    );
-
-    footer.classList.add(
-      "hideControls"
-    );
-
-    document.body.classList.add(
-      "readingMode"
-    );
-    
-  }
-
-}
-
-*/ 
-
-/* =========================
- HIDE CONTROLS 
-========================= */
-/*
-function hideControlsHeader() {
-  
-  header.classList.add(
-    "hideControls"
-  );
-}
-
-function hideControlsFooter() {
-  
-  footer.classList.add( 
-    "hideControls"
-  );
-  
-  controlsVisible = false;
-  
-  document.body.classList.add( 
-    "readingMode"
-  );
-}
-
-function hideControls() {
-  hideControlsHeader();
-  hideControlsFooter();
-}
-
-*/
-
-
-
-
-
-
-
-
-
-
 
 
 /* =========================
@@ -1319,9 +1217,12 @@ function toggleSidebar() {
 
 function closeSidebar() {
   sidebar.classList.remove("active");
+  
   updateMenuButtons();
+  
+  hideHeader();
 
-  showControls();
+  //showControls();
 }
 
 /* MENU EVENTS */
@@ -1335,35 +1236,6 @@ bottomMenuBtn.addEventListener(
   "click",
   toggleSidebar
 );
-
-
-
-/*
-menuBtn.addEventListener(
-  "click",
-  () => {
-
-    if (
-      sidebar.classList.contains(
-        "active"
-      )
-    ) {
-
-      closeSidebar();
-
-    }
-
-    else {
-
-      openSidebar();
-
-    }
-
-  }
-);
-*/
-
-
 
 
 /* ==========
@@ -1397,9 +1269,6 @@ nextPage.addEventListener(
     rendition.next();
 
     hideHeader();
-    
-    // hideControls();
-    // hideControlsHeader();
 
   }
 );
@@ -1411,24 +1280,9 @@ prevPage.addEventListener(
     rendition.prev();
     
     hideHeader();
-    // hideControlsHeader();
 
   }
 );
-
-
-/*
-bottomMenuBtn.addEventListener(
-  "click",
-  () => {
-
-    menuBtn.click();
-
-  }
-);
-
-*/
-
 
 bottomThemeBtn.addEventListener(
   "click",
