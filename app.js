@@ -364,7 +364,7 @@ function buildTOC(
       );
 
       closeSidebar();
-      toggleControls();
+      
       hideControls();
 
     }
@@ -602,10 +602,99 @@ function startReader() {
 }  
 
 
+
+
+
+
+
+
+
+function hideHeader() {
+
+  header.classList.add(
+    "hideControls"
+  );
+
+}
+
+function showHeader() {
+
+  header.classList.remove(
+    "hideControls"
+  );
+
+}
+
+function hideFooter() {
+
+  footer.classList.add(
+    "hideControls"
+  );
+
+}
+
+function showFooter() {
+
+  footer.classList.remove(
+    "hideControls"
+  );
+
+}
+
+
+function showControls() {
+
+  showHeader();
+
+  showFooter();
+
+  controlsVisible = true;
+
+  document.body.classList.remove(
+    "readingMode"
+  );
+
+}
+
+function hideControls() {
+
+  hideHeader();
+
+  hideFooter();
+
+  controlsVisible = false;
+
+  document.body.classList.add(
+    "readingMode"
+  );
+
+}
+
+
+function toggleControls() {
+
+  controlsVisible
+    ? hideControls()
+    : showControls();
+
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
 /* ===================
    TOGGLE CONTROLS
 =================== */
-
+/*
 function toggleControls() {
 
   controlsVisible =
@@ -645,11 +734,12 @@ function toggleControls() {
 
 }
 
+*/ 
 
 /* =========================
  HIDE CONTROLS 
 ========================= */
-
+/*
 function hideControlsHeader() {
   
   header.classList.add(
@@ -674,6 +764,18 @@ function hideControls() {
   hideControlsHeader();
   hideControlsFooter();
 }
+
+*/
+
+
+
+
+
+
+
+
+
+
 
 
 /* =========================
@@ -1287,9 +1389,10 @@ nextPage.addEventListener(
 
     rendition.next();
 
+    hideHeader();
+    
     // hideControls();
-
-    hideControlsHeader();
+    // hideControlsHeader();
 
   }
 );
@@ -1300,7 +1403,8 @@ prevPage.addEventListener(
 
     rendition.prev();
     
-    hideControlsHeader();
+    hideHeader();
+    // hideControlsHeader();
 
   }
 );
