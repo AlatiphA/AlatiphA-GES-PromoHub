@@ -1304,7 +1304,7 @@ function toggleSidebar() {
 
   updateMenuButtons();
 
-  hideControlsFooter();
+  hideFooter();
 
 }
 
