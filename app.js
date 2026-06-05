@@ -364,6 +364,7 @@ function buildTOC(
       );
 
       closeSidebar();
+      toggleControls();
       hideControls();
 
     }
@@ -581,14 +582,6 @@ function startReader() {
         " • " +
         percent +
         "%";
-
-  /*
-  readingInfo.textContent =
-    chapterName +
-    " • " +
-    percent +
-    "%";
-       */
 
     }
       
