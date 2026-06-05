@@ -606,8 +606,11 @@ function startReader() {
 
 
 
+/* ===================
+   CONTROLS
+=================== */
 
-
+/* ===== HIDE HEADER ===== */
 
 function hideHeader() {
 
@@ -617,6 +620,7 @@ function hideHeader() {
 
 }
 
+/* ===== SHOW HEADER ===== */
 function showHeader() {
 
   header.classList.remove(
@@ -625,6 +629,7 @@ function showHeader() {
 
 }
 
+/* ===== HIDE FOOTER ===== */
 function hideFooter() {
 
   footer.classList.add(
@@ -633,6 +638,7 @@ function hideFooter() {
 
 }
 
+/* ===== SHOW FOOTER ===== */
 function showFooter() {
 
   footer.classList.remove(
@@ -641,21 +647,7 @@ function showFooter() {
 
 }
 
-
-function showControls() {
-
-  showHeader();
-
-  showFooter();
-
-  controlsVisible = true;
-
-  document.body.classList.remove(
-    "readingMode"
-  );
-
-}
-
+/* ===== HIDE CONTROLS ===== */
 function hideControls() {
 
   hideHeader();
@@ -670,7 +662,22 @@ function hideControls() {
 
 }
 
+/* ===== SHOW CONTROLS ===== */
+function showControls() {
 
+  showHeader();
+
+  showFooter();
+
+  controlsVisible = true;
+
+  document.body.classList.remove(
+    "readingMode"
+  );
+
+}
+
+/* ===== TOGGLE CONTROLS - middle tap ===== */
 function toggleControls() {
 
   controlsVisible
