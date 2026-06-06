@@ -289,30 +289,6 @@ footer {
    SIDEBAR
 ========================= */
 
-/*
-.sidebar {
-  position: fixed;
-
-  top: 56px;
-  left: -300px;
-
-  width: 300px;
-
-  height: calc(100dvh - 56px);
-
-  background: white;
-
-  overflow-y: auto;
-
-  transition: left 0.3s ease;
-
-  z-index: 10000;
-
-  padding: 15px;
-}
-*/ 
-
-
 .sidebar {
 
   position: fixed;
@@ -348,18 +324,12 @@ body.dark .sidebar {
 }
 
 .tocContainer {
-
   flex: 1;
-
   overflow-y: auto;
 
 }
 
-
-
-
-
-    .aboutSection {
+.aboutSection {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -370,8 +340,8 @@ body.dark .sidebar {
 }
 
 .aboutIcon {
-  width: 32px;
-  height: 32px;
+  width: 35px;
+  height: 35px;
   border-radius: 8px;
 }
 
@@ -385,19 +355,6 @@ body.dark .sidebar {
 .aboutText strong {
   font-size: 11px;
 }
-
-
-
-
-    
-    
-
-
-
-
-
-
-
 
 
 /* =========================
