@@ -289,6 +289,7 @@ footer {
    SIDEBAR
 ========================= */
 
+/*
 .sidebar {
   position: fixed;
 
@@ -309,6 +310,33 @@ footer {
 
   padding: 15px;
 }
+*/ 
+
+
+.sidebar {
+
+  position: fixed;
+
+  top: 56px;
+  left: -300px;
+
+  width: 300px;
+
+  height: calc(100dvh - 56px);
+
+  background: white;
+
+  transition: left 0.3s ease;
+
+  z-index: 10000;
+
+  padding: 15px;
+
+  display: flex;
+
+  flex-direction: column;
+
+}
 
 .sidebar.active {
   left: 0;
@@ -318,6 +346,42 @@ body.dark .sidebar {
   background: #1e1e1e;
   color: white;
 }
+
+
+
+
+.tocContainer {
+
+  flex: 1;
+
+  overflow-y: auto;
+
+}
+
+
+.aboutSection {
+
+  border-top: 1px solid #ccc;
+
+  padding-top: 12px;
+
+  margin-top: 10px;
+
+  font-size: 12px;
+
+  text-align: center;
+
+  opacity: 0.8;
+
+}
+
+body.dark .aboutSection {
+
+  border-top: 1px solid #444;
+
+}
+
+
 
 /* =========================
    TOC
