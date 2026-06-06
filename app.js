@@ -28,6 +28,17 @@ const menuBtn =
     "menuBtn"
   );
 
+
+
+
+const bookmarkBtn =
+  document.getElementById(
+    "bookmarkBtn"
+  );
+
+
+
+
 const themeBtn =
   document.getElementById(
     "themeBtn"
@@ -118,6 +129,7 @@ const rightZone =
 
 let rendition;
 let book;
+let currentLocation = null;
 let activeSearchHighlight =
   null;
 
@@ -132,8 +144,21 @@ let fontSize =
   ) || 100;
 
 
+
+
+
+
+
+
+
+
+
+
 const READER_DATA_KEY =
   "epub-beta-reader-data";
+
+const BOOKMARKS_KEY =
+  "epub-beta-bookmarks";
 
 /* =========================
    SAVE READER DATA
@@ -198,6 +223,139 @@ function loadReaderData() {
   }
 
 }
+
+
+
+
+/* ==================
+   BOOKMARKS
+================== */
+
+function saveBookmark() {
+
+  if (
+    !rendition ||
+    !currentLocation
+  ) {
+
+    return;
+
+  }
+
+  const bookmarks =
+    JSON.parse(
+      localStorage.getItem(
+        BOOKMARKS_KEY
+      ) || "[]"
+    );
+
+  const chapterName =
+    getCurrentChapter(
+      currentLocation.start.href
+    );
+
+  const percent =
+    Math.floor(
+      book.locations
+        .percentageFromCfi(
+          currentLocation.start.cfi
+        ) * 100
+    );
+
+  bookmarks.push({
+
+    cfi:
+      currentLocation.start.cfi,
+
+    chapter:
+      chapterName,
+
+    progress:
+      percent,
+
+    date:
+      new Date()
+        .toISOString()
+
+  });
+
+  localStorage.setItem(
+    BOOKMARKS_KEY,
+    JSON.stringify(
+      bookmarks
+    )
+  );
+
+}
+
+
+function loadBookmarks() {
+
+  const list =
+    document.getElementById(
+      "bookmarksList"
+    );
+
+  if (!list)
+    return;
+
+  list.innerHTML = "";
+
+  const bookmarks =
+    JSON.parse(
+      localStorage.getItem(
+        BOOKMARKS_KEY
+      ) || "[]"
+    );
+
+  bookmarks.forEach(
+    bookmark => {
+
+      const item =
+        document.createElement(
+          "a"
+        );
+
+      item.href = "#";
+
+      item.textContent =
+        bookmark.chapter +
+        " (" +
+        bookmark.progress +
+        "%)";
+
+      item.addEventListener(
+        "click",
+        e => {
+
+          e.preventDefault();
+
+          rendition.display(
+            bookmark.cfi
+          );
+
+          closeSidebar();
+
+          hideControls();
+
+        }
+      );
+
+      list.appendChild(
+        item
+      );
+
+    }
+  );
+
+}
+
+
+
+
+
+
+
 
 
 /* ==============
@@ -514,6 +672,9 @@ function startReader() {
    location => {
 
     try {
+
+       currentLocation =
+        location;
 
       /* =========================
          CALCULATE PROGRESS
@@ -1377,6 +1538,28 @@ searchInput.addEventListener(
 
   }
 );
+
+
+
+
+
+
+bookmarkBtn.addEventListener(
+  "click",
+  () => {
+
+    saveBookmark();
+
+    alert(
+      "Bookmark saved"
+    );
+
+  }
+);
+
+
+
+
 
 
 /* ================
