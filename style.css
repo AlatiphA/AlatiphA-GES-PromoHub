@@ -376,9 +376,9 @@ body.dark .sidebar {
 <!-- About icon -->
 .aboutIcon {
 
-  width: 28px;
+  width: 15px;
 
-  height: 28px;
+  height: 15px;
 
   display: block;
 
@@ -390,7 +390,7 @@ body.dark .sidebar {
 
 .aboutText {
 
-  margin-top: 4px;
+  margin-top: 6px;
 
 }
 
