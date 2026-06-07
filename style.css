@@ -641,6 +641,36 @@ body.dark .searchItem {
   display: block !important;
 
  }
+
   
-      
+  
+ .bookmarksSection {
+
+  margin-top: 12px;
+
+}
+
+#bookmarksList {
+
+  max-height: 120px;
+
+  overflow-y: auto;
+
+}
+
+#bookmarksList a {
+
+  display: block;
+
+  padding: 8px;
+
+  text-decoration: none;
+
+  color: inherit;
+
+  font-size: 13px;
+
+ } 
+
+  
 }
