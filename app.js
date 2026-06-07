@@ -54,10 +54,7 @@ const prevPage =
     "prevPage"
   );
 
-const bottomThemeBtn =
-  document.getElementById(
-    "bottomThemeBtn"
-  );
+
 
 const bottomDecreaseFont =
   document.getElementById(
@@ -1549,13 +1546,7 @@ bookmarkBtn.addEventListener(
 
 
 
-bottomThemeBtn.addEventListener(
-  "click",
-  e => {
-    e.stopPropagation();
-    toggleThemePicker();
-  }
-);
+
 
 bottomDecreaseFont.addEventListener(
   "click",
@@ -1832,8 +1823,7 @@ document.addEventListener(
     if (
       themePicker.classList.contains("open") &&
       !themePicker.contains(e.target) &&
-      !themeBtn.contains(e.target) &&
-      !bottomThemeBtn.contains(e.target)
+      !themeBtn.contains(e.target)
     ) {
       closeThemePicker();
     }
