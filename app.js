@@ -277,6 +277,8 @@ function saveBookmark() {
     )
   );
 
+  loadBookmarks();
+
 }
 
 
@@ -615,7 +617,7 @@ function startReader() {
 
 
   /* RESTORE SAVED LOCATION */
-  
+  /*
   const readerData =
    loadReaderData();
 
@@ -624,7 +626,8 @@ function startReader() {
 
   rendition.display(
    savedLocation || undefined
-);
+); 
+*/
 
   /* BACKGROUND SETUP */
   
@@ -644,6 +647,8 @@ function startReader() {
             item
           );
 
+          loadBookmarks();
+
         }
       );
 
@@ -652,6 +657,48 @@ function startReader() {
       await book.locations.generate(
         1000
       );
+
+
+
+
+
+      const readerData =
+  loadReaderData();
+
+const savedLocation =
+  readerData.location;
+
+if (savedLocation) {
+
+  try {
+
+    await rendition.display(
+      savedLocation
+    );
+
+  }
+
+  catch (error) {
+
+    console.error(
+      "Restore failed:",
+      error
+    );
+
+    await rendition.display();
+
+  }
+
+}
+
+else {
+
+  await rendition.display();
+
+}
+
+
+      
 
     });
   
