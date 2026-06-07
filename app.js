@@ -739,9 +739,6 @@ function startReader() {
    "relocated",
    location => {
 
-    /* Stop TTS on every page turn */
-    ttsStop();
-
     try {
 
       currentLocation =
@@ -1097,72 +1094,78 @@ function setupNavigationZones() {
    THEME
 ========================= */
 
-function applyTheme() {
+/* =========================
+   THEME ENGINE
+========================= */
 
-  const darkMode =
-    localStorage.getItem(
-      "darkMode-beta"
-    ) === "true";
+const THEMES = {
+  light: {
+    bg:    "#f5f5f5",
+    color: "#111111",
+    link:  "#1565c0",
+  },
+  dark: {
+    bg:    "#111111",
+    color: "#eeeeee",
+    link:  "#4dabff",
+  },
+  sepia: {
+    bg:    "#f4ede0",
+    color: "#2c1a0e",
+    link:  "#7a4a1a",
+  },
+  night: {
+    bg:    "#000000",
+    color: "#bbbbbb",
+    link:  "#4dabff",
+  },
+};
 
-  document.body.classList.toggle(
-    "dark",
-    darkMode
+function applyTheme(theme) {
+
+  if (!theme) {
+    theme = localStorage.getItem(
+      "theme-v2"
+    ) || "dark";
+  }
+
+  localStorage.setItem(
+    "theme-v2", theme
   );
 
-  /* UPDATE ICONS */
+  /* Remove all theme classes */
+  document.body.classList.remove(
+    "dark", "sepia", "night"
+  );
 
-  themeBtn.textContent =
-    darkMode
-      ? "🌙"
-      : "☀️";
+  if (theme !== "light") {
+    document.body.classList.add(theme);
+  }
 
-  bottomThemeBtn.textContent =
-    darkMode
-      ? "🌙"
-      : "☀️";
-
-  /* SAFETY */
-
-  if (!rendition)
-    return;
-
-  /* FORCE EPUB REFRESH */
-
-  rendition.themes.default({
-
-    body: {
-
-      background:
-        darkMode
-          ? "#111111"
-          : "#ffffff",
-
-      color:
-        darkMode
-          ? "#ffffff"
-          : "#111111",
-
-      padding: "20px",
-
-      "line-height": "1.7",
-
-      "font-family":
-        "Arial, sans-serif"
-
-    },
-
-    a: {
-
-      color:
-        darkMode
-          ? "#4dabff"
-          : "#1565c0"
-
-    }
-
+  /* Mark active option */
+  document.querySelectorAll(
+    ".themeOption"
+  ).forEach(btn => {
+    btn.classList.toggle(
+      "active",
+      btn.dataset.theme === theme
+    );
   });
 
-  /* RE-APPLY FONT SIZE */
+  if (!rendition) return;
+
+  const t = THEMES[theme] || THEMES.dark;
+
+  rendition.themes.default({
+    body: {
+      background:   t.bg,
+      color:        t.color,
+      padding:      "20px",
+      "line-height":"1.7",
+      "font-family":"Arial, sans-serif",
+    },
+    a: { color: t.link },
+  });
 
   rendition.themes.fontSize(
     fontSize + "%"
@@ -1474,23 +1477,25 @@ bottomMenuBtn.addEventListener(
    OTHER EVENTS
 ========== */
 
+/* Theme button — toggle picker panel */
+const themePicker =
+  document.getElementById(
+    "themePicker"
+  );
+
+function toggleThemePicker() {
+  themePicker.classList.toggle("open");
+}
+
+function closeThemePicker() {
+  themePicker.classList.remove("open");
+}
+
 themeBtn.addEventListener(
   "click",
-  () => {
-
-    const darkMode =
-      localStorage.getItem(
-        "darkMode-beta"
-      ) === "true";
-
-    localStorage.setItem(
-      "darkMode-beta",
-      (!darkMode).toString()
-    );
-
-    applyTheme();
-    updateMenuButtons();
-
+  e => {
+    e.stopPropagation();
+    toggleThemePicker();
   }
 );
 
@@ -1538,11 +1543,9 @@ bookmarkBtn.addEventListener(
 
 bottomThemeBtn.addEventListener(
   "click",
-  () => {
-
-    themeBtn.click();
-    updateMenuButtons();
-
+  e => {
+    e.stopPropagation();
+    toggleThemePicker();
   }
 );
 
@@ -1676,179 +1679,6 @@ if (
 
 loadBook();
 
-
-
-/* =========================
-   TEXT TO SPEECH (TTS)
-========================= */
-
-const ttsBtn =
-  document.getElementById(
-    "ttsBtn"
-  );
-
-let ttsActive = false;
-let ttsPaused = false;
-
-function getPageText() {
-
-  try {
-
-    /* Grab the iframe epub.js
-       injects into #viewer */
-    const iframe =
-      document.querySelector(
-        "#viewer iframe"
-      );
-
-    if (!iframe)
-      return "";
-
-    const iframeDoc =
-      iframe.contentDocument ||
-      iframe.contentWindow
-        ?.document;
-
-    if (
-      !iframeDoc ||
-      !iframeDoc.body
-    ) return "";
-
-    const clone =
-      iframeDoc.body
-        .cloneNode(true);
-
-    /* Remove noise */
-    clone.querySelectorAll(
-      "script, style, sup"
-    ).forEach(
-      el => el.remove()
-    );
-
-    const text =
-      clone.innerText ||
-      clone.textContent ||
-      "";
-
-    return text.trim();
-
-  } catch (err) {
-
-    console.warn(
-      "TTS extract failed:",
-      err
-    );
-
-    return "";
-
-  }
-
-}
-
-function ttsSpeak() {
-
-  const text = getPageText();
-
-  if (!text.trim()) {
-
-    alert(
-      "No text found on this page."
-    );
-
-    return;
-
-  }
-
-  window.speechSynthesis.cancel();
-
-  const utterance =
-    new SpeechSynthesisUtterance(
-      text
-    );
-
-  utterance.lang = "en-US";
-  utterance.rate = 0.95;
-  utterance.pitch = 1;
-
-  utterance.onstart = () => {
-
-    ttsActive = true;
-    ttsPaused = false;
-    ttsBtn.textContent = "⏸";
-    ttsBtn.title = "Pause";
-
-  };
-
-  utterance.onend = () => {
-
-    ttsActive = false;
-    ttsPaused = false;
-    ttsBtn.textContent = "🔊";
-    ttsBtn.title = "Read Aloud";
-
-  };
-
-  utterance.onerror = () => {
-
-    ttsActive = false;
-    ttsPaused = false;
-    ttsBtn.textContent = "🔊";
-    ttsBtn.title = "Read Aloud";
-
-  };
-
-  window.speechSynthesis
-    .speak(utterance);
-
-}
-
-function ttsStop() {
-
-  window.speechSynthesis.cancel();
-  ttsActive = false;
-  ttsPaused = false;
-  ttsBtn.textContent = "🔊";
-  ttsBtn.title = "Read Aloud";
-
-}
-
-ttsBtn.addEventListener(
-  "click",
-  () => {
-
-    if (!rendition) return;
-
-    if (!ttsActive && !ttsPaused) {
-
-      /* Start reading */
-      ttsSpeak();
-
-    } else if (
-      ttsActive && !ttsPaused
-    ) {
-
-      /* Pause */
-      window.speechSynthesis.pause();
-      ttsPaused = true;
-      ttsActive = false;
-      ttsBtn.textContent = "▶️";
-      ttsBtn.title = "Resume";
-
-    } else if (ttsPaused) {
-
-      /* Resume */
-      window.speechSynthesis.resume();
-      ttsPaused = false;
-      ttsActive = true;
-      ttsBtn.textContent = "⏸";
-      ttsBtn.title = "Pause";
-
-    }
-
-  }
-);
-
-/* Stop TTS when page changes */
 /* =========================
    SIDEBAR TABS
 ========================= */
@@ -1966,4 +1796,37 @@ sidebar.addEventListener(
 
   },
   { passive: true }
+);
+
+
+/* =========================
+   THEME OPTION CLICKS
+========================= */
+
+document.querySelectorAll(
+  ".themeOption"
+).forEach(btn => {
+
+  btn.addEventListener(
+    "click",
+    () => {
+      applyTheme(btn.dataset.theme);
+      closeThemePicker();
+    }
+  );
+
+});
+
+/* Close picker on outside tap */
+document.addEventListener(
+  "click",
+  e => {
+    if (
+      !themePicker.contains(e.target) &&
+      e.target !== themeBtn &&
+      e.target !== bottomThemeBtn
+    ) {
+      closeThemePicker();
+    }
+  }
 );
