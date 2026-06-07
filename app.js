@@ -1692,44 +1692,50 @@ let ttsPaused = false;
 
 function getPageText() {
 
-  /* Get the iframe document
-     from the epub rendition */
   try {
 
-    const views =
-      rendition.manager.views;
+    /* Grab the iframe epub.js
+       injects into #viewer */
+    const iframe =
+      document.querySelector(
+        "#viewer iframe"
+      );
 
-    if (!views || !views._views)
+    if (!iframe)
       return "";
 
     const iframeDoc =
-      views._views[0]
-        ?.iframe
-        ?.contentDocument;
+      iframe.contentDocument ||
+      iframe.contentWindow
+        ?.document;
 
-    if (!iframeDoc)
-      return "";
+    if (
+      !iframeDoc ||
+      !iframeDoc.body
+    ) return "";
 
-    /* Extract visible text,
-       skip script/style tags */
     const clone =
       iframeDoc.body
         .cloneNode(true);
 
+    /* Remove noise */
     clone.querySelectorAll(
       "script, style, sup"
     ).forEach(
       el => el.remove()
     );
 
-    return clone.innerText
-      || clone.textContent
-      || "";
+    const text =
+      clone.innerText ||
+      clone.textContent ||
+      "";
+
+    return text.trim();
 
   } catch (err) {
 
     console.warn(
-      "TTS text extract failed:",
+      "TTS extract failed:",
       err
     );
 
