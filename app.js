@@ -127,9 +127,10 @@ const rightZone =
 
 /* OTHER GLOBALS */
 
-let rendition;
 let book;
+let rendition;
 let currentLocation = null;
+
 let activeSearchHighlight =
   null;
 
@@ -142,16 +143,6 @@ let fontSize =
       "fontSize-beta"
     )
   ) || 100;
-
-
-
-
-
-
-
-
-
-
 
 
 const READER_DATA_KEY =
@@ -673,7 +664,7 @@ function startReader() {
 
     try {
 
-       currentLocation =
+      currentLocation =
         location;
 
       /* =========================
@@ -1445,6 +1436,26 @@ prevPage.addEventListener(
   }
 );
 
+
+
+
+bookmarkBtn.addEventListener(
+  "click",
+  () => {
+
+    saveBookmark();
+
+    alert(
+      "Bookmark saved"
+    );
+
+  }
+);
+
+
+
+
+
 bottomThemeBtn.addEventListener(
   "click",
   () => {
@@ -1544,18 +1555,6 @@ searchInput.addEventListener(
 
 
 
-bookmarkBtn.addEventListener(
-  "click",
-  () => {
-
-    saveBookmark();
-
-    alert(
-      "Bookmark saved"
-    );
-
-  }
-);
 
 
 
