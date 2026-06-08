@@ -655,130 +655,6 @@ function buildTOC(
 }
 
 
-/* =========================
-   FOOTNOTE POPUP
-========================= */
-
-function showFootnotePopup(el) {
-
-  const existing =
-    document.getElementById(
-      "footnotePopup"
-    );
-  if (existing) existing.remove();
-
-  const clone = el.cloneNode(true);
-
-  clone.querySelectorAll(
-    'a[epub\:type="backlink"],' +
-    'a.backlink'
-  ).forEach(a => a.remove());
-
-  /* Inject animation once */
-  if (
-    !document.getElementById("fnStyle")
-  ) {
-    const style =
-      document.createElement("style");
-    style.id = "fnStyle";
-    style.textContent = `
-      @keyframes fnPopUp {
-        from {
-          opacity:0;
-          transform:translateX(-50%)
-                    translateY(8px);
-        }
-        to {
-          opacity:1;
-          transform:translateX(-50%)
-                    translateY(0);
-        }
-      }
-    `;
-    document.head.appendChild(style);
-  }
-
-  const popup =
-    document.createElement("div");
-  popup.id = "footnotePopup";
-
-  const isDark =
-    document.body.classList
-      .contains("dark") ||
-    document.body.classList
-      .contains("night");
-
-  Object.assign(popup.style, {
-    position:    "fixed",
-    bottom:      "70px",
-    left:        "50%",
-    transform:   "translateX(-50%)",
-    width:       "min(500px, 90vw)",
-    background:  isDark
-                   ? "#1e1e1e"
-                   : "#fffdf6",
-    color:       isDark
-                   ? "#eee"
-                   : "#111",
-    border:      "1px solid #888",
-    borderRadius:"10px",
-    boxShadow:   "0 8px 32px rgba(0,0,0,0.4)",
-    zIndex:      "99999",
-    overflow:    "hidden",
-    fontFamily:  "Arial, sans-serif",
-    fontSize:    "14px",
-    animation:   "fnPopUp 0.2s ease both",
-  });
-
-  popup.innerHTML = `
-    <div style="
-      display:flex;align-items:center;
-      justify-content:space-between;
-      padding:8px 12px;
-      border-bottom:1px solid #555;
-      font-size:11px;text-transform:uppercase;
-      letter-spacing:0.08em;color:#aaa;">
-      <span>Footnote</span>
-      <button id="closeFnBtn" style="
-        background:none;border:none;
-        cursor:pointer;color:inherit;
-        font-size:18px;line-height:1;
-        padding:2px 6px;">✕</button>
-    </div>
-    <div style="
-      padding:12px 14px;
-      max-height:200px;
-      overflow-y:auto;
-      line-height:1.6;">
-      ${clone.innerHTML}
-    </div>
-  `;
-
-  document.body.appendChild(popup);
-
-  document
-    .getElementById("closeFnBtn")
-    .addEventListener("click", () =>
-      popup.remove()
-    );
-
-  setTimeout(() => {
-    document.addEventListener(
-      "click",
-      function handler(e) {
-        if (!popup.contains(e.target)) {
-          popup.remove();
-          document.removeEventListener(
-            "click", handler
-          );
-        }
-      }
-    );
-  }, 100);
-
-}
-
-
 /* =================
    START READER
 ================= */
@@ -830,25 +706,137 @@ function startReader() {
       loadBookmarks();
     });
 
-    /* Generate locations in background */
+    /* Generate locations in background — progress works once ready */
     book.locations
       .generate(1000)
       .catch(err => console.warn("Locations:", err));
 
   });
 
-  /* Attach all iframe handlers on
-     every rendered page */
-  rendition.on(
-    "rendered",
-    (section, view) => {
-      const doc =
-        view?.document ||
-        view?.iframe
-          ?.contentDocument;
-      attachIframeHandlers(doc);
-    }
-  );
+  /* =========================
+     LINKS, CONTENTS & FOOTNOTES
+     Runs every time a page renders
+  ========================= */
+
+  rendition.on("rendered", (section, view) => {
+
+    const doc =
+      view?.document ||
+      view?.iframe?.contentDocument;
+
+    if (!doc || !doc.body) return;
+
+    doc.querySelectorAll("a[href]")
+      .forEach(anchor => {
+
+        anchor.addEventListener("click", e => {
+
+          e.preventDefault();
+          e.stopPropagation();
+
+          const href =
+            anchor.getAttribute("href") || "";
+
+          const epubType =
+            anchor.getAttribute("epub:type") || "";
+
+          const role =
+            anchor.getAttribute("role") || "";
+
+          /* Footnote ref */
+          const isNote =
+            epubType.includes("noteref") ||
+            role.includes("doc-noteref") ||
+            anchor.classList.contains("footnote") ||
+            anchor.classList.contains("endnote");
+
+          if (isNote && href.startsWith("#")) {
+            const el = doc.getElementById(href.slice(1));
+            if (el) { showFootnote(el); return; }
+          }
+
+          /* Fragment (#id) — treat as footnote */
+          if (href.startsWith("#")) {
+            const el = doc.getElementById(href.slice(1));
+            if (el) showFootnote(el);
+            return;
+          }
+
+          /* External */
+          if (/^https?:\/\//.test(href)) {
+            if (confirm("Open link?
+" + href))
+              window.open(href, "_blank", "noopener");
+            return;
+          }
+
+          /* Internal chapter nav */
+          rendition.display(href)
+            .catch(err => console.error(err));
+
+        });
+
+      });
+
+  });
+
+  /* Footnote popup */
+  function showFootnote(el) {
+
+    document.getElementById("fnPopup")?.remove();
+
+    const clone = el.cloneNode(true);
+    clone.querySelectorAll(
+      'a[epub\:type="backlink"], a.backlink'
+    ).forEach(a => a.remove());
+
+    const isDark =
+      document.body.classList.contains("dark") ||
+      document.body.classList.contains("night");
+
+    const popup = document.createElement("div");
+    popup.id = "fnPopup";
+    Object.assign(popup.style, {
+      position: "fixed",
+      bottom: "70px",
+      left: "50%",
+      transform: "translateX(-50%)",
+      width: "min(480px, 90vw)",
+      background: isDark ? "#1e1e1e" : "#fffdf6",
+      color: isDark ? "#eee" : "#111",
+      border: "1px solid #888",
+      borderRadius: "10px",
+      boxShadow: "0 8px 32px rgba(0,0,0,0.45)",
+      zIndex: "99999",
+      overflow: "hidden",
+      fontSize: "14px",
+      fontFamily: "Arial, sans-serif",
+    });
+    popup.innerHTML =
+      '<div style="display:flex;align-items:center;justify-content:space-between;' +
+      'padding:8px 12px;border-bottom:1px solid #555;font-size:11px;' +
+      'text-transform:uppercase;letter-spacing:.08em;color:#aaa;">' +
+      '<span>Footnote</span>' +
+      '<button id="fnClose" style="background:none;border:none;cursor:pointer;' +
+      'color:inherit;font-size:18px;padding:2px 6px;">✕</button></div>' +
+      '<div style="padding:12px 14px;max-height:200px;overflow-y:auto;line-height:1.6;">' +
+      clone.innerHTML + '</div>';
+
+    document.body.appendChild(popup);
+
+    document.getElementById("fnClose")
+      .addEventListener("click", () => popup.remove());
+
+    setTimeout(() => {
+      document.addEventListener("click", function h(e) {
+        if (!popup.contains(e.target)) {
+          popup.remove();
+          document.removeEventListener("click", h);
+        }
+      });
+    }, 150);
+
+  }
 
     /* SAVE LOCATION */
 
@@ -1047,231 +1035,165 @@ function sidebarIsOpen() {
 
 function setupNavigationZones() {
 
-  /* Desktop mouse: zone clicks */
+  function zonesDisabled() {
+
+    if (
+      sidebarIsOpen()
+    ) {
+
+      return true;
+
+    }
+
+    const iframe =
+      viewer.querySelector(
+        "iframe"
+      );
+
+    if (!iframe) {
+
+      return false;
+
+    }
+
+    try {
+
+      const active =
+        iframe.contentDocument
+          .activeElement;
+
+      if (!active) {
+
+        return false;
+
+      }
+
+      const tag =
+        active.tagName;
+
+      return (
+        tag === "A" ||
+        tag === "BUTTON" ||
+        tag === "INPUT"
+      );
+
+    }
+
+    catch {
+
+      return false;
+
+    }
+
+  }
+
   leftZone.addEventListener(
     "click",
-    () => {
-      if (sidebarIsOpen()) return;
+    e => {
+
+      if (
+        zonesDisabled()
+      ) return;
+
+      const iframe =
+        viewer.querySelector(
+          "iframe"
+        );
+
+      if (!iframe) return;
+
+      try {
+
+        const doc =
+          iframe.contentDocument;
+
+        const selection =
+          doc.getSelection();
+
+        if (
+          selection &&
+          selection.toString()
+        ) {
+
+          return;
+
+        }
+
+      }
+
+      catch {}
+
+      e.stopPropagation();
+
       rendition.prev();
+
       hideControls();
+
     }
   );
 
   rightZone.addEventListener(
     "click",
-    () => {
-      if (sidebarIsOpen()) return;
+    e => {
+
+      if (
+        zonesDisabled()
+      ) return;
+
+      const iframe =
+        viewer.querySelector(
+          "iframe"
+        );
+
+      if (!iframe) return;
+
+      try {
+
+        const doc =
+          iframe.contentDocument;
+
+        const selection =
+          doc.getSelection();
+
+        if (
+          selection &&
+          selection.toString()
+        ) {
+
+          return;
+
+        }
+
+      }
+
+      catch {}
+
+      e.stopPropagation();
+
       rendition.next();
+
       hideControls();
+
     }
   );
 
   centerZone.addEventListener(
     "click",
-    () => {
-      if (sidebarIsOpen()) return;
+    e => {
+
+      if (
+        zonesDisabled()
+      ) return;
+
+      e.stopPropagation();
+
       toggleControls();
-    }
-  );
 
-  /* Keyboard navigation (desktop) */
-  document.addEventListener(
-    "keydown",
-    e => {
-      if (!rendition) return;
-      if (
-        document.activeElement ===
-        searchInput
-      ) return;
-      if (
-        e.key === "ArrowRight" ||
-        e.key === "ArrowDown"
-      ) {
-        e.preventDefault();
-        rendition.next();
-      }
-      if (
-        e.key === "ArrowLeft" ||
-        e.key === "ArrowUp"
-      ) {
-        e.preventDefault();
-        rendition.prev();
-      }
     }
   );
 
 }
 
-/* =========================
-   ATTACH IFRAME HANDLERS
-   Called on every rendered event —
-   handles BOTH touch navigation
-   AND link/footnote clicks inside
-   the EPUB iframe
-========================= */
-
-function attachIframeHandlers(doc) {
-
-  if (!doc || !doc.body) return;
-
-  /* ── TOUCH NAVIGATION inside iframe ──
-     Fires left/center/right by tap position.
-     Bails out if the tap landed on a link. */
-
-  let tx = null, ty = null, tt = null;
-
-  doc.addEventListener(
-    "touchstart",
-    e => {
-      if (sidebarIsOpen()) return;
-      tx = e.touches[0].clientX;
-      ty = e.touches[0].clientY;
-      tt = Date.now();
-    },
-    { passive: true }
-  );
-
-  doc.addEventListener(
-    "touchend",
-    e => {
-
-      if (tx === null) return;
-      if (sidebarIsOpen()) {
-        tx = null; return;
-      }
-
-      const t   = e.changedTouches[0];
-      const dx  = t.clientX - tx;
-      const dy  = t.clientY - ty;
-      const dt  = Date.now() - tt;
-      const tapX = t.clientX;
-
-      tx = null;
-
-      /* Ignore swipes / long presses */
-      if (
-        Math.abs(dx) > 25 ||
-        Math.abs(dy) > 25 ||
-        dt > 500
-      ) return;
-
-      /* If tap was on or inside a link,
-         let the click event handle it */
-      const el =
-        doc.elementFromPoint(
-          t.clientX, t.clientY
-        );
-      if (el && el.closest("a")) return;
-
-      const W = window.innerWidth;
-
-      if (tapX < W * 0.3) {
-        rendition.prev();
-        hideControls();
-      } else if (tapX > W * 0.7) {
-        rendition.next();
-        hideControls();
-      } else {
-        toggleControls();
-      }
-
-    },
-    { passive: true }
-  );
-
-  /* ── LINKS & FOOTNOTES ──
-     Use only 'click' — it works on
-     both desktop and mobile (touch
-     generates a click after touchend
-     as long as we don't prevent it
-     at the overlay level). */
-
-  doc.querySelectorAll("a[href]")
-    .forEach(anchor => {
-
-      anchor.addEventListener(
-        "click",
-        e => {
-
-          e.preventDefault();
-          e.stopPropagation();
-
-          const href =
-            anchor.getAttribute("href")
-            || "";
-
-          const epubType =
-            anchor.getAttribute(
-              "epub:type"
-            ) || "";
-
-          const role =
-            anchor.getAttribute("role")
-            || "";
-
-          /* Footnote / noteref */
-          const isNoteRef =
-            epubType.includes("noteref") ||
-            role.includes("doc-noteref") ||
-            anchor.classList
-              .contains("footnote") ||
-            anchor.classList
-              .contains("endnote");
-
-          if (
-            isNoteRef &&
-            href.startsWith("#")
-          ) {
-            const target =
-              doc.getElementById(
-                href.slice(1)
-              );
-            if (target) {
-              showFootnotePopup(target);
-              return;
-            }
-          }
-
-          /* Fragment-only (#id) */
-          if (href.startsWith("#")) {
-            const target =
-              doc.getElementById(
-                href.slice(1)
-              );
-            if (target)
-              showFootnotePopup(target);
-            return;
-          }
-
-          /* External link */
-          if (/^https?:\/\//.test(href)) {
-            if (
-              confirm(
-                "Open external link?
-" +
-                href
-              )
-            ) {
-              window.open(
-                href, "_blank", "noopener"
-              );
-            }
-            return;
-          }
-
-          /* Internal navigation */
-          rendition
-            .display(href)
-            .catch(err =>
-              console.error(err)
-            );
-
-        }
-      );
-
-    });
-
-}
 
 /* =========================
    THEME
