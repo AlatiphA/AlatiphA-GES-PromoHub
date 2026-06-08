@@ -1,4 +1,4 @@
-# AlatiphA GES Pasco
+# AlatiphA GES Pasco Beta 
 
 A fast, lightweight, installable EPUB Reader PWA built with HTML, CSS, JavaScript, and epub.js.
 
