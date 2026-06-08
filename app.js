@@ -837,120 +837,16 @@ function startReader() {
 
   });
 
-  /* =========================
-     INTERACTIVE LINKS &
-     FOOTNOTES IN EPUB IFRAME
-  ========================= */
-
+  /* Attach all iframe handlers on
+     every rendered page */
   rendition.on(
     "rendered",
     (section, view) => {
-
       const doc =
         view?.document ||
         view?.iframe
           ?.contentDocument;
-
-      if (!doc) return;
-
-      doc.querySelectorAll(
-        "a[href]"
-      ).forEach(anchor => {
-
-        anchor.style.cursor =
-          "pointer";
-
-        anchor.addEventListener(
-          "click",
-          e => {
-
-            e.preventDefault();
-            e.stopPropagation();
-
-            const href =
-              anchor.getAttribute(
-                "href"
-              ) || "";
-
-            const epubType =
-              anchor.getAttribute(
-                "epub:type"
-              ) || "";
-
-            const role =
-              anchor.getAttribute(
-                "role"
-              ) || "";
-
-            /* Footnote / noteref */
-            const isNoteRef =
-              epubType.includes(
-                "noteref"
-              ) ||
-              role.includes(
-                "doc-noteref"
-              ) ||
-              anchor.classList
-                .contains("footnote") ||
-              anchor.classList
-                .contains("endnote");
-
-            if (
-              isNoteRef &&
-              href.startsWith("#")
-            ) {
-              const el =
-                doc.getElementById(
-                  href.slice(1)
-                );
-              if (el) {
-                showFootnotePopup(el);
-                return;
-              }
-            }
-
-            /* Fragment-only (#id) */
-            if (href.startsWith("#")) {
-              const el =
-                doc.getElementById(
-                  href.slice(1)
-                );
-              if (el)
-                showFootnotePopup(el);
-              return;
-            }
-
-            /* External link */
-            if (
-              /^https?:\/\//.test(href)
-            ) {
-              if (
-                confirm(
-                  "Open external link?\n" +
-                  href
-                )
-              ) {
-                window.open(
-                  href,
-                  "_blank",
-                  "noopener"
-                );
-              }
-              return;
-            }
-
-            /* Internal navigation */
-            rendition
-              .display(href)
-              .catch(err =>
-                console.error(err)
-              );
-
-          }
-        );
-
-      });
-
+      attachIframeHandlers(doc);
     }
   );
 
@@ -1151,140 +1047,7 @@ function sidebarIsOpen() {
 
 function setupNavigationZones() {
 
-  const navOverlay =
-    document.getElementById(
-      "navOverlay"
-    );
-
-  /* KEY FIX:
-     navOverlay is pointer-events:none
-     by default so clicks pass through
-     to EPUB links/footnotes.
-     We only enable it briefly on
-     touchstart to detect navigation
-     taps, then disable again. */
-
-  let touchStartX = null;
-  let touchStartY = null;
-  let touchStartTime = null;
-
-  /* Touch-based navigation —
-     doesn't block iframe clicks */
-  document.addEventListener(
-    "touchstart",
-    e => {
-
-      if (sidebarIsOpen()) return;
-
-      /* Ignore if touch is on
-         controls or sidebar */
-      const target = e.target;
-      if (
-        target.closest("header") ||
-        target.closest("footer") ||
-        target.closest(".sidebar") ||
-        target.closest(".themePicker") ||
-        target.closest("#searchModal")
-      ) return;
-
-      touchStartX =
-        e.touches[0].clientX;
-      touchStartY =
-        e.touches[0].clientY;
-      touchStartTime = Date.now();
-
-    },
-    { passive: true }
-  );
-
-  document.addEventListener(
-    "touchend",
-    e => {
-
-      if (
-        touchStartX === null ||
-        sidebarIsOpen()
-      ) return;
-
-      const target =
-        e.changedTouches[0];
-
-      const dx =
-        target.clientX - touchStartX;
-      const dy =
-        target.clientY - touchStartY;
-      const dt =
-        Date.now() - touchStartTime;
-
-      /* Must be a quick tap,
-         not a swipe or scroll */
-      if (
-        Math.abs(dx) > 20 ||
-        Math.abs(dy) > 20 ||
-        dt > 400
-      ) {
-        touchStartX = null;
-        return;
-      }
-
-      const W = window.innerWidth;
-      const tapX = target.clientX;
-
-      /* Left 30% → prev page */
-      if (tapX < W * 0.3) {
-        rendition.prev();
-        hideControls();
-
-      /* Right 30% → next page */
-      } else if (tapX > W * 0.7) {
-        rendition.next();
-        hideControls();
-
-      /* Center 40% → toggle controls */
-      } else {
-        toggleControls();
-      }
-
-      touchStartX = null;
-
-    },
-    { passive: true }
-  );
-
-  /* Keyboard navigation (desktop) */
-  document.addEventListener(
-    "keydown",
-    e => {
-
-      if (!rendition) return;
-
-      /* Ignore if typing in search */
-      if (
-        document.activeElement ===
-        searchInput
-      ) return;
-
-      if (
-        e.key === "ArrowRight" ||
-        e.key === "ArrowDown"
-      ) {
-        e.preventDefault();
-        rendition.next();
-      }
-
-      if (
-        e.key === "ArrowLeft" ||
-        e.key === "ArrowUp"
-      ) {
-        e.preventDefault();
-        rendition.prev();
-      }
-
-    }
-  );
-
-  /* Keep zone click handlers
-     for mouse (desktop) users only */
+  /* Desktop mouse: zone clicks */
   leftZone.addEventListener(
     "click",
     () => {
@@ -1310,6 +1073,210 @@ function setupNavigationZones() {
       toggleControls();
     }
   );
+
+  /* Keyboard navigation (desktop) */
+  document.addEventListener(
+    "keydown",
+    e => {
+      if (!rendition) return;
+      if (
+        document.activeElement ===
+        searchInput
+      ) return;
+      if (
+        e.key === "ArrowRight" ||
+        e.key === "ArrowDown"
+      ) {
+        e.preventDefault();
+        rendition.next();
+      }
+      if (
+        e.key === "ArrowLeft" ||
+        e.key === "ArrowUp"
+      ) {
+        e.preventDefault();
+        rendition.prev();
+      }
+    }
+  );
+
+}
+
+/* =========================
+   ATTACH IFRAME HANDLERS
+   Called on every rendered event —
+   handles BOTH touch navigation
+   AND link/footnote clicks inside
+   the EPUB iframe
+========================= */
+
+function attachIframeHandlers(doc) {
+
+  if (!doc || !doc.body) return;
+
+  /* ── TOUCH NAVIGATION ── */
+  let tx = null, ty = null, tt = null;
+
+  doc.addEventListener(
+    "touchstart",
+    e => {
+      if (sidebarIsOpen()) return;
+      tx = e.touches[0].clientX;
+      ty = e.touches[0].clientY;
+      tt = Date.now();
+    },
+    { passive: true }
+  );
+
+  doc.addEventListener(
+    "touchend",
+    e => {
+      if (tx === null) return;
+      if (sidebarIsOpen()) {
+        tx = null; return;
+      }
+
+      const t = e.changedTouches[0];
+      const dx = t.clientX - tx;
+      const dy = t.clientY - ty;
+      const dt = Date.now() - tt;
+
+      tx = null;
+
+      /* Must be quick short tap */
+      if (
+        Math.abs(dx) > 20 ||
+        Math.abs(dy) > 20 ||
+        dt > 400
+      ) return;
+
+      /* Check if tap was on a link —
+         let the link handler run */
+      const el =
+        doc.elementFromPoint(
+          t.clientX, t.clientY
+        );
+
+      if (
+        el &&
+        (el.closest("a") ||
+         el.closest("button"))
+      ) return;
+
+      const W = window.innerWidth;
+      const tapX = t.clientX;
+
+      if (tapX < W * 0.3) {
+        rendition.prev();
+        hideControls();
+      } else if (tapX > W * 0.7) {
+        rendition.next();
+        hideControls();
+      } else {
+        toggleControls();
+      }
+    },
+    { passive: true }
+  );
+
+  /* ── LINKS & FOOTNOTES ── */
+  doc.querySelectorAll(
+    "a[href]"
+  ).forEach(anchor => {
+
+    /* Use both click and touchend
+       for maximum compatibility */
+    const handleLink = e => {
+
+      e.preventDefault();
+      e.stopPropagation();
+
+      const href =
+        anchor.getAttribute("href")
+        || "";
+
+      const epubType =
+        anchor.getAttribute(
+          "epub:type"
+        ) || "";
+
+      const role =
+        anchor.getAttribute("role")
+        || "";
+
+      /* Footnote / noteref */
+      const isNoteRef =
+        epubType.includes("noteref") ||
+        role.includes("doc-noteref") ||
+        anchor.classList
+          .contains("footnote") ||
+        anchor.classList
+          .contains("endnote");
+
+      if (
+        isNoteRef &&
+        href.startsWith("#")
+      ) {
+        const el =
+          doc.getElementById(
+            href.slice(1)
+          );
+        if (el) {
+          showFootnotePopup(el);
+          return;
+        }
+      }
+
+      /* Fragment link (#id) */
+      if (href.startsWith("#")) {
+        const el =
+          doc.getElementById(
+            href.slice(1)
+          );
+        if (el) showFootnotePopup(el);
+        return;
+      }
+
+      /* External link */
+      if (/^https?:\/\//.test(href)) {
+        if (
+          confirm(
+            "Open external link?
+" + href
+          )
+        ) {
+          window.open(
+            href, "_blank", "noopener"
+          );
+        }
+        return;
+      }
+
+      /* Internal nav */
+      rendition
+        .display(href)
+        .catch(err =>
+          console.error(err)
+        );
+
+    };
+
+    anchor.addEventListener(
+      "click", handleLink
+    );
+
+    anchor.addEventListener(
+      "touchend",
+      e => {
+        /* Only fire if not a swipe */
+        const t = e.changedTouches[0];
+        if (tx !== null) return;
+        handleLink(e);
+      },
+      { passive: false }
+    );
+
+  });
 
 }
 
