@@ -1114,7 +1114,10 @@ function attachIframeHandlers(doc) {
 
   if (!doc || !doc.body) return;
 
-  /* ── TOUCH NAVIGATION ── */
+  /* ── TOUCH NAVIGATION inside iframe ──
+     Fires left/center/right by tap position.
+     Bails out if the tap landed on a link. */
+
   let tx = null, ty = null, tt = null;
 
   doc.addEventListener(
@@ -1131,40 +1134,36 @@ function attachIframeHandlers(doc) {
   doc.addEventListener(
     "touchend",
     e => {
+
       if (tx === null) return;
       if (sidebarIsOpen()) {
         tx = null; return;
       }
 
-      const t = e.changedTouches[0];
-      const dx = t.clientX - tx;
-      const dy = t.clientY - ty;
-      const dt = Date.now() - tt;
+      const t   = e.changedTouches[0];
+      const dx  = t.clientX - tx;
+      const dy  = t.clientY - ty;
+      const dt  = Date.now() - tt;
+      const tapX = t.clientX;
 
       tx = null;
 
-      /* Must be quick short tap */
+      /* Ignore swipes / long presses */
       if (
-        Math.abs(dx) > 20 ||
-        Math.abs(dy) > 20 ||
-        dt > 400
+        Math.abs(dx) > 25 ||
+        Math.abs(dy) > 25 ||
+        dt > 500
       ) return;
 
-      /* Check if tap was on a link —
-         let the link handler run */
+      /* If tap was on or inside a link,
+         let the click event handle it */
       const el =
         doc.elementFromPoint(
           t.clientX, t.clientY
         );
-
-      if (
-        el &&
-        (el.closest("a") ||
-         el.closest("button"))
-      ) return;
+      if (el && el.closest("a")) return;
 
       const W = window.innerWidth;
-      const tapX = t.clientX;
 
       if (tapX < W * 0.3) {
         rendition.prev();
@@ -1175,111 +1174,104 @@ function attachIframeHandlers(doc) {
       } else {
         toggleControls();
       }
+
     },
     { passive: true }
   );
 
-  /* ── LINKS & FOOTNOTES ── */
-  doc.querySelectorAll(
-    "a[href]"
-  ).forEach(anchor => {
+  /* ── LINKS & FOOTNOTES ──
+     Use only 'click' — it works on
+     both desktop and mobile (touch
+     generates a click after touchend
+     as long as we don't prevent it
+     at the overlay level). */
 
-    /* Use both click and touchend
-       for maximum compatibility */
-    const handleLink = e => {
+  doc.querySelectorAll("a[href]")
+    .forEach(anchor => {
 
-      e.preventDefault();
-      e.stopPropagation();
+      anchor.addEventListener(
+        "click",
+        e => {
 
-      const href =
-        anchor.getAttribute("href")
-        || "";
+          e.preventDefault();
+          e.stopPropagation();
 
-      const epubType =
-        anchor.getAttribute(
-          "epub:type"
-        ) || "";
+          const href =
+            anchor.getAttribute("href")
+            || "";
 
-      const role =
-        anchor.getAttribute("role")
-        || "";
+          const epubType =
+            anchor.getAttribute(
+              "epub:type"
+            ) || "";
 
-      /* Footnote / noteref */
-      const isNoteRef =
-        epubType.includes("noteref") ||
-        role.includes("doc-noteref") ||
-        anchor.classList
-          .contains("footnote") ||
-        anchor.classList
-          .contains("endnote");
+          const role =
+            anchor.getAttribute("role")
+            || "";
 
-      if (
-        isNoteRef &&
-        href.startsWith("#")
-      ) {
-        const el =
-          doc.getElementById(
-            href.slice(1)
-          );
-        if (el) {
-          showFootnotePopup(el);
-          return;
+          /* Footnote / noteref */
+          const isNoteRef =
+            epubType.includes("noteref") ||
+            role.includes("doc-noteref") ||
+            anchor.classList
+              .contains("footnote") ||
+            anchor.classList
+              .contains("endnote");
+
+          if (
+            isNoteRef &&
+            href.startsWith("#")
+          ) {
+            const target =
+              doc.getElementById(
+                href.slice(1)
+              );
+            if (target) {
+              showFootnotePopup(target);
+              return;
+            }
+          }
+
+          /* Fragment-only (#id) */
+          if (href.startsWith("#")) {
+            const target =
+              doc.getElementById(
+                href.slice(1)
+              );
+            if (target)
+              showFootnotePopup(target);
+            return;
+          }
+
+          /* External link */
+          if (/^https?:\/\//.test(href)) {
+            if (
+              confirm(
+                "Open external link?
+" +
+                href
+              )
+            ) {
+              window.open(
+                href, "_blank", "noopener"
+              );
+            }
+            return;
+          }
+
+          /* Internal navigation */
+          rendition
+            .display(href)
+            .catch(err =>
+              console.error(err)
+            );
+
         }
-      }
+      );
 
-      /* Fragment link (#id) */
-      if (href.startsWith("#")) {
-        const el =
-          doc.getElementById(
-            href.slice(1)
-          );
-        if (el) showFootnotePopup(el);
-        return;
-      }
-
-      /* External link */
-      if (/^https?:\/\//.test(href)) {
-        if (
-          confirm(
-            "Open external link?
-" + href
-          )
-        ) {
-          window.open(
-            href, "_blank", "noopener"
-          );
-        }
-        return;
-      }
-
-      /* Internal nav */
-      rendition
-        .display(href)
-        .catch(err =>
-          console.error(err)
-        );
-
-    };
-
-    anchor.addEventListener(
-      "click", handleLink
-    );
-
-    anchor.addEventListener(
-      "touchend",
-      e => {
-        /* Only fire if not a swipe */
-        const t = e.changedTouches[0];
-        if (tx !== null) return;
-        handleLink(e);
-      },
-      { passive: false }
-    );
-
-  });
+    });
 
 }
-
 
 /* =========================
    THEME
