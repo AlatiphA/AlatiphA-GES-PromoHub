@@ -28,16 +28,10 @@ const menuBtn =
     "menuBtn"
   );
 
-
-
-
 const bookmarkBtn =
   document.getElementById(
     "bookmarkBtn"
   );
-
-
-
 
 const themeBtn =
   document.getElementById(
@@ -53,8 +47,6 @@ const prevPage =
   document.getElementById(
     "prevPage"
   );
-
-
 
 const bottomDecreaseFont =
   document.getElementById(
@@ -146,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.0.0";
+const APP_VERSION = "1.0.1";
 
 const versionEl =
   document.getElementById(
@@ -225,8 +217,6 @@ function loadReaderData() {
   }
 
 }
-
-
 
 
 /* ==================
@@ -430,13 +420,6 @@ function loadBookmarks() {
   );
 
 }
-
-
-
-
-
-
-
 
 
 /* ==============
@@ -702,20 +685,6 @@ function startReader() {
   setupNavigationZones();
 
   hideControls();
-
-
-  /* RESTORE SAVED LOCATION */
-  /*
-  const readerData =
-   loadReaderData();
-
-  const savedLocation =
-   readerData.location;
-
-  rendition.display(
-   savedLocation || undefined
-); 
-*/
 
   /* DISPLAY IMMEDIATELY — don't wait for locations */
 
@@ -1540,9 +1509,6 @@ prevPage.addEventListener(
   }
 );
 
-
-
-
 bookmarkBtn.addEventListener(
   "click",
   () => {
@@ -1555,12 +1521,6 @@ bookmarkBtn.addEventListener(
 
   }
 );
-
-
-
-
-
-
 
 bottomDecreaseFont.addEventListener(
   "click",
@@ -1645,16 +1605,6 @@ searchInput.addEventListener(
 
   }
 );
-
-
-
-
-
-
-
-
-
-
 
 
 /* ================
