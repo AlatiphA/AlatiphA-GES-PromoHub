@@ -1470,9 +1470,9 @@ function closeSidebar() {
   
   updateMenuButtons();
   
-  // hideHeader();
+  hideHeader();
 
-  hideControls(); 
+  // hideControls(); 
 
 }
 
