@@ -1457,7 +1457,7 @@ function toggleSidebar() {
 
   updateMenuButtons();
 
-  hideFooter();
+  hideControls();
 
 }
 
@@ -1470,7 +1470,6 @@ function closeSidebar() {
   
   hideHeader();
 
-  //showControls();
 }
 
 /* MENU EVENTS */
