@@ -1451,6 +1451,45 @@ function updateMenuButtons() {
 
 function toggleSidebar() {
 
+  const isOpen =
+    sidebar.classList.contains(
+      "active"
+    );
+
+  if (isOpen) {
+
+    /* X pressed */
+
+    sidebar.classList.remove(
+      "active"
+    );
+
+    updateMenuButtons();
+
+    hideControls();
+
+  }
+
+  else {
+
+    /* ☰ pressed */
+
+    sidebar.classList.add(
+      "active"
+    );
+
+    updateMenuButtons();
+
+    showHeader();
+
+    hideFooter();
+
+  }
+
+}
+/*
+function toggleSidebar() {
+
   sidebar.classList.toggle(
     "active"
   );
@@ -1460,6 +1499,7 @@ function toggleSidebar() {
   hideFooter();
 
 }
+*/
 
 /* CLOSE SIDEBAR */
 
