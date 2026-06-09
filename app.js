@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.1.6";
+const APP_VERSION = "1.1.7";
 
 const versionEl =
   document.getElementById(
@@ -1643,7 +1643,7 @@ searchBtn.addEventListener(
 
     searchInput.focus();
 
-    toggleSidebar();
+    hideControls();
 
   }
 );
@@ -1656,7 +1656,7 @@ closeSearch.addEventListener(
       "active"
     );
 
-    toggleSidebar();
+    hideControls();
 
   }
 );
