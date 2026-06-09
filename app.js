@@ -1510,7 +1510,6 @@ function closeSidebar() {
   
   hideHeader();
 
-  //showControls();
 }
 
 /* MENU EVENTS */
@@ -1798,7 +1797,8 @@ document.addEventListener(
       !menuBtn.contains(el) &&
       !bottomMenuBtn.contains(el)
     ) {
-      closeSidebar();
+      // closeSidebar();
+      toggleSidebar();
     }
   },
   { passive: true }
@@ -1836,7 +1836,8 @@ document.addEventListener(
     swipeStartY = null;
     /* Left swipe, more horizontal than vertical */
     if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
-      closeSidebar();
+      // closeSidebar();
+      toggleSidebar();
     }
   },
   { passive: true }
