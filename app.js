@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.1.7";
+const APP_VERSION = "v1.3.0";
 
 const versionEl =
   document.getElementById(
