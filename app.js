@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "v1.3.0";
+const APP_VERSION = "v1.3.1";
 
 const versionEl =
   document.getElementById(
@@ -1781,7 +1781,8 @@ document.addEventListener("click", e => {
     !menuBtn.contains(e.target) &&
     !bottomMenuBtn.contains(e.target)
   ) {
-    closeSidebar();
+    // closeSidebar();
+      toggleSidebar();
   }
 });
 
@@ -1796,7 +1797,8 @@ document.addEventListener("touchend", e => {
     !menuBtn.contains(el) &&
     !bottomMenuBtn.contains(el)
   ) {
-    closeSidebar();
+    // closeSidebar();
+      toggleSidebar();
   }
 }, { passive: true });
 
@@ -1816,7 +1818,8 @@ document.addEventListener("touchend", e => {
   const dy = e.changedTouches[0].clientY - _swipeY;
   _swipeX = null; _swipeY = null;
   if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
-    closeSidebar();
+    // closeSidebar();
+      toggleSidebar();
   }
 }, { passive: true });
 
