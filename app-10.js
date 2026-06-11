@@ -1747,10 +1747,148 @@ if (
 
 }
 
+
+
+
+/* =========================
+   SIDEBAR TABS
+========================= */
+
+document.querySelectorAll(
+  ".sidebarTab"
+).forEach(tab => {
+
+  tab.addEventListener(
+    "click",
+    () => {
+
+      /* Update tab buttons */
+      document.querySelectorAll(
+        ".sidebarTab"
+      ).forEach(t =>
+        t.classList.remove("active")
+      );
+      tab.classList.add("active");
+
+      /* Update panels */
+      document.querySelectorAll(
+        ".tabPanel"
+      ).forEach(p =>
+        p.classList.remove("active")
+      );
+
+      const target =
+        document.getElementById(
+          tab.dataset.tab === "toc"
+            ? "tocPanel"
+            : "bookmarksPanel"
+        );
+
+      if (target)
+        target.classList.add("active");
+
+    }
+  );
+
+});
+
+
+/* =========================
+   SIDEBAR GESTURES
+========================= */
+
+/* 1. Tap outside sidebar to close */
+document.addEventListener(
+  "click",
+  e => {
+
+    if (
+      sidebar.classList.contains(
+        "active"
+      ) &&
+      !sidebar.contains(e.target) &&
+      e.target !== menuBtn &&
+      e.target !== bottomMenuBtn
+    ) {
+
+      closeSidebar();
+
+    }
+
+  }
+);
+
+/* 2. Swipe left on sidebar to close */
+let swipeStartX = null;
+let swipeStartY = null;
+
+sidebar.addEventListener(
+  "touchstart",
+  e => {
+
+    swipeStartX =
+      e.touches[0].clientX;
+
+    swipeStartY =
+      e.touches[0].clientY;
+
+  },
+  { passive: true }
+);
+
+sidebar.addEventListener(
+  "touchend",
+  e => {
+
+    if (swipeStartX === null)
+      return;
+
+    const dx =
+      e.changedTouches[0].clientX -
+      swipeStartX;
+
+    const dy =
+      e.changedTouches[0].clientY -
+      swipeStartY;
+
+    /* Horizontal swipe left,
+       more horizontal than vertical */
+    if (
+      dx < -50 &&
+      Math.abs(dx) > Math.abs(dy)
+    ) {
+
+      closeSidebar();
+
+    }
+
+    swipeStartX = null;
+    swipeStartY = null;
+
+  },
+  { passive: true }
+);
+
+
+
+
+loadBook();
+
+
+
+
+
+
+
+
+
+
+
+
 /* =========================
    SIDEBAR TAB SWITCHING
 ========================= */
-
+/*
 document.querySelectorAll(".sidebarTab")
   .forEach(tab => {
     tab.addEventListener("click", () => {
@@ -1774,6 +1912,7 @@ document.querySelectorAll(".sidebarTab")
 ========================= */
 
 /* Tap outside — click (desktop) */
+/*
 document.addEventListener("click", e => {
   if (
     sidebar.classList.contains("active") &&
@@ -1787,6 +1926,7 @@ document.addEventListener("click", e => {
 });
 
 /* Tap outside — touchend (mobile, iframe doesn't bubble click) */
+/*
 document.addEventListener("touchend", e => {
   if (!sidebar.classList.contains("active")) return;
   const t = e.changedTouches[0];
@@ -1803,6 +1943,7 @@ document.addEventListener("touchend", e => {
 }, { passive: true });
 
 /* Swipe left on document to close sidebar */
+/*
 let _swipeX = null, _swipeY = null;
 
 document.addEventListener("touchstart", e => {
