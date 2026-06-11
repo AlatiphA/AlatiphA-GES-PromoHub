@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.1.7";
+const APP_VERSION = "1.4.0";
 
 const versionEl =
   document.getElementById(
@@ -1122,10 +1122,6 @@ function setupNavigationZones() {
 
 
 /* =========================
-   THEME
-========================= */
-
-/* =========================
    THEME ENGINE
 ========================= */
 
@@ -1518,19 +1514,6 @@ function toggleSidebar() {
   }
 
 }
-/*
-function toggleSidebar() {
-
-  sidebar.classList.toggle(
-    "active"
-  );
-
-  updateMenuButtons();
-
-  hideFooter();
-
-}
-*/
 
 /* CLOSE SIDEBAR */
 
@@ -1781,7 +1764,7 @@ document.addEventListener("click", e => {
     e.target !== menuBtn &&
     e.target !== bottomMenuBtn
   ) {
-    closeSidebar();
+    toggleSidebar();
   }
 });
 
@@ -1803,7 +1786,7 @@ sidebar.addEventListener("touchend", e => {
   swipeStartX = null;
   swipeStartY = null;
   if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
-    closeSidebar();
+    toggleSidebar();
   }
 }, { passive: true });
 
@@ -1822,7 +1805,7 @@ document.addEventListener("touchend", e => {
     !menuBtn.contains(el) &&
     !bottomMenuBtn.contains(el)
   ) {
-    closeSidebar();
+    toggleSidebar();
   }
 }, { passive: true });
 
