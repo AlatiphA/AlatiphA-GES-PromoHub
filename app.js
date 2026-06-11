@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.3.6";
+const APP_VERSION = "1.3.7";
 
 const versionEl =
   document.getElementById(
@@ -1884,85 +1884,4 @@ loadBook();
 
 
 
-
-/* =========================
-   SIDEBAR TAB SWITCHING
-========================= */
-/*
-document.querySelectorAll(".sidebarTab")
-  .forEach(tab => {
-    tab.addEventListener("click", () => {
-      document.querySelectorAll(".sidebarTab")
-        .forEach(t => t.classList.remove("active"));
-      tab.classList.add("active");
-      document.querySelectorAll(".tabPanel")
-        .forEach(p => p.classList.remove("active"));
-      const target = document.getElementById(
-        tab.dataset.tab === "toc"
-          ? "tocPanel"
-          : "bookmarksPanel"
-      );
-      if (target) target.classList.add("active");
-    });
-  });
-
-/* =========================
-   SIDEBAR GESTURES
-   Tap outside + swipe left to close
-========================= */
-
-/* Tap outside — click (desktop) */
-/*
-document.addEventListener("click", e => {
-  if (
-    sidebar.classList.contains("active") &&
-    !sidebar.contains(e.target) &&
-    !menuBtn.contains(e.target) &&
-    !bottomMenuBtn.contains(e.target)
-  ) {
-    // closeSidebar();
-      toggleSidebar();
-  }
-});
-
-/* Tap outside — touchend (mobile, iframe doesn't bubble click) */
-/*
-document.addEventListener("touchend", e => {
-  if (!sidebar.classList.contains("active")) return;
-  const t = e.changedTouches[0];
-  const el = document.elementFromPoint(t.clientX, t.clientY);
-  if (
-    el &&
-    !sidebar.contains(el) &&
-    !menuBtn.contains(el) &&
-    !bottomMenuBtn.contains(el)
-  ) {
-    // closeSidebar();
-      toggleSidebar();
-  }
-}, { passive: true });
-
-/* Swipe left on document to close sidebar */
-/*
-let _swipeX = null, _swipeY = null;
-
-document.addEventListener("touchstart", e => {
-  if (!sidebar.classList.contains("active")) return;
-  _swipeX = e.touches[0].clientX;
-  _swipeY = e.touches[0].clientY;
-}, { passive: true });
-
-document.addEventListener("touchend", e => {
-  if (_swipeX === null) return;
-  if (!sidebar.classList.contains("active")) { _swipeX = null; return; }
-  const dx = e.changedTouches[0].clientX - _swipeX;
-  const dy = e.changedTouches[0].clientY - _swipeY;
-  _swipeX = null; _swipeY = null;
-  if (dx < -50 && Math.abs(dx) > Math.abs(dy)) {
-    // closeSidebar();
-      toggleSidebar();
-  }
-}, { passive: true });
-
-loadBook();
 
