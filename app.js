@@ -761,7 +761,8 @@ function startReader() {
       /* If sidebar is open, any tap on the
          reader area (inside iframe) closes it */
       if (sidebarIsOpen()) {
-        closeSidebar();
+        // closeSidebar();
+        toggleSidebar();
         _tx = null;
         return;
       }
