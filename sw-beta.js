@@ -10,6 +10,10 @@
 const APP_VERSION  = "v2.3.0";
 const CACHE_NAME   = `alatipha-ges-pasco-${APP_VERSION}`;
 
+/* ====================
+   APP SHELL
+==================== */
+
 const FILES_TO_CACHE = [
   "./",
   "./index.html",
