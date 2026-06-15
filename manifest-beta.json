@@ -1,6 +1,6 @@
 {
   "name": "AlatiphA GES Pasco",
-  "short_name": "GES Pasco Beta",
+  "short_name": "GES Pasco β",
   "description": "Offline EPUB reader for GES Promotion Aptitude Test — 2026 Edition",
   "version": "2.0.0",
   "start_url": "./index.html",
