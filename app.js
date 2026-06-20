@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "2.3.5";
+const APP_VERSION = "2.3.4";
 
 const versionEl =
   document.getElementById(
@@ -328,7 +328,7 @@ function loadBookmarks() {
 
   if (!bookmarks.length) {
     list.innerHTML =
-      '<div class="noBookmarks">No bookmarks yet.<br>Tap 🔖 while reading to add one.</div>';
+      '<div class="noBookmarks">No bookmarks yet.<br>Tap <i class="fa-solid fa-bookmark"></i> while reading to add one.</div>';
     return;
   }
 
