@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "2.3.6";
+const APP_VERSION = "2.3.7";
 
 const versionEl =
   document.getElementById(
@@ -662,10 +662,6 @@ function buildTOC(
 }
 
 
-/* =================
-   START READER
-================= */
-
 /* =========================
    SLIDE PAGE ANIMATION
 ========================= */
@@ -732,6 +728,11 @@ function pagePrev() {
   if (!rendition || _sliding) return;
   slidePage("prev", () => rendition.prev());
 }
+
+
+/* =================
+   START READER
+================= */
 
 function startReader() {
 
