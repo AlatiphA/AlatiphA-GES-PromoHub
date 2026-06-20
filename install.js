@@ -1,5 +1,5 @@
 /* =====================================================
-   AlatiphA GES Pasco — PWA Install Prompt
+   GES Pasco beta— PWA Install Prompt
    install.js
    ─────────────────────────────────────────────────
    Handles install prompt for Android/Chrome
@@ -133,7 +133,7 @@
   `;
   document.head.appendChild(style);
 
-  const INSTALL_KEY = "pwa_install_dismissed";
+  const INSTALL_KEY = "gespasco_beta_install_dismissed";
   const dismissed =
     localStorage.getItem(INSTALL_KEY);
 
@@ -161,7 +161,7 @@
     banner.innerHTML = `
       <img src="icon-beta-192.png" alt="icon" />
       <div class="ib-text">
-        <div class="ib-title">GES Pasco</div>
+        <div class="ib-title">GES Pasco Beta</div>
         <div class="ib-sub">Add to Home Screen for offline reading</div>
       </div>
       <div class="ib-actions">
@@ -225,7 +225,7 @@
       banner.id = "iosBanner";
       banner.innerHTML = `
         <div class="ios-title">
-          📖 Install GES Pasco
+          📖 Install GES Pasco Beta
         </div>
         <div class="ios-steps">
           Tap <strong>Share</strong> (□↑) at the bottom of Safari<br>
