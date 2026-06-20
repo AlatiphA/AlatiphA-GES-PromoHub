@@ -133,7 +133,7 @@
   `;
   document.head.appendChild(style);
 
-  const INSTALL_KEY = "gespasco_beta_install_dismissed";
+  const INSTALL_KEY = "gespascobeta_install_dismissed";
   const dismissed =
     localStorage.getItem(INSTALL_KEY);
 
