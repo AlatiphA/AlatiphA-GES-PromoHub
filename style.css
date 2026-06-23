@@ -543,13 +543,6 @@ body.dark .searchItem {
   pointer-events: none;
 }
 
-/* =========================
-   MOBILE
-========================= */
-
-/* =========================
-   READING INFO
-========================= */
 
 /* =========================
    PERMANENT INFO BAR
@@ -655,8 +648,8 @@ body.dark .sidebarTabs {
 
 .sidebarTab.active {
   opacity: 1;
-  border-bottom-color: #4aa3ff;
-  color: #4aa3ff;
+  border-bottom-color: #956433;
+  color: #956433;
 }
 
 /* =========================
@@ -885,7 +878,7 @@ body.night .momoSection { border-color: #222; }
 .momoTitle {
   font-size: 13px;
   font-weight: 700;
-  color: #4aa3ff;
+  color: #956433;
   margin-bottom: 4px;
   display: flex;
   align-items: center;
