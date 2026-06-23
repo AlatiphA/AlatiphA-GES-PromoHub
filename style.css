@@ -253,7 +253,7 @@ footer {
 
   width: 0%;
 
-  background: #4aa3ff;
+  background: #956433;
 }
 
 .bottomBtn {
@@ -830,7 +830,7 @@ body.dark .bookmarkRow {
 }
 
 .themeOption.active {
-  color: #4aa3ff;
+  color: #956433;
 }
 
 .themeSwatchWrap {
@@ -843,7 +843,7 @@ body.dark .bookmarkRow {
 }
 
 .themeOption.active .themeSwatchWrap {
-  border-color: #4aa3ff;
+  border-color: #956433;
 }
 
 .themeSwatch {
