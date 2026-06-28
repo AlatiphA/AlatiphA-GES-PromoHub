@@ -9,7 +9,7 @@ importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
    get a "New version available" prompt on next visit.
 ===================================================== */
 
-const APP_VERSION  = "v3.0.6";
+const APP_VERSION  = "v3.0.7";
 const CACHE_NAME   = `alatipha-ges-pasco-beta-${APP_VERSION}`;
 
 /* ====================
