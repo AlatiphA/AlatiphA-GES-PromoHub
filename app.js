@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "3.0.5";
+const APP_VERSION = "3.1.5";
 
 const versionEl =
   document.getElementById(
@@ -206,10 +206,10 @@ function openReader() {
 }
 
 const READER_DATA_KEY =
-  "ges-pasco-data";
+  "alatipha-ges-data";
 
 const BOOKMARKS_KEY =
-  "ges-pasco-bookmarks";
+  "alatipha-ges-bookmarks";
 
 
 /* =========================
