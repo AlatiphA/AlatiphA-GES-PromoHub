@@ -9,7 +9,7 @@
    get a "New version available" prompt on next visit.
 ===================================================== */
 
-const APP_VERSION  = "v1.1.0";
+const APP_VERSION  = "v1.1.5";
 const CACHE_NAME   = `alatipha-ges-${APP_VERSION}`;
 
 /* ====================
