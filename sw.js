@@ -1,7 +1,7 @@
 /*importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js"); */
 
 /* =====================================================
-   AlatiphA GES Pasco — Service Worker
+   AlatiphA GES — Service Worker
    ─────────────────────────────────────────────────
    HOW TO UPDATE:
    Bump APP_VERSION on every release (e.g. "1.0.5").
