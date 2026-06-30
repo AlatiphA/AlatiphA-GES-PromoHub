@@ -1,10 +1,10 @@
-importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js");
+/*importScripts("https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.sw.js"); */
 
 /* =====================================================
    AlatiphA GES Pasco — Service Worker
    ─────────────────────────────────────────────────
    HOW TO UPDATE:
-   Bump APP_VERSION on every release (e.g. "1.0.1").
+   Bump APP_VERSION on every release (e.g. "1.0.5").
    The cache name updates automatically. Users will
    get a "New version available" prompt on next visit.
 ===================================================== */
