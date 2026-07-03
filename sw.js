@@ -1,5 +1,5 @@
 /* =====================================================
-   AlatiphA GES — Service Worker
+   AlatiphA GES PromoHub— Service Worker
    ─────────────────────────────────────────────────
    HOW TO UPDATE:
    Bump APP_VERSION on every release (e.g. "1.0.5").
@@ -7,8 +7,8 @@
    get a "New version available" prompt on next visit.
 ===================================================== */
 
-const APP_VERSION  = "v1.2.4";
-const CACHE_NAME   = `alatipha-ges-${APP_VERSION}`;
+const APP_VERSION  = "v1.2.5";
+const CACHE_NAME   = `alatipha-ges-promohub-${APP_VERSION}`;
 
 /* ====================
    APP SHELL
