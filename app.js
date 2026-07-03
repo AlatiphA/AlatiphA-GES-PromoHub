@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.2.1";
+const APP_VERSION = "1.2.3";
 
 const versionEl =
   document.getElementById(
@@ -163,21 +163,7 @@ const BOOKS = [
   {
     title: "Model Aptitude Test for GES 2",
     file: "./library/mat2.epub"
-  }, 
-
-
-{
-    title: "GES Promotion Aptitude Test Pasco",
-    file: "./library/gespasco.epub"
-  },
-  {
-    title: "Model Aptitude Test for GES 1",
-    file: "./library/mat1.epub"
-  },
-  {
-    title: "Model Aptitude Test for GES 2",
-    file: "./library/mat2.epub"
-  }
+  } 
 
 ];
 
