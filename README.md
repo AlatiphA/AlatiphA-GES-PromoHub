@@ -1,4 +1,4 @@
-# AlatiphA GES Promotion Beta 
+# AlatiphA GES Promotion Hub Beta 
 
 A fast, lightweight, installable EPUB Reader PWA built with HTML, CSS, JavaScript, and epub.js.
 
