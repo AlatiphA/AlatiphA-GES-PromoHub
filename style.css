@@ -24,7 +24,7 @@ body {
   --surface: #ffffff;
   --border: #dddddd;
 }
-body.dark {
+body.dark, html.dark body {
   background: #111111;
   color: #eeeeee;
 
@@ -33,7 +33,7 @@ body.dark {
   --surface: #1e1e1e;
   --border: #333333;
 }
-body.sepia {
+body.sepia, html.sepia body {
   background: #f4ede0;
   color: #2c1a0e;
 
@@ -42,7 +42,7 @@ body.sepia {
   --surface: #ede3d0;
   --border: #c8b89a;
 }
-body.night {
+body.night, html.night body {
   background: #000000;
   color: #bbbbbb;
 
