@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.3.2";
+const APP_VERSION = "1.3.3";
 
 const versionEl =
   document.getElementById(
@@ -1305,47 +1305,34 @@ function applyLibraryDayNight(forceTheme) {
   let theme = forceTheme;
 
   if (!theme) {
-    theme = localStorage.getItem("theme-v2") || "dark";
+    theme = localStorage.getItem("library-theme") || "dark";
   }
 
-  localStorage.setItem("theme-v2", theme);
+  localStorage.setItem("library-theme", theme);
 
+  /* Only apply light/dark to body — never sepia/night */
   document.body.classList.remove(
     "dark", "sepia", "night"
   );
 
-  if (theme !== "light") {
-    document.body.classList.add(theme);
+  if (theme === "dark") {
+    document.body.classList.add("dark");
   }
-
-  document.querySelectorAll(".themeOption")
-    .forEach(btn => {
-      btn.classList.toggle(
-        "active",
-        btn.dataset.theme === theme
-      );
-    });
 
   const dayNightBtn =
     document.getElementById("libraryDayNightBtn");
 
   if (dayNightBtn) {
-    const isDark = theme !== "light";
-    dayNightBtn.innerHTML = isDark
+    dayNightBtn.innerHTML = theme === "dark"
       ? '<i class="fa-solid fa-moon"></i>'
       : '<i class="fa-solid fa-sun"></i>';
-  }
-
-  /* Keep reader in sync if it's already open */
-  if (rendition) {
-    applyTheme(theme);
   }
 }
 
 function toggleLibraryDayNight() {
 
   const current =
-    localStorage.getItem("theme-v2") || "dark";
+    localStorage.getItem("library-theme") || "dark";
 
   const next = current === "light" ? "dark" : "light";
 
@@ -1356,12 +1343,12 @@ function applyTheme(theme) {
 
   if (!theme) {
     theme = localStorage.getItem(
-      "theme-v2"
+      "reader-theme"
     ) || "dark";
   }
 
   localStorage.setItem(
-    "theme-v2", theme
+    "reader-theme", theme
   );
 
   /* Remove all theme classes */
@@ -1382,16 +1369,6 @@ function applyTheme(theme) {
       btn.dataset.theme === theme
     );
   });
-
-  const dayNightBtn =
-    document.getElementById("libraryDayNightBtn");
-
-  if (dayNightBtn) {
-    const isDark = theme !== "light";
-    dayNightBtn.innerHTML = isDark
-      ? '<i class="fa-solid fa-moon"></i>'
-      : '<i class="fa-solid fa-sun"></i>';
-  }
 
   if (!rendition) return;
 
@@ -1425,7 +1402,10 @@ const libraryDayNightBtn =
 if (libraryDayNightBtn) {
   libraryDayNightBtn.addEventListener(
     "click",
-    toggleLibraryDayNight
+    function(e) {
+      e.stopPropagation();
+      toggleLibraryDayNight();
+    }
   );
 }
 
@@ -2061,7 +2041,6 @@ document.addEventListener("touchend", e => {
 libraryScreen.style.display = "flex";
 readerApp.style.display = "none";
 
-/* Apply saved theme immediately so the
-   library screen matches the reader theme */
+/* Apply saved library theme immediately */
 applyLibraryDayNight();
 

@@ -49,11 +49,11 @@
     content="black-translucent"
   >
 
-  <!-- Apply saved theme immediately to prevent flash -->
+  <!-- Apply saved library theme immediately to prevent flash -->
   <script>
     (function() {
-      var t = localStorage.getItem("theme-v2") || "dark";
-      if (t !== "light") document.documentElement.classList.add(t);
+      var t = localStorage.getItem("library-theme") || "dark";
+      if (t === "dark") document.documentElement.classList.add("dark");
     })();
   </script>
 
