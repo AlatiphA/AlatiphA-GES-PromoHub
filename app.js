@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.3.3";
+const APP_VERSION = "1.3.4";
 
 const versionEl =
   document.getElementById(
@@ -207,6 +207,8 @@ if (backBtn) {
     libraryScreen.style.display = "flex";
     backBtn.style.display = "none";
     if (rendition) rendition.destroy();
+    /* Restore library theme when returning */
+    applyLibraryDayNight();
   });
 }
 
@@ -1305,34 +1307,47 @@ function applyLibraryDayNight(forceTheme) {
   let theme = forceTheme;
 
   if (!theme) {
-    theme = localStorage.getItem("library-theme") || "dark";
+    theme = localStorage.getItem("theme-v2") || "dark";
   }
 
-  localStorage.setItem("library-theme", theme);
+  localStorage.setItem("theme-v2", theme);
 
-  /* Only apply light/dark to body — never sepia/night */
   document.body.classList.remove(
     "dark", "sepia", "night"
   );
 
-  if (theme === "dark") {
-    document.body.classList.add("dark");
+  if (theme !== "light") {
+    document.body.classList.add(theme);
   }
+
+  document.querySelectorAll(".themeOption")
+    .forEach(btn => {
+      btn.classList.toggle(
+        "active",
+        btn.dataset.theme === theme
+      );
+    });
 
   const dayNightBtn =
     document.getElementById("libraryDayNightBtn");
 
   if (dayNightBtn) {
-    dayNightBtn.innerHTML = theme === "dark"
+    const isDark = theme !== "light";
+    dayNightBtn.innerHTML = isDark
       ? '<i class="fa-solid fa-moon"></i>'
       : '<i class="fa-solid fa-sun"></i>';
+  }
+
+  /* Keep reader in sync if it's already open */
+  if (rendition) {
+    applyTheme(theme);
   }
 }
 
 function toggleLibraryDayNight() {
 
   const current =
-    localStorage.getItem("library-theme") || "dark";
+    localStorage.getItem("theme-v2") || "dark";
 
   const next = current === "light" ? "dark" : "light";
 
@@ -1402,10 +1417,7 @@ const libraryDayNightBtn =
 if (libraryDayNightBtn) {
   libraryDayNightBtn.addEventListener(
     "click",
-    function(e) {
-      e.stopPropagation();
-      toggleLibraryDayNight();
-    }
+    toggleLibraryDayNight
   );
 }
 
@@ -2041,6 +2053,7 @@ document.addEventListener("touchend", e => {
 libraryScreen.style.display = "flex";
 readerApp.style.display = "none";
 
-/* Apply saved library theme immediately */
+/* Apply saved theme immediately so the
+   library screen matches the reader theme */
 applyLibraryDayNight();
 
