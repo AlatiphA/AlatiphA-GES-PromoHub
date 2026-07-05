@@ -53,7 +53,10 @@
   <script>
     (function() {
       var t = localStorage.getItem("library-theme") || "dark";
-      if (t === "dark") document.documentElement.classList.add("dark");
+      document.addEventListener("DOMContentLoaded", function() {
+        var lib = document.getElementById("libraryScreen");
+        if (lib) lib.setAttribute("data-theme", t);
+      });
     })();
   </script>
 
