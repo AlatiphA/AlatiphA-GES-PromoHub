@@ -138,7 +138,7 @@ let fontSize =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.3.6";
+const APP_VERSION = "1.3.7";
 
 const versionEl =
   document.getElementById(
@@ -1312,12 +1312,11 @@ function applyLibraryDayNight(forceTheme) {
 
   localStorage.setItem("library-theme", theme);
 
-  document.body.classList.remove(
-    "dark", "sepia", "night"
-  );
-
-  if (theme === "dark") {
-    document.body.classList.add("dark");
+  /* Apply only to the library screen element,
+     never touch body classes */
+  const lib = document.getElementById("libraryScreen");
+  if (lib) {
+    lib.setAttribute("data-theme", theme);
   }
 
   const dayNightBtn =
@@ -1352,7 +1351,7 @@ function applyTheme(theme) {
     "reader-theme", theme
   );
 
-  /* Remove all theme classes */
+  /* Apply only to body — reader only */
   document.body.classList.remove(
     "dark", "sepia", "night"
   );
