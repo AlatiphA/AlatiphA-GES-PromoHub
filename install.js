@@ -1,5 +1,5 @@
 /* =====================================================
-   GES Pasco beta— PWA Install Prompt
+   GES PromoHub — PWA Install Prompt
    install.js
    ─────────────────────────────────────────────────
    Handles install prompt for Android/Chrome
