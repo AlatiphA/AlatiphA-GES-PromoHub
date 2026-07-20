@@ -1,5 +1,5 @@
 /* =====================================================
-   GES PromoHub — PWA Install Prompt
+   AlatiphA GES PromoHub — PWA Install Prompt
    install.js
    ─────────────────────────────────────────────────
    Handles install prompt for Android/Chrome
@@ -161,7 +161,7 @@
     banner.innerHTML = `
       <img src="icon-192.png" alt="icon" />
       <div class="ib-text">
-        <div class="ib-title">GES PromoHub</div>
+        <div class="ib-title">AlatiphA GES PromoHub</div>
         <div class="ib-sub">Add to Home Screen for offline reading</div>
       </div>
       <div class="ib-actions">
@@ -225,7 +225,7 @@
       banner.id = "iosBanner";
       banner.innerHTML = `
         <div class="ios-title">
-          📖 Install GES PromoHub
+          📖 Install AlatiphA GES PromoHub
         </div>
         <div class="ios-steps">
           Tap <strong>Share</strong> (□↑) at the bottom of Safari<br>
