@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.4.6";
+const APP_VERSION = "1.4.8";
 
 const versionEl =
   document.getElementById(
@@ -648,6 +648,46 @@ function getCurrentChapter(
    BUILD TOC
 ================= */
 
+/* =========================
+   HIGHLIGHT ACTIVE TOC ITEM
+========================= */
+
+function highlightActiveTOC(currentHref) {
+
+  if (!currentHref) return;
+
+  /* Strip any fragment for comparison */
+  const cleanHref = currentHref.split("#")[0];
+
+  document.querySelectorAll(".tocItem").forEach(row => {
+
+    const rowHref = (row.dataset.href || "").split("#")[0];
+
+    row.classList.toggle(
+      "active",
+      rowHref && cleanHref.endsWith(rowHref)
+    );
+
+  });
+
+  /* Auto-expand parent groups containing the active item,
+     and scroll it into view */
+  const activeRow = document.querySelector(".tocItem.active");
+  if (activeRow) {
+
+    let parent = activeRow.closest(".tocChildren");
+    while (parent) {
+      parent.classList.add("open");
+      const toggle = parent.previousElementSibling?.querySelector(".tocToggle");
+      if (toggle) toggle.innerHTML = '<i class="fa-solid fa-chevron-down"></i>';
+      parent = parent.parentElement?.closest(".tocChildren");
+    }
+
+    activeRow.scrollIntoView({ block: "center", behavior: "smooth" });
+  }
+
+}
+
 function buildTOC(
   item,
   level = 0,
@@ -661,6 +701,8 @@ function buildTOC(
 
   row.className =
     "tocItem";
+
+  row.dataset.href = item.href;
 
   row.style.paddingLeft =
     (level * 20) + "px";
@@ -1285,7 +1327,9 @@ function startReader() {
         "%";
 
     }
-      
+
+      highlightActiveTOC(location.start.href);
+
  }
 
       catch (error) {
