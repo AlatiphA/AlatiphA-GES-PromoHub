@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.5.4";
+const APP_VERSION = "1.6.0";
 
 const versionEl =
   document.getElementById(
@@ -609,6 +609,7 @@ function loadBookmarks() {
           );
 
           loadBookmarks();
+          deleteCloudBookmark(bookmark);
 
         }
       );
@@ -1054,6 +1055,8 @@ function startReader() {
       view?.iframe?.contentDocument;
 
     if (!doc || !doc.body) return;
+
+    installPinchTextZoom(doc);
 
     /* Detect if this page is a notes/endnotes page */
     const pageTitle = (doc.title || "").toLowerCase();
@@ -2418,3 +2421,387 @@ readerApp.style.display = "none";
    library screen matches the reader theme */
 applyLibraryDayNight();
 
+
+/* =====================================================
+   v1.6.0 - Firebase sync, in-app FAQ, pull refresh,
+   pinch-to-text zoom. LocalStorage remains authoritative
+   offline and Firebase is the cross-device sync layer.
+===================================================== */
+
+let cloudUser = null;
+let cloudDb = null;
+let cloudAuth = null;
+let cloudReady = false;
+let authMode = "login";
+let preferenceSyncTimer = null;
+let progressSyncTimer = null;
+
+function firebaseConfigured() {
+  const c = window.GES_PROMOHUB_FIREBASE_CONFIG;
+  return !!(window.firebase && c && c.apiKey && !c.apiKey.startsWith("PASTE_") && c.appId && !c.appId.startsWith("PASTE_"));
+}
+
+function bookCloudId() {
+  return (selectedBookFile || "book").replace(/^\.\/library\//, "").replace(/[^a-z0-9_-]+/gi, "-").toLowerCase();
+}
+
+function getBookReaderDataKey() {
+  return READER_DATA_KEY + "-" + bookCloudId();
+}
+
+/* Upgrade the original single-book local progress store to a book-specific
+   store without discarding an existing installation's saved position. */
+const _legacyLoadReaderData = loadReaderData;
+const _legacySaveReaderData = saveReaderData;
+loadReaderData = function() {
+  try {
+    const key = getBookReaderDataKey();
+    const own = localStorage.getItem(key);
+    if (own) return JSON.parse(own);
+    const legacy = _legacyLoadReaderData();
+    if (legacy && legacy.location) {
+      localStorage.setItem(key, JSON.stringify(legacy));
+      return legacy;
+    }
+  } catch (e) { console.warn("Local reading data:", e); }
+  return {};
+};
+
+saveReaderData = function(data) {
+  try {
+    data.updatedAtMs = Date.now();
+    localStorage.setItem(getBookReaderDataKey(), JSON.stringify(data));
+    scheduleProgressSync(data);
+  } catch (e) { console.error(e); }
+};
+
+function localPreferences() {
+  return {
+    theme: localStorage.getItem("reader-theme") || "dark",
+    libraryTheme: localStorage.getItem("library-theme") || "dark",
+    fontSize: Math.max(70, Math.min(200, Number(localStorage.getItem("fontSize")) || fontSize || 100)),
+    fontFamily: localStorage.getItem("fontFamily") || fontFamily || "serif",
+    updatedAtMs: Number(localStorage.getItem("ges-promohub-pref-updated")) || Date.now()
+  };
+}
+
+function markPreferencesChanged() {
+  localStorage.setItem("ges-promohub-pref-updated", String(Date.now()));
+  schedulePreferenceSync();
+}
+
+function schedulePreferenceSync() {
+  clearTimeout(preferenceSyncTimer);
+  preferenceSyncTimer = setTimeout(syncPreferencesToCloud, 700);
+}
+
+function scheduleProgressSync(data) {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  clearTimeout(progressSyncTimer);
+  progressSyncTimer = setTimeout(async () => {
+    try {
+      await cloudDb.collection("users").doc(cloudUser.uid)
+        .collection("reading").doc(bookCloudId()).set({
+          bookFile: selectedBookFile,
+          cfi: data.location || "",
+          progress: Number(data.progress) || 0,
+          chapter: data.chapter || "",
+          updatedAtMs: Number(data.updatedAtMs) || Date.now(),
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+    } catch (e) { console.warn("Cloud progress sync:", e); }
+  }, 1200);
+}
+
+async function syncPreferencesToCloud() {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    const prefs = localPreferences();
+    await cloudDb.collection("users").doc(cloudUser.uid)
+      .collection("preferences").doc("reader").set({
+        ...prefs,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true });
+  } catch (e) { console.warn("Cloud preferences sync:", e); }
+}
+
+async function mergePreferencesFromCloud() {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("preferences").doc("reader");
+    const snap = await ref.get();
+    const local = localPreferences();
+    if (!snap.exists) { await syncPreferencesToCloud(); return; }
+    const remote = snap.data() || {};
+    if ((Number(remote.updatedAtMs) || 0) > (Number(local.updatedAtMs) || 0)) {
+      if (remote.theme) localStorage.setItem("reader-theme", remote.theme);
+      if (remote.libraryTheme) localStorage.setItem("library-theme", remote.libraryTheme);
+      if (remote.fontFamily) { localStorage.setItem("fontFamily", remote.fontFamily); fontFamily = remote.fontFamily; }
+      if (remote.fontSize) { fontSize = Math.max(70, Math.min(200, Number(remote.fontSize))); localStorage.setItem("fontSize", String(fontSize)); }
+      localStorage.setItem("ges-promohub-pref-updated", String(remote.updatedAtMs || Date.now()));
+      applyLibraryDayNight();
+      if (rendition) { applyTheme(); applyFont(fontFamily); }
+    } else {
+      await syncPreferencesToCloud();
+    }
+  } catch (e) { console.warn("Preference merge:", e); }
+}
+
+async function mergeProgressFromCloud() {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("reading").doc(bookCloudId());
+    const snap = await ref.get();
+    const local = loadReaderData();
+    if (!snap.exists) { if (local.location) scheduleProgressSync(local); return; }
+    const remote = snap.data() || {};
+    if ((Number(remote.updatedAtMs) || 0) > (Number(local.updatedAtMs) || 0) && remote.cfi) {
+      const merged = { location: remote.cfi, progress: remote.progress || 0, chapter: remote.chapter || "", lastRead: new Date().toISOString(), updatedAtMs: remote.updatedAtMs };
+      localStorage.setItem(getBookReaderDataKey(), JSON.stringify(merged));
+      if (rendition) rendition.display(remote.cfi).catch(() => {});
+    } else if (local.location) {
+      scheduleProgressSync(local);
+    }
+  } catch (e) { console.warn("Progress merge:", e); }
+}
+
+function bookmarkId(b) {
+  const s = [selectedBookFile, b.cfi, b.date || ""].join("|");
+  let h = 2166136261;
+  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
+  return "b" + (h >>> 0).toString(36);
+}
+
+async function syncLocalBookmarksToCloud() {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    const arr = JSON.parse(localStorage.getItem(getBookmarksKey()) || "[]");
+    const batch = cloudDb.batch();
+    arr.forEach(b => {
+      const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks").doc(bookmarkId(b));
+      batch.set(ref, { ...b, bookFile: selectedBookFile, updatedAtMs: Date.now() }, { merge: true });
+    });
+    if (arr.length) await batch.commit();
+  } catch (e) { console.warn("Bookmark upload:", e); }
+}
+
+
+async function deleteCloudBookmark(bookmark) {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    const col = cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks");
+    const q = await col.where("bookFile", "==", selectedBookFile).where("cfi", "==", bookmark.cfi).get();
+    const batch = cloudDb.batch(); q.forEach(d => batch.delete(d.ref)); if (!q.empty) await batch.commit();
+  } catch (e) { console.warn("Bookmark delete sync:", e); }
+}
+
+async function mergeBookmarksFromCloud() {
+  if (!cloudReady || !cloudUser || !cloudDb) return;
+  try {
+    await syncLocalBookmarksToCloud();
+    const snap = await cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks")
+      .where("bookFile", "==", selectedBookFile).get();
+    const local = JSON.parse(localStorage.getItem(getBookmarksKey()) || "[]");
+    const map = new Map(local.map(b => [b.cfi + "|" + (b.date || ""), b]));
+    snap.forEach(d => { const b=d.data(); map.set(b.cfi + "|" + (b.date || ""), b); });
+    localStorage.setItem(getBookmarksKey(), JSON.stringify([...map.values()]));
+    loadBookmarks();
+  } catch (e) { console.warn("Bookmark merge:", e); }
+}
+
+async function syncCurrentBookCloud() {
+  await Promise.allSettled([mergeProgressFromCloud(), mergeBookmarksFromCloud()]);
+}
+
+/* Existing bookmark actions stay local-first. These observers mirror the
+   final local state to Firestore after add/delete without changing UI flow. */
+const _saveBookmarkLocal = saveBookmark;
+saveBookmark = function() { _saveBookmarkLocal(); setTimeout(syncLocalBookmarksToCloud, 0); };
+
+const _loadBookmarksLocal = loadBookmarks;
+loadBookmarks = function() { _loadBookmarksLocal(); };
+
+/* Preference setters keep their original behavior, then schedule cloud sync. */
+const _applyThemeLocal = applyTheme;
+applyTheme = function(theme) { _applyThemeLocal(theme); if (theme) markPreferencesChanged(); postFaqTheme(theme || localStorage.getItem("reader-theme") || "dark"); };
+const _applyFontLocal = applyFont;
+applyFont = function(font) { _applyFontLocal(font); markPreferencesChanged(); };
+
+/* Capture A+/A- changes already handled by the original buttons. */
+if (bottomDecreaseFont) bottomDecreaseFont.addEventListener("click", markPreferencesChanged);
+if (bottomIncreaseFont) bottomIncreaseFont.addEventListener("click", markPreferencesChanged);
+if (libraryDayNightBtn) libraryDayNightBtn.addEventListener("click", markPreferencesChanged);
+
+/* ---------- Firebase Authentication ---------- */
+const authScreen = document.getElementById("authScreen");
+const authName = document.getElementById("authName");
+const authEmail = document.getElementById("authEmail");
+const authPassword = document.getElementById("authPassword");
+const authPrimaryBtn = document.getElementById("authPrimaryBtn");
+const googleSignInBtn = document.getElementById("googleSignInBtn");
+const authModeBtn = document.getElementById("authModeBtn");
+const authOfflineBtn = document.getElementById("authOfflineBtn");
+const authError = document.getElementById("authError");
+
+function setAuthMode(mode) {
+  authMode = mode;
+  const signup = mode === "signup";
+  authName.style.display = signup ? "block" : "none";
+  authPrimaryBtn.textContent = signup ? "Create account" : "Login";
+  authModeBtn.textContent = signup ? "Already have an account? Login" : "Create an account";
+  authPassword.autocomplete = signup ? "new-password" : "current-password";
+  authError.textContent = "";
+}
+
+function showAuth() { if (authScreen) authScreen.classList.add("active"); }
+function hideAuth() { if (authScreen) authScreen.classList.remove("active"); }
+
+function initials(name, email) {
+  const source = (name || email || "U").trim();
+  const parts = source.split(/\s+/).filter(Boolean);
+  return ((parts[0]?.[0] || "U") + (parts.length > 1 ? parts[parts.length-1][0] : "")).toUpperCase();
+}
+
+function setAvatar(el, user) {
+  if (!el || !user) return;
+  if (user.photoURL) el.innerHTML = '<img src="' + user.photoURL.replace(/"/g, "&quot;") + '" alt="">';
+  else el.textContent = initials(user.displayName, user.email);
+}
+
+async function ensureUserProfile(user) {
+  if (!cloudDb || !user) return;
+  const ref = cloudDb.collection("users").doc(user.uid);
+  const snap = await ref.get();
+  if (!snap.exists) {
+    await ref.set({ uid:user.uid, name:user.displayName || "", email:user.email || "", photoURL:user.photoURL || "", role:"user", accountStatus:"active", createdAt:firebase.firestore.FieldValue.serverTimestamp(), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
+  } else {
+    await ref.set({ name:user.displayName || snap.data().name || "", email:user.email || "", photoURL:user.photoURL || "", updatedAt:firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
+  }
+}
+
+async function updateAccountUI(user) {
+  [document.getElementById("profileAvatar"), document.getElementById("libraryProfileAvatar"), document.getElementById("accountAvatar")].forEach(el => setAvatar(el,user));
+  document.getElementById("accountName").textContent = user?.displayName || "GES PromoHub User";
+  document.getElementById("accountEmail").textContent = user?.email || "";
+  try {
+    const s = await cloudDb.collection("users").doc(user.uid).get();
+    const d = s.data() || {};
+    document.getElementById("accountType").textContent = (d.role || "user") + " · " + (d.accountStatus || "active");
+  } catch (_) {}
+}
+
+async function initFirebaseFeatures() {
+  if (!firebaseConfigured()) { cloudReady = false; return; }
+  try {
+    if (!firebase.apps.length) firebase.initializeApp(window.GES_PROMOHUB_FIREBASE_CONFIG);
+    cloudAuth = firebase.auth();
+    cloudDb = firebase.firestore();
+    cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
+    cloudAuth.onAuthStateChanged(async user => {
+      cloudUser = user || null;
+      cloudReady = !!user;
+      if (!user) { showAuth(); return; }
+      hideAuth();
+      await ensureUserProfile(user);
+      await updateAccountUI(user);
+      await mergePreferencesFromCloud();
+      await syncCurrentBookCloud();
+    });
+  } catch (e) { console.warn("Firebase startup:", e); }
+}
+
+if (authModeBtn) authModeBtn.addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));
+if (authOfflineBtn) authOfflineBtn.addEventListener("click", hideAuth);
+if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async () => {
+  if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
+  authError.textContent = "";
+  try {
+    if (authMode === "signup") {
+      const cred = await cloudAuth.createUserWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
+      if (authName.value.trim()) await cred.user.updateProfile({ displayName: authName.value.trim() });
+      await ensureUserProfile(cred.user);
+      await cloudAuth.signOut();
+      setAuthMode("login");
+      authPassword.value = "";
+      authError.textContent = "Account created. Please log in.";
+      showAuth();
+    } else {
+      await cloudAuth.signInWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
+    }
+  } catch (e) { authError.textContent = (e.message || "Unable to sign in.").replace(/^Firebase:\s*/i, ""); }
+});
+if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
+  if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
+  try { await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+  catch (e) { authError.textContent = e.message || "Google sign-in failed."; }
+});
+
+/* Account panel */
+const accountPanel = document.getElementById("accountPanel");
+function openAccount() { if (cloudUser) accountPanel.classList.add("open"); else showAuth(); }
+[document.getElementById("profileBtn"), document.getElementById("libraryProfileBtn")].forEach(b => b && b.addEventListener("click", e => { e.stopPropagation(); openAccount(); }));
+document.getElementById("accountClose")?.addEventListener("click", () => accountPanel.classList.remove("open"));
+document.getElementById("logoutBtn")?.addEventListener("click", async () => { accountPanel.classList.remove("open"); if (cloudAuth) await cloudAuth.signOut(); });
+
+/* ---------- In-app FAQ ---------- */
+const faqOverlay = document.getElementById("faqOverlay");
+const faqFrame = document.getElementById("faqFrame");
+function postFaqTheme(theme) { try { faqFrame?.contentWindow?.postMessage({ type:"GES_PROMOHUB_THEME", theme }, location.origin); } catch (_) {} }
+function openFaq() { faqOverlay.classList.add("open"); postFaqTheme(localStorage.getItem("reader-theme") || localStorage.getItem("library-theme") || "dark"); }
+function closeFaq() { faqOverlay.classList.remove("open"); }
+document.getElementById("sidebarFaqBtn")?.addEventListener("click", openFaq);
+document.querySelector(".libraryFooterLink")?.addEventListener("click", e => { e.preventDefault(); openFaq(); });
+document.getElementById("faqCloseBtn")?.addEventListener("click", closeFaq);
+window.addEventListener("message", e => { if (e.data?.type === "GES_PROMOHUB_CLOSE_FAQ") closeFaq(); });
+
+/* ---------- Pull to refresh ---------- */
+const refreshIndicator = document.createElement("div");
+refreshIndicator.id = "pullRefreshIndicator";
+refreshIndicator.textContent = "Pull to refresh";
+document.body.appendChild(refreshIndicator);
+let prStartY = null, prStartX = null, prArmed = false;
+document.addEventListener("touchstart", e => {
+  if (e.touches.length !== 1 || sidebarIsOpen() || faqOverlay.classList.contains("open")) return;
+  if (window.scrollY > 0) return;
+  prStartY = e.touches[0].clientY; prStartX = e.touches[0].clientX; prArmed = false;
+}, { passive:true, capture:true });
+document.addEventListener("touchmove", e => {
+  if (prStartY === null || e.touches.length !== 1) return;
+  const dy=e.touches[0].clientY-prStartY, dx=Math.abs(e.touches[0].clientX-prStartX);
+  if (dy > 70 && dx < 35) { prArmed=true; refreshIndicator.textContent="Release to refresh"; refreshIndicator.classList.add("show"); }
+}, { passive:true, capture:true });
+document.addEventListener("touchend", () => {
+  if (prStartY === null) return;
+  const doRefresh=prArmed; prStartY=null; prArmed=false; refreshIndicator.classList.remove("show");
+  if (doRefresh) setTimeout(() => location.reload(), 80);
+}, { passive:true, capture:true });
+
+/* ---------- Pinch changes EPUB text size only ---------- */
+function installPinchTextZoom(doc) {
+  if (!doc || doc.__gesPinchInstalled) return;
+  doc.__gesPinchInstalled = true;
+  let startDistance=0, startFont=fontSize, pinching=false;
+  const dist = touches => Math.hypot(touches[0].clientX-touches[1].clientX, touches[0].clientY-touches[1].clientY);
+  doc.addEventListener("touchstart", e => {
+    if (e.touches.length !== 2) return;
+    pinching=true; startDistance=dist(e.touches); startFont=fontSize;
+  }, { passive:true });
+  doc.addEventListener("touchmove", e => {
+    if (!pinching || e.touches.length !== 2 || !startDistance) return;
+    e.preventDefault();
+    const scale=dist(e.touches)/startDistance;
+    const next=Math.max(70, Math.min(200, Math.round((startFont*scale)/5)*5));
+    if (next !== fontSize) { fontSize=next; rendition.themes.fontSize(fontSize+"%"); localStorage.setItem("fontSize", String(fontSize)); }
+  }, { passive:false });
+  doc.addEventListener("touchend", e => {
+    if (!pinching) return;
+    if (e.touches.length < 2) { pinching=false; markPreferencesChanged(); }
+  }, { passive:true });
+}
+
+/* Sync the selected book whenever a book is opened. */
+const _openReaderLocal = openReader;
+openReader = function() { _openReaderLocal(); setTimeout(syncCurrentBookCloud, 500); };
+
+setAuthMode("login");
+initFirebaseFeatures();

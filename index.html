@@ -6,7 +6,7 @@
 
   <meta
     name="viewport"
-    content="width=device-width, initial-scale=1.0"
+    content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
   />
 
   <title>
@@ -81,6 +81,9 @@
       aria-label="Clear App Data"
     >
       <i class="fa-solid fa-trash-can"></i>
+    </button>
+    <button id="libraryProfileBtn" class="libraryDayNightBtn profileBtn" aria-label="Account">
+      <span id="libraryProfileAvatar">?</span>
     </button>
     <img src="icon-192.png" alt="GES PromoHub" class="libraryLogo">
     <h1 class="libraryTitle">AlatiphA GES PromoHub</h1>
@@ -179,14 +182,9 @@
       AlatiphA GES PromoHub
     </h1>
 
-    <a
-      href="./faq.html"
-      id="faqBtn"
-      class="iconBtn"
-      aria-label="Help and FAQ"
-    >
-      <i class="fa-solid fa-circle-question"></i>
-    </a>
+    <button id="profileBtn" class="iconBtn profileBtn" aria-label="Account">
+      <span id="profileAvatar">?</span>
+    </button>
 
   </header>
 
@@ -254,6 +252,12 @@
     <div class="supporterThanks" id="supporterThanks" style="display:none">
       <i class="fa-solid fa-circle-check"></i>
       <span>Thank you for supporting AlatiphA!</span>
+    </div>
+
+    <div class="sidebarFaqWrap">
+      <button id="sidebarFaqBtn" class="sidebarFaqBtn">
+        <i class="fa-solid fa-circle-question"></i> Help & FAQ
+      </button>
     </div>
 
     <!-- About --> 
@@ -474,6 +478,50 @@
   </div>
 </div>
 
+
+<!-- AUTH SCREEN -->
+<div id="authScreen" class="authScreen">
+  <div class="authCard">
+    <img src="icon-192.png" class="authLogo" alt="GES PromoHub">
+    <h2>AlatiphA GES PromoHub</h2>
+    <p id="authSubtitle">Sign in to sync your reading across devices.</p>
+    <input id="authName" type="text" placeholder="Full name" autocomplete="name" style="display:none">
+    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
+    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
+    <button id="authPrimaryBtn" class="authPrimaryBtn">Login</button>
+    <button id="googleSignInBtn" class="authGoogleBtn"><i class="fa-brands fa-google"></i> Continue with Google</button>
+    <button id="authModeBtn" class="authModeBtn">Create an account</button>
+    <button id="authOfflineBtn" class="authModeBtn">Continue offline</button>
+    <p id="authError" class="authError"></p>
+  </div>
+</div>
+
+<!-- ACCOUNT PANEL -->
+<div id="accountPanel" class="accountPanel">
+  <div class="accountCard">
+    <button id="accountClose" class="accountClose">✕</button>
+    <div id="accountAvatar" class="accountAvatar">?</div>
+    <strong id="accountName">User</strong>
+    <span id="accountEmail"></span>
+    <span id="accountType" class="accountType">Standard account</span>
+    <button id="logoutBtn" class="logoutBtn">Log out</button>
+  </div>
+</div>
+
+<!-- IN-APP FAQ -->
+<div id="faqOverlay" class="faqOverlay">
+  <div class="faqOverlayBar">
+    <strong>Help & FAQ</strong>
+    <button id="faqCloseBtn" aria-label="Close FAQ">✕</button>
+  </div>
+  <iframe id="faqFrame" src="./faq.html?embedded=1" title="GES PromoHub FAQ"></iframe>
+</div>
+
+<!-- Firebase compat SDKs. Configuration lives in firebase-config.js -->
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="./firebase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
