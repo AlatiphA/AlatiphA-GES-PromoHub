@@ -541,5 +541,25 @@
 
   </script>
 
+
+<script>
+(function(){
+  var embedded = new URLSearchParams(location.search).get("embedded") === "1";
+  if (embedded) {
+    var back = document.querySelector(".backLink");
+    if (back) back.addEventListener("click", function(e){ e.preventDefault(); parent.postMessage({type:"GES_PROMOHUB_CLOSE_FAQ"}, location.origin); });
+    var toggle = document.querySelector(".themeToggle");
+    if (toggle) toggle.style.display = "none";
+  }
+  window.addEventListener("message", function(e){
+    if (e.origin !== location.origin || !e.data || e.data.type !== "GES_PROMOHUB_THEME") return;
+    var t=e.data.theme;
+    document.documentElement.classList.toggle("dark", t === "dark" || t === "night");
+    document.body.setAttribute("data-reader-theme", t);
+    if (t === "sepia") { document.body.style.background="#f4ede0"; document.body.style.color="#2c1a0e"; }
+    else { document.body.style.background=""; document.body.style.color=""; }
+  });
+})();
+</script>
 </body>
 </html>

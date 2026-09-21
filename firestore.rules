@@ -1,0 +1,49 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function own(uid) { return signedIn() && request.auth.uid == uid; }
+    function protectedProfileFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys()
+        .hasAny(['role', 'accountStatus', 'isAdmin', 'createdAt']);
+    }
+
+    match /users/{uid} {
+      allow read: if own(uid);
+      allow create: if own(uid)
+        && request.resource.data.role == 'user'
+        && request.resource.data.accountStatus == 'active';
+      allow update: if own(uid) && protectedProfileFieldsUnchanged();
+      allow delete: if false;
+
+      match /reading/{bookId} {
+        allow read, delete: if own(uid);
+        allow create, update: if own(uid)
+          && request.resource.data.cfi is string
+          && request.resource.data.progress is number
+          && request.resource.data.progress >= 0
+          && request.resource.data.progress <= 100;
+      }
+
+      match /bookmarks/{bookmarkId} {
+        allow read, delete: if own(uid);
+        allow create, update: if own(uid)
+          && request.resource.data.bookFile is string
+          && request.resource.data.cfi is string
+          && request.resource.data.chapter is string
+          && request.resource.data.progress is number;
+      }
+
+      match /preferences/{docId} {
+        allow read, delete: if own(uid);
+        allow create, update: if own(uid)
+          && docId == 'reader'
+          && request.resource.data.fontSize is number
+          && request.resource.data.fontSize >= 70
+          && request.resource.data.fontSize <= 200
+          && request.resource.data.theme in ['light','dark','sepia','night'];
+      }
+    }
+    match /{document=**} { allow read, write: if false; }
+  }
+}

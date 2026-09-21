@@ -7,7 +7,7 @@
    get a "New version available" prompt on next visit.
 ===================================================== */
 
-const APP_VERSION  = "v1.5.4";
+const APP_VERSION  = "v1.5.5";
 const CACHE_NAME   = `alatipha-ges-promohub-${APP_VERSION}`;
 
 /* ====================
@@ -22,6 +22,7 @@ const FILES_TO_CACHE = [
   "./app.js",
   "./sw.js",
   "./manifest.json",
+  "./firebase-config.js",
   "./library/gespasco.epub",
   "./library/mat1.epub",
   "./library/mat2.epub",
