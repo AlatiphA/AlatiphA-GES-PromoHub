@@ -1,0 +1,20 @@
+{
+  "name": "promohub-account-functions",
+  "private": true,
+  "main": "index.js",
+  "engines": {
+    "node": "22"
+  },
+  "scripts": {
+    "test": "node ../tests/run-tests.cjs",
+    "test:rules": "node --test ../tests/rules.emulator.cjs"
+  },
+  "dependencies": {
+    "firebase-admin": "14.5.0",
+    "firebase-functions": "7.4.0"
+  },
+  "devDependencies": {
+    "@firebase/rules-unit-testing": "^3.0.0",
+    "firebase": "10.14.1"
+  }
+}

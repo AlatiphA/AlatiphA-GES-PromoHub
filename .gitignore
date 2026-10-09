@@ -1,0 +1,12 @@
+﻿
+node_modules/
+.firebase/
+*debug.log*
+*.tmp
+*-backup-*/
+*.ps1
+.env
+.env.*
+!.env.example
+*service-account*.json
+*serviceAccount*.json
