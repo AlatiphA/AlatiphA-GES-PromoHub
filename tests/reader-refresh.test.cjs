@@ -16,7 +16,7 @@ function setup(record, owner = 'alice', broken = false) {
     saveReaderData: value => data.set(context.securityLocalOwner + context.selectedBookFile, value),
     openReader: () => {opened.push({book: context.selectedBookFile, owner: context.securityLocalOwner, location: context.loadReaderData().location});context.rememberReaderView('reader');},
     window: {addEventListener: (name, handler) => listeners[name] = handler},
-    document: {visibilityState: 'hidden', addEventListener: (name, handler) => listeners[name] = handler},
+    document: {documentElement: {classList: {remove() {}}}, visibilityState: 'hidden', addEventListener: (name, handler) => listeners[name] = handler},
     console: {warn() {}}, Date
   };
   vm.createContext(context); vm.runInContext(code, context);

@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.5";
+const APP_VERSION = "1.6.6";
 
 const versionEl =
   document.getElementById(
@@ -2841,14 +2841,18 @@ function rememberReaderView(view) {
 function resumeReaderAfterStartup() {
   const saved = pendingReaderView;
   pendingReaderView = null;
-  if (!saved || saved.view !== "reader" || saved.owner !== securityLocalOwner) return false;
-  const selectedBook = BOOKS.find(b => b.file === saved.bookFile);
-  if (!selectedBook) return false;
-  selectedBookFile = selectedBook.file;
-  localStorage.setItem("lastBook", selectedBookFile);
-  if (readerTitle) readerTitle.textContent = selectedBook.title;
-  openReader();
-  return true;
+  try {
+    if (!saved || saved.view !== "reader" || saved.owner !== securityLocalOwner) return false;
+    const selectedBook = BOOKS.find(b => b.file === saved.bookFile);
+    if (!selectedBook) return false;
+    selectedBookFile = selectedBook.file;
+    localStorage.setItem("lastBook", selectedBookFile);
+    if (readerTitle) readerTitle.textContent = selectedBook.title;
+    openReader();
+    return true;
+  } finally {
+    document.documentElement.classList.remove("reader-resuming");
+  }
 }
 
 function persistCurrentReaderPosition() {
