@@ -522,11 +522,36 @@
     <strong id="accountName">User</strong>
     <span id="accountEmail"></span>
     <span id="accountType" class="accountType">Standard account</span>
-<section id="securityControls"><p id="securityMessage" role="status"></p>
-<div><button data-security="resend">Resend verification</button><button data-security="check">Check verification</button><button data-security="premium">Request Premium</button></div>
-<label>Profile name<input id="securityName" maxlength="100"></label><button data-security="name">Save name</button><button data-security="delete">Delete account</button>
-<div id="securityDeletion" hidden><input id="securityDeleteConfirm" placeholder="Type DELETE"><input id="securityPassword" type="password" placeholder="Password, for password accounts"><button data-security="confirmDelete">Confirm deletion</button></div>
-<section id="securityAdmin" hidden><h3>PromoHub Admin</h3><p id="securitySummary"></p><button data-security="users">Users</button><button data-security="more">Next users</button><button data-security="requests">Premium requests</button><button data-security="audit">Recent audit</button><div id="securityRecords"></div></section></section>
+<section id="securityControls">
+  <p id="securityMessage" role="status"></p>
+  <div class="accountTabs" role="tablist" aria-label="Account sections">
+    <button id="myAccountTab" role="tab" aria-selected="true" aria-controls="myAccountPanel" data-account-tab="account">My Account</button>
+    <button id="administrationTab" role="tab" aria-selected="false" aria-controls="securityAdmin" data-account-tab="admin" tabindex="-1" hidden>Administration</button>
+  </div>
+  <section id="myAccountPanel" role="tabpanel" aria-labelledby="myAccountTab">
+    <div id="securityVerification" class="securityBlock">
+      <h3>Email verification</h3><p>Verify your email to use cloud account features.</p>
+      <div class="securityActions"><button data-security="resend">Resend verification</button><button data-security="check">Check verification</button></div>
+    </div>
+    <div class="securityBlock">
+      <label for="securityName">Profile name</label><input id="securityName" maxlength="100" autocomplete="nickname">
+      <button data-security="name">Save name</button>
+    </div>
+    <div class="securityBlock"><h3>Membership</h3><p>Premium requests are reviewed by an administrator. Requesting access does not charge you.</p>
+      <button id="securityPremiumButton" data-security="premium">Request Premium</button>
+    </div>
+    <details class="securityBlock securityDanger"><summary>Delete account</summary>
+      <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
+      <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
+    </details>
+  </section>
+  <section id="securityAdmin" role="tabpanel" aria-labelledby="administrationTab" hidden>
+    <h3>Administration</h3><p id="securitySummary"></p>
+    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="requests" aria-pressed="false">Premium requests</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
+    <h4 id="securityRecordsTitle">Choose a view above</h4><div id="securityRecords" aria-live="polite"></div>
+    <div id="securityPagination" hidden><button id="securityNextPage" data-security="more" disabled>Next page</button></div>
+  </section>
+</section>
     <button id="logoutBtn" class="logoutBtn">Log out</button>
   </div>
 </div>

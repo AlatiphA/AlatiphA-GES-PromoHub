@@ -111,12 +111,24 @@ exports.getPromoHubAdminSummary = onCall(options,async req => {
 });
 exports.getPromoHubAdminRecords = onCall(options,async req => {
  await member(req,true);
- if(req.data?.kind==='audit') {
-  const snap=await db.collection('auditLogs').orderBy('createdAt','desc').limit(50).get();
-  return {records:snap.docs.map(d=>({id:d.id,...d.data()}))};
+ const kind=req.data?.kind || 'requests';
+ if(!['requests','audit'].includes(kind))throw new HttpsError('invalid-argument','Invalid records view.');
+ const query=kind==='audit' ? db.collection('auditLogs').orderBy('createdAt','desc').limit(50) : db.collection('premiumRequests').where('status','==','pending').limit(50);
+ const snap=await query.get(), accounts=new Map();
+ function account(uid){
+  if(typeof uid!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(uid))return Promise.resolve({displayName:'',email:'',available:false});
+  if(!accounts.has(uid))accounts.set(uid,db.doc(`users/${uid}`).get().then(s=>{
+   const p=s.data() || {};
+   return {displayName:typeof p.displayName==='string'?p.displayName:typeof p.name==='string'?p.name:'',email:typeof p.email==='string'?p.email:'',available:s.exists};
+  }));
+  return accounts.get(uid);
  }
- const snap=await db.collection('premiumRequests').where('status','==','pending').limit(50).get();
- return {records:snap.docs.map(d=>({id:d.id,...d.data()}))};
+ const records=await Promise.all(snap.docs.map(async d=>{
+  const r={...d.data(),id:d.id};
+  const [targetAccount,actorAccount]=await Promise.all([account(kind==='audit'?r.targetUid:r.uid),kind==='audit'?account(r.actor):Promise.resolve(null)]);
+  return {...r,account:targetAccount,...(kind==='audit'?{actorAccount}:{})};
+ }));
+ return {records};
 });
 exports.deletePromoHubAccount = onCall(options,async req => {
  const uid=identity(req);
