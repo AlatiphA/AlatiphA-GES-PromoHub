@@ -467,10 +467,8 @@ footer.hideControls {
 #centerZone { width: 40%; }
 #rightZone  { width: 30%; }
 
-/* Desktop mouse only — zones active */
-@media (pointer: fine) {
-  .navZone { pointer-events: all; cursor: pointer; }
-}
+/* Keep the overlay transparent to mouse and touch input.
+   Desktop navigation is handled inside the EPUB document. */
 
 button {
   touch-action: manipulation;

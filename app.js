@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.2";
+const APP_VERSION = "1.6.3";
 
 const versionEl =
   document.getElementById(
@@ -1175,6 +1175,25 @@ function startReader() {
       else if (screenX > W * 0.7) { pageNext(); hideControls(); }
       else { toggleControls(); }
     }, { passive: true });
+
+    /* Desktop content clicks: links stay with the existing link handler.
+       Touch navigation remains in touchend; ignore its synthetic click. */
+    doc.addEventListener("click", e => {
+      if (!window.matchMedia("(pointer: fine)").matches || e.detail === 0) return;
+      if (e.sourceCapabilities?.firesTouchEvents || (_tt !== null && Date.now() - _tt < 800)) return;
+      const target = e.target.nodeType === 1 ? e.target : e.target.parentElement;
+      if (!target || target.closest("a[href], button, input, select, textarea, [contenteditable], [role='button']")) return;
+      const popup = document.getElementById("fnPopup");
+      if (popup) { popup.remove(); return; }
+      if (sidebarIsOpen()) { toggleSidebar(); return; }
+      const frame = doc.defaultView?.frameElement;
+      if (!frame) return;
+      const screenX = frame.getBoundingClientRect().left + e.clientX;
+      const W = window.innerWidth;
+      if (screenX < W * 0.3) { pagePrev(); hideControls(); }
+      else if (screenX > W * 0.7) { pageNext(); hideControls(); }
+      else { toggleControls(); }
+    });
 
     /* Use document-level capture listener so it fires BEFORE
        epub.js's own link handler, preventing page navigation */
