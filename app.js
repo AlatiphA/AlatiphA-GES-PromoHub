@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.4";
+const APP_VERSION = "1.6.5";
 
 const versionEl =
   document.getElementById(
@@ -243,6 +243,8 @@ document.querySelectorAll(".bookCard")
 
 if (backBtn) {
   backBtn.addEventListener("click", () => {
+    persistCurrentReaderPosition();
+    rememberReaderView("library");
     readerApp.style.display = "none";
     libraryScreen.style.display = "flex";
     backBtn.style.display = "none";
@@ -253,6 +255,8 @@ if (backBtn) {
 }
 
 function openReader() {
+  currentLocation = null;
+  rememberReaderView("reader");
   libraryScreen.style.display = "none";
   readerApp.style.display = "flex";
   if (backBtn) backBtn.style.display = "flex";
@@ -2712,18 +2716,18 @@ async function updateAccountUI(user) {
 }
 
 async function initFirebaseFeatures() {
-  if (!firebaseConfigured()) { cloudReady = false; return; }
+  if (!firebaseConfigured()) { cloudReady = false; resumeReaderAfterStartup(); return; }
   try {
     if (!firebase.apps.length) firebase.initializeApp(window.GES_PROMOHUB_FIREBASE_CONFIG);
     cloudAuth = firebase.auth();
     cloudDb = firebase.firestore();
     cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
     cloudAuth.onAuthStateChanged(user => securityAuthChanged(user));
-  } catch (e) { console.warn("Firebase startup:", e); }
+  } catch (e) { console.warn("Firebase startup:", e); resumeReaderAfterStartup(); }
 }
 
 if (authModeBtn) authModeBtn.addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));
-if (authOfflineBtn) authOfflineBtn.addEventListener("click", hideAuth);
+if (authOfflineBtn) authOfflineBtn.addEventListener("click", () => { hideAuth(); resumeReaderAfterStartup(); });
 if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async () => {
   if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
   authError.textContent = "";
@@ -2816,6 +2820,48 @@ function installPinchTextZoom(doc) {
 /* Sync the selected book whenever a book is opened. */
 const _openReaderLocal = openReader;
 openReader = function() { _openReaderLocal(); setTimeout(syncCurrentBookCloud, 500); };
+
+/* Restore this tab's reader only after its local account scope is known.
+   Reading positions still use the existing account-specific local store. */
+function readReaderView() {
+  try { return JSON.parse(sessionStorage.getItem("ges-promohub-reader-view")); }
+  catch (e) { console.warn("Reader view restore:", e); return null; }
+}
+let pendingReaderView = readReaderView();
+
+function rememberReaderView(view) {
+  pendingReaderView = null;
+  try {
+    sessionStorage.setItem("ges-promohub-reader-view", JSON.stringify({
+      view, bookFile: selectedBookFile, owner: securityLocalOwner
+    }));
+  } catch (e) { console.warn("Reader view save:", e); }
+}
+
+function resumeReaderAfterStartup() {
+  const saved = pendingReaderView;
+  pendingReaderView = null;
+  if (!saved || saved.view !== "reader" || saved.owner !== securityLocalOwner) return false;
+  const selectedBook = BOOKS.find(b => b.file === saved.bookFile);
+  if (!selectedBook) return false;
+  selectedBookFile = selectedBook.file;
+  localStorage.setItem("lastBook", selectedBookFile);
+  if (readerTitle) readerTitle.textContent = selectedBook.title;
+  openReader();
+  return true;
+}
+
+function persistCurrentReaderPosition() {
+  if (!rendition || !currentLocation?.start?.cfi) return;
+  const saved = loadReaderData();
+  saveReaderData({ ...saved, location: currentLocation.start.cfi,
+    chapter: currentLocation.start.href || saved.chapter || "",
+    lastRead: new Date().toISOString() });
+}
+window.addEventListener("pagehide", persistCurrentReaderPosition);
+document.addEventListener("visibilitychange", () => {
+  if (document.visibilityState === "hidden") persistCurrentReaderPosition();
+});
 
 setAuthMode("login");
 window.addEventListener("DOMContentLoaded", initFirebaseFeatures, {once:true});
