@@ -52,8 +52,9 @@ async function securityAuthChanged(user){
  securityEpoch++;clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};
- if(!user){accountPanel.classList.remove('open');showAuth();return;}
+ if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  hideAuth();if(securityRegistering)return;
+ resumeReaderAfterStartup();
  try{const ready=await securityActivate(user);await updateAccountUI(user);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else accountPanel.classList.add('open');}
  catch(e){cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
