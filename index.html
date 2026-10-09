@@ -4,6 +4,23 @@
 
   <meta charset="UTF-8" />
 
+  <!-- Hide the library before first paint only when this tab will resume a book. -->
+  <style>
+    html.reader-resuming #libraryScreen { visibility: hidden !important; }
+  </style>
+  <script id="readerResumeBoot">
+    (function() {
+      try {
+        var saved = JSON.parse(sessionStorage.getItem("ges-promohub-reader-view"));
+        var owner = localStorage.getItem("ges-promohub-security-owner") || "";
+        if (saved && saved.view === "reader" && saved.owner === owner &&
+            /^\.\/library\/(gespasco|mat1|mat2|etmala|nfatfges|eigala)\.epub$/.test(saved.bookFile)) {
+          document.documentElement.classList.add("reader-resuming");
+        }
+      } catch (e) { /* Normal library startup when storage is unavailable. */ }
+    })();
+  </script>
+
   <meta
     name="viewport"
     content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
