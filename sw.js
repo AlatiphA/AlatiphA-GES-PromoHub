@@ -1,158 +1,40 @@
-/* =====================================================
-   AlatiphA GES PromoHub— Service Worker
-   ─────────────────────────────────────────────────
-   HOW TO UPDATE:
-   Bump APP_VERSION on every release (e.g. "1.0.5").
-   The cache name updates automatically. Users will
-   get a "New version available" prompt on next visit.
-===================================================== */
-
-const APP_VERSION  = "v1.5.6";
-const CACHE_NAME   = `alatipha-ges-promohub-${APP_VERSION}`;
-
-/* ====================
-   APP SHELL
-==================== */
-
-const FILES_TO_CACHE = [
-  "./",
-  "./index.html",
-  "./faq.html",
-  "./style.css",
-  "./app.js",
-  "./sw.js",
-  "./manifest.json",
-  "./firebase-config.js",
-  "./library/gespasco.epub",
-  "./library/mat1.epub",
-  "./library/mat2.epub",
-  "./library/etmala.epub",
-  "./library/nfatfges.epub",
-  "./library/eigala.epub",
-  "./icon-192.png",
-  "./icon-512.png",
-  "./fonts/OpenSans-VariableFont_wdth_wght.ttf",
-  "https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css",
-];
-
-/* =========================
-   INSTALL — cache app shell
-========================= */
-
-self.addEventListener("install", event => {
-
-  event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then(async cache => {
-
-        // Cache each file independently so one missing/
-        // failing file (a renamed EPUB, wrong path, CORS
-        // hiccup on the CDN link) can't sink the entire
-        // precache and leave the app with ZERO offline
-        // support.
-        const results = await Promise.allSettled(
-          FILES_TO_CACHE.map(url => cache.add(url))
-        );
-
-        results.forEach((result, i) => {
-          if (result.status === "rejected") {
-            console.warn(
-              "Precache failed for:",
-              FILES_TO_CACHE[i],
-              result.reason
-            );
-          }
-        });
-      })
-      .then(() => self.skipWaiting())
-  );
-
-});
-
-/* =========================
-   ACTIVATE — clean old caches
-========================= */
-
-self.addEventListener("activate", event => {
-
-  event.waitUntil(
-    caches.keys()
-      .then(cacheNames =>
-        Promise.all(
-          cacheNames
-            .filter(name => name !== CACHE_NAME)
-            .map(name => caches.delete(name))
-        )
-      )
-      .then(() => self.clients.claim())
-  );
-
-});
-
-/* =========================
-   FETCH — network-first for
-   HTML/JS/CSS, cache-first
-   for EPUB and icons
-========================= */
-
-self.addEventListener("fetch", event => {
-
-  if (event.request.method !== "GET") return;
-
-  const url = new URL(event.request.url);
-  const isAppShell =
-    url.pathname.endsWith(".html") ||
-    url.pathname.endsWith(".css")  ||
-    url.pathname.endsWith(".js")   ||
-    url.pathname.endsWith(".json") ||
-    url.pathname === "/" ||
-    url.pathname.endsWith("/");
-
-  if (isAppShell) {
-
-    /* Network-first: always try to get the freshest
-       app shell, fall back to cache if offline */
-    event.respondWith(
-      fetch(event.request)
-        .then(networkResponse => {
-          const clone = networkResponse.clone();
-          caches.open(CACHE_NAME)
-            .then(cache => cache.put(event.request, clone));
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request))
-    );
-
-  } else {
-
-    /* Cache-first: EPUB, icons, fonts — stable assets */
-    event.respondWith(
-      caches.match(event.request)
-        .then(cached => {
-          if (cached) return cached;
-          return fetch(event.request)
-            .then(networkResponse => {
-              const clone = networkResponse.clone();
-              caches.open(CACHE_NAME)
-                .then(cache => cache.put(event.request, clone));
-              return networkResponse;
-            });
-        })
-        .catch(() => caches.match("./index.html"))
-    );
-
+/* Account security patch. SW cache version is independent of app version. */
+const APP_VERSION='v1.5.8';
+const PREFIX='alatipha-ges-promohub-';
+const CACHE_NAME=PREFIX+APP_VERSION;
+const CORE=['./','./index.html','./style.css','./app.js','./install.js','./security-ui.js','./firebase-config.js','./faq.html','./manifest.json','./icon-192.png','./icon-512.png'];
+const OPTIONAL=['gespasco','mat1','mat2','etmala','nfatfges','eigala'].map(name=>'./library/'+name+'.epub').concat(['./fonts/OpenSans-VariableFont_wdth_wght.ttf','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js','https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',...['app','auth','firestore','functions'].map(name=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${name}-compat.js`)]);
+self.addEventListener('install',event=>event.waitUntil((async()=>{
+ const cache=await caches.open(CACHE_NAME);
+ await cache.addAll(CORE);
+ const results=await Promise.allSettled(OPTIONAL.map(url=>cache.add(url)));
+ results.forEach((r,i)=>{if(r.status==='rejected')console.warn('Optional precache unavailable:',OPTIONAL[i]);});
+ // Keep current reader sessions on their current worker until they are closed.
+})()));
+self.addEventListener('activate',event=>event.waitUntil((async()=>{
+ await Promise.all((await caches.keys()).filter(name=>name.startsWith(PREFIX)&&name!==CACHE_NAME).map(name=>caches.delete(name)));
+ await self.clients.claim();
+})()));
+self.addEventListener('fetch',event=>{
+ if(event.request.method!=='GET')return;
+ const url=new URL(event.request.url),same=url.origin===self.location.origin;
+ if(same && url.pathname.startsWith('/__/'))return;
+ const approvedCDN=['www.gstatic.com','cdn.jsdelivr.net','cdnjs.cloudflare.com'].includes(url.hostname);
+ if(!same&&!approvedCDN)return; // Never intercept or cache Auth, Functions, or Firestore API traffic.
+ event.respondWith((async()=>{
+  const cache=await caches.open(CACHE_NAME),cached=await cache.match(event.request);
+  const shell=event.request.mode==='navigate'||/\.(?:html|js|css|json)$/.test(url.pathname);
+  if(!shell&&cached)return cached;
+  try{
+   const response=await fetch(event.request);
+   if(response.ok||response.type==='opaque')event.waitUntil(cache.put(event.request,response.clone()));
+   if(!response.ok&&response.type!=='opaque'&&cached)return cached;
+   return response;
+  }catch(error){
+   if(cached)return cached;
+   if(event.request.mode==='navigate')return (await cache.match('./index.html')) || Response.error();
+   return Response.error();
   }
-
+ })());
 });
-
-/* =========================
-   MESSAGE — version check
-========================= */
-
-self.addEventListener("message", event => {
-
-  if (event.data === "GET_VERSION") {
-    event.ports[0].postMessage(APP_VERSION);
-  }
-
-});
+self.addEventListener('message',event=>{if(event.data==='GET_VERSION'&&event.ports[0])event.ports[0].postMessage(APP_VERSION);});

@@ -1,0 +1,47 @@
+{
+  "functions": {
+    "source": "functions"
+  },
+  "firestore": {
+    "rules": "firestore.rules"
+  },
+  "hosting": {
+    "public": ".",
+    "ignore": [
+      "firebase.json",
+      ".firebaserc",
+      "**/.*",
+      "functions/**",
+      "tests/**",
+      "*.md",
+      "package*.json",
+      "**/*.ps1",
+      "**/node_modules/**",
+      "test-repair-backup-*/**",
+      "sdk-backup-*/**",
+      "**/*debug.log",
+      "**/*.tmp",
+      "baseline-correction-backup-*/**"
+    ],
+    "headers": [
+      {
+        "source": "sw.js",
+        "headers": [
+          {
+            "key": "Cache-Control",
+            "value": "no-cache"
+          }
+        ]
+      }
+    ]
+  },
+  "emulators": {
+    "firestore": {
+      "port": 8080
+    },
+    "ui": {
+      "enabled": false
+    },
+    "singleProjectMode": true
+  }
+}

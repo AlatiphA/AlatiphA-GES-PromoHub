@@ -491,6 +491,7 @@
     <button id="authPrimaryBtn" class="authPrimaryBtn">Login</button>
     <button id="googleSignInBtn" class="authGoogleBtn"><i class="fa-brands fa-google"></i> Continue with Google</button>
     <button id="authModeBtn" class="authModeBtn">Create an account</button>
+    <button id="authResetBtn" class="authModeBtn">Forgot password</button>
     <button id="authOfflineBtn" class="authModeBtn">Continue offline</button>
     <p id="authError" class="authError"></p>
   </div>
@@ -504,6 +505,11 @@
     <strong id="accountName">User</strong>
     <span id="accountEmail"></span>
     <span id="accountType" class="accountType">Standard account</span>
+<section id="securityControls"><p id="securityMessage" role="status"></p>
+<div><button data-security="resend">Resend verification</button><button data-security="check">Check verification</button><button data-security="premium">Request Premium</button></div>
+<label>Profile name<input id="securityName" maxlength="100"></label><button data-security="name">Save name</button><button data-security="delete">Delete account</button>
+<div id="securityDeletion" hidden><input id="securityDeleteConfirm" placeholder="Type DELETE"><input id="securityPassword" type="password" placeholder="Password, for password accounts"><button data-security="confirmDelete">Confirm deletion</button></div>
+<section id="securityAdmin" hidden><h3>PromoHub Admin</h3><p id="securitySummary"></p><button data-security="users">Users</button><button data-security="more">Next users</button><button data-security="requests">Premium requests</button><button data-security="audit">Recent audit</button><div id="securityRecords"></div></section></section>
     <button id="logoutBtn" class="logoutBtn">Log out</button>
   </div>
 </div>
@@ -521,12 +527,14 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <script src="./firebase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
 <script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
 
 <script src="./app.js"></script>
+<script src="./security-ui.js"></script>
 <script src="./install.js"></script>
 
 </body>

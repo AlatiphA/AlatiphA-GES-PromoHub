@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.0";
+const APP_VERSION = "1.6.2";
 
 const versionEl =
   document.getElementById(
@@ -347,7 +347,7 @@ const READER_DATA_KEY =
   "ges-promohub-data";
 
 function getBookmarksKey() {
-  return "ges-promohub-bookmarks-" + selectedBookFile;
+  return "ges-promohub-bookmarks-" + selectedBookFile + securityLocalSuffix();
 }
 
 
@@ -2446,7 +2446,7 @@ function bookCloudId() {
 }
 
 function getBookReaderDataKey() {
-  return READER_DATA_KEY + "-" + bookCloudId();
+  return READER_DATA_KEY + "-" + bookCloudId() + securityLocalSuffix();
 }
 
 /* Upgrade the original single-book local progress store to a book-specific
@@ -2459,7 +2459,7 @@ loadReaderData = function() {
     const own = localStorage.getItem(key);
     if (own) return JSON.parse(own);
     const legacy = _legacyLoadReaderData();
-    if (legacy && legacy.location) {
+    if (!securityLocalSuffix() && localStorage.getItem("lastBook") === selectedBookFile && legacy && legacy.location) {
       localStorage.setItem(key, JSON.stringify(legacy));
       return legacy;
     }
@@ -2498,10 +2498,12 @@ function schedulePreferenceSync() {
 function scheduleProgressSync(data) {
   if (!cloudReady || !cloudUser || !cloudDb) return;
   clearTimeout(progressSyncTimer);
+  const scheduledUser=cloudUser, scheduledBook=selectedBookFile, scheduledId=bookCloudId();
   progressSyncTimer = setTimeout(async () => {
+    if(!cloudReady || cloudUser?.uid!==scheduledUser.uid || selectedBookFile!==scheduledBook)return;
     try {
       await cloudDb.collection("users").doc(cloudUser.uid)
-        .collection("reading").doc(bookCloudId()).set({
+        .collection("reading").doc(scheduledId).set({
           bookFile: selectedBookFile,
           cfi: data.location || "",
           progress: Number(data.progress) || 0,
@@ -2579,7 +2581,7 @@ async function syncLocalBookmarksToCloud() {
     const batch = cloudDb.batch();
     arr.forEach(b => {
       const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks").doc(bookmarkId(b));
-      batch.set(ref, { ...b, bookFile: selectedBookFile, updatedAtMs: Date.now() }, { merge: true });
+      batch.set(ref, { ...b, bookFile: selectedBookFile, updatedAtMs: Date.now(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
     });
     if (arr.length) await batch.commit();
   } catch (e) { console.warn("Bookmark upload:", e); }
@@ -2669,14 +2671,7 @@ function setAvatar(el, user) {
 }
 
 async function ensureUserProfile(user) {
-  if (!cloudDb || !user) return;
-  const ref = cloudDb.collection("users").doc(user.uid);
-  const snap = await ref.get();
-  if (!snap.exists) {
-    await ref.set({ uid:user.uid, name:user.displayName || "", email:user.email || "", photoURL:user.photoURL || "", role:"user", accountStatus:"active", createdAt:firebase.firestore.FieldValue.serverTimestamp(), updatedAt:firebase.firestore.FieldValue.serverTimestamp() });
-  } else {
-    await ref.set({ name:user.displayName || snap.data().name || "", email:user.email || "", photoURL:user.photoURL || "", updatedAt:firebase.firestore.FieldValue.serverTimestamp() }, { merge:true });
-  }
+  return securityActivate(user);
 }
 
 async function updateAccountUI(user) {
@@ -2686,7 +2681,7 @@ async function updateAccountUI(user) {
   try {
     const s = await cloudDb.collection("users").doc(user.uid).get();
     const d = s.data() || {};
-    document.getElementById("accountType").textContent = (d.role || "user") + " · " + (d.accountStatus || "active");
+    document.getElementById("accountType").textContent = (d.accountTier || "free") + " · " + (d.accountStatus || "active");
   } catch (_) {}
 }
 
@@ -2697,16 +2692,7 @@ async function initFirebaseFeatures() {
     cloudAuth = firebase.auth();
     cloudDb = firebase.firestore();
     cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
-    cloudAuth.onAuthStateChanged(async user => {
-      cloudUser = user || null;
-      cloudReady = !!user;
-      if (!user) { showAuth(); return; }
-      hideAuth();
-      await ensureUserProfile(user);
-      await updateAccountUI(user);
-      await mergePreferencesFromCloud();
-      await syncCurrentBookCloud();
-    });
+    cloudAuth.onAuthStateChanged(user => securityAuthChanged(user));
   } catch (e) { console.warn("Firebase startup:", e); }
 }
 
@@ -2717,18 +2703,20 @@ if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async () => {
   authError.textContent = "";
   try {
     if (authMode === "signup") {
+      securityRegistering = true;
       const cred = await cloudAuth.createUserWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
       if (authName.value.trim()) await cred.user.updateProfile({ displayName: authName.value.trim() });
-      await ensureUserProfile(cred.user);
+      await cred.user.sendEmailVerification();
       await cloudAuth.signOut();
       setAuthMode("login");
       authPassword.value = "";
-      authError.textContent = "Account created. Please log in.";
+      authError.textContent = "Account created. Verify your email, then log in.";
       showAuth();
     } else {
       await cloudAuth.signInWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
     }
   } catch (e) { authError.textContent = (e.message || "Unable to sign in.").replace(/^Firebase:\s*/i, ""); }
+  finally { securityRegistering = false; }
 });
 if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
   if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
@@ -2804,4 +2792,4 @@ const _openReaderLocal = openReader;
 openReader = function() { _openReaderLocal(); setTimeout(syncCurrentBookCloud, 500); };
 
 setAuthMode("login");
-initFirebaseFeatures();
+window.addEventListener("DOMContentLoaded", initFirebaseFeatures, {once:true});

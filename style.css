@@ -1409,3 +1409,12 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 #faqFrame { width:100%; flex:1; border:0; background:#111; }
 #pullRefreshIndicator { position:fixed; top:8px; left:50%; transform:translate(-50%,-60px); z-index:9999; padding:7px 12px; border-radius:18px; background:#222; color:#fff; font-size:12px; transition:transform .16s ease; pointer-events:none; }
 #pullRefreshIndicator.show { transform:translate(-50%,0); }
+
+/* v1.6.2 security controls, existing account card retained */
+.accountCard { max-height:80dvh;overflow:auto; }
+#securityControls { width:100%;font-size:13px; }
+#securityControls button { padding:8px;margin:4px 2px;border:1px solid #777;border-radius:8px;background:#333;color:white;cursor:pointer; }
+#securityControls input { width:100%;padding:8px;margin:6px 0;border:1px solid #777;border-radius:7px;background:#222;color:white;box-sizing:border-box; }
+#securityControls [hidden] { display:none!important; }
+#securityMessage { color:#ffd576;overflow-wrap:anywhere; }
+#securityRecords>div { border-top:1px solid #666;padding:8px 0; }
