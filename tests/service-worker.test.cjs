@@ -4,11 +4,11 @@ function setup(){
  const listeners={},deleted=[],fetched=[],stored=[];
  const cache={addAll:async()=>{},add:async()=>{},match:async()=>undefined,put:async r=>stored.push(r.url)};
  const scope={addEventListener:(name,f)=>listeners[name]=f,location:{origin:'https://example.test'},clients:{claim:async()=>{}}};
- vm.runInNewContext(fs.readFileSync(require.resolve('../sw.js'),'utf8'),{self:scope,caches:{open:async()=>cache,keys:async()=>['other-app-v1','alatipha-ges-promohub-v1.5.4','alatipha-ges-promohub-v1.5.8','alatipha-ges-promohub-v1.5.9'],delete:async n=>deleted.push(n)},fetch:async r=>{fetched.push(r.url);throw new Error('offline');},URL,Response,console,Promise});
+ vm.runInNewContext(fs.readFileSync(require.resolve('../sw.js'),'utf8'),{self:scope,caches:{open:async()=>cache,keys:async()=>['other-app-v1','alatipha-ges-promohub-v1.5.4','alatipha-ges-promohub-v1.5.8','alatipha-ges-promohub-v1.5.9','alatipha-ges-promohub-v1.5.10'],delete:async n=>deleted.push(n)},fetch:async r=>{fetched.push(r.url);throw new Error('offline');},URL,Response,console,Promise});
  return {listeners,deleted,fetched,stored,cache};
 }
 test('activation keeps unrelated origin caches',async()=>{
- const s=setup();let work;s.listeners.activate({waitUntil:p=>work=p});await work;assert.deepEqual(s.deleted,['alatipha-ges-promohub-v1.5.4','alatipha-ges-promohub-v1.5.8']);
+ const s=setup();let work;s.listeners.activate({waitUntil:p=>work=p});await work;assert.deepEqual(s.deleted,['alatipha-ges-promohub-v1.5.4','alatipha-ges-promohub-v1.5.8','alatipha-ges-promohub-v1.5.9']);
 });
 test('Auth, Functions and Firestore API traffic is not intercepted',()=>{
  const s=setup();for(const host of ['identitytoolkit.googleapis.com','firestore.googleapis.com','us-central1-ges-promohub.cloudfunctions.net'])s.listeners.fetch({request:{method:'GET',url:'https://'+host+'/data'},respondWith:()=>assert.fail('Sensitive endpoint intercepted')});assert.equal(s.fetched.length,0);

@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.3";
+const APP_VERSION = "1.6.4";
 
 const versionEl =
   document.getElementById(
@@ -2043,14 +2043,21 @@ function closeSidebar() {
 
 /* MENU EVENTS */
 
+function handleSidebarButtonClick(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  toggleSidebar();
+  showControls();
+}
+
 menuBtn.addEventListener(
   "click",
-  toggleSidebar
+  handleSidebarButtonClick
 );
 
 bottomMenuBtn.addEventListener(
   "click",
-  toggleSidebar
+  handleSidebarButtonClick
 );
 
 
@@ -2357,8 +2364,8 @@ document.addEventListener("click", e => {
   if (
     sidebar.classList.contains("active") &&
     !sidebar.contains(e.target) &&
-    e.target !== menuBtn &&
-    e.target !== bottomMenuBtn &&
+    !menuBtn.contains(e.target) &&
+    !bottomMenuBtn.contains(e.target) &&
     !e.target.closest("header")
   ) {
     toggleSidebar();
