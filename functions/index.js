@@ -48,6 +48,8 @@ exports.initializePromoHubAccount = onCall(options,async req => {
   if (!old.exists || !p.accountStatus) data.accountStatus='active';
   if (!old.exists || p.securitySchemaVersion !== 2 || !['free','premium'].includes(p.accountTier)) data.accountTier='free';
   Object.assign(data,subscriptions.initial(p));
+  if(p.pendingLoginEmail && String(p.pendingLoginEmail).toLowerCase()===String(record.email||'').toLowerCase())data.pendingLoginEmail='';
+  if(old.exists && p.email && String(p.email).toLowerCase()!==String(record.email||'').toLowerCase())audit(tx,uid,'account.emailChanged',uid);
   data.securitySchemaVersion=2;
   if (!old.exists) data.createdAt=stamp();
   tx.set(ref,data,{merge:true});
@@ -151,3 +153,5 @@ exports.deletePromoHubAccount = onCall(options,async req => {
 });
 
 Object.assign(exports,require('./payments.cjs')({onCall,options,HttpsError,db,member,identity,target,stamp,audit,policy}));
+
+Object.assign(exports,require('./account-security.cjs')({onCall,options,HttpsError,db,admin,stamp,audit,policy}));

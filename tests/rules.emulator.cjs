@@ -47,3 +47,8 @@ test('trial users can still edit their name but cannot submit client-approved pa
  await assertFails(setDoc(doc(client('trial'),'subscriptionRequests/trial'),{status:'approved'}));
  await assertFails(setDoc(doc(client('trial'),'subscriptionPayments/fake'),{uid:'trial'}));
 });
+test('clients cannot change login email or pending email metadata',async()=>{
+ for(const update of [{email:'injected@example.test'},{pendingLoginEmail:'injected@example.test'},{emailVerified:true}]){
+  await assertFails(updateDoc(doc(client('alice'),'users/alice'),{...update,updatedAt:serverTimestamp()}));
+ }
+});
