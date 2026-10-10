@@ -3,6 +3,7 @@
 <head>
 
   <meta charset="UTF-8" />
+  <script src="./ui-theme.js"></script>
 
   <!-- Hide the library before first paint only when this tab will resume a book. -->
   <style>
@@ -65,17 +66,6 @@
     name="apple-mobile-web-app-status-bar-style"
     content="black-translucent"
   >
-
-  <!-- Apply saved library theme immediately to prevent flash -->
-  <script>
-    (function() {
-      var t = localStorage.getItem("library-theme") || "dark";
-      document.addEventListener("DOMContentLoaded", function() {
-        var lib = document.getElementById("libraryScreen");
-        if (lib) lib.setAttribute("data-theme", t);
-      });
-    })();
-  </script>
 
 </head>
 
@@ -516,6 +506,7 @@
     <div class="authDivider"><span>Or continue with Google</span></div>
     <button id="googleSignInBtn" class="authGoogleBtn" type="button"><span class="authGoogleMark" aria-hidden="true">G</span> Continue with Google</button>
     <button id="authOfflineBtn" class="authModeBtn authOfflineBtn" type="button">Continue offline</button>
+    <label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
     <p class="authGuestNote">Try reading free for 7 days. Trial progress and bookmarks stay on this device. Sign in to choose a paid plan.</p>
   </div>
 </div>
@@ -529,6 +520,7 @@
     <span id="accountEmail"></span>
     <span id="accountType" class="accountType">Standard account</span>
 <section id="securityControls">
+  <label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <p id="securityMessage" role="status"></p>
   <div class="accountTabs" role="tablist" aria-label="Account sections">
     <button id="myAccountTab" role="tab" aria-selected="true" aria-controls="myAccountPanel" data-account-tab="account">My Account</button>
