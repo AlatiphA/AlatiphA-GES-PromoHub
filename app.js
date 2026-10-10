@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.8";
+const APP_VERSION = "1.6.9";
 
 const versionEl =
   document.getElementById(
@@ -2798,21 +2798,56 @@ refreshIndicator.id = "pullRefreshIndicator";
 refreshIndicator.textContent = "Pull to refresh";
 document.body.appendChild(refreshIndicator);
 let prStartY = null, prStartX = null, prArmed = false;
+function profileRefreshBlocked() {
+  return accountPanel.classList.contains("open") || authScreen.classList.contains("active");
+}
+function pullRefreshBlocked() {
+  return profileRefreshBlocked() || sidebarIsOpen() || faqOverlay.classList.contains("open");
+}
+function resetPullRefresh() {
+  prStartY = null; prStartX = null; prArmed = false;
+  refreshIndicator.classList.remove("show");
+}
 document.addEventListener("touchstart", e => {
-  if (e.touches.length !== 1 || sidebarIsOpen() || faqOverlay.classList.contains("open")) return;
-  if (window.scrollY > 0) return;
-  prStartY = e.touches[0].clientY; prStartX = e.touches[0].clientX; prArmed = false;
+  resetPullRefresh();
+  if (e.touches.length !== 1 || pullRefreshBlocked() || window.scrollY > 0) return;
+  prStartY = e.touches[0].clientY; prStartX = e.touches[0].clientX;
 }, { passive:true, capture:true });
 document.addEventListener("touchmove", e => {
-  if (prStartY === null || e.touches.length !== 1) return;
+  if (pullRefreshBlocked() || e.touches.length !== 1) { resetPullRefresh(); return; }
+  if (prStartY === null) return;
   const dy=e.touches[0].clientY-prStartY, dx=Math.abs(e.touches[0].clientX-prStartX);
-  if (dy > 70 && dx < 35) { prArmed=true; refreshIndicator.textContent="Release to refresh"; refreshIndicator.classList.add("show"); }
+  prArmed=dy > 70 && dx < 35;
+  refreshIndicator.classList.toggle("show",prArmed);
+  if(prArmed)refreshIndicator.textContent="Release to refresh";
 }, { passive:true, capture:true });
 document.addEventListener("touchend", () => {
-  if (prStartY === null) return;
-  const doRefresh=prArmed; prStartY=null; prArmed=false; refreshIndicator.classList.remove("show");
-  if (doRefresh) setTimeout(() => location.reload(), 80);
+  const doRefresh=prArmed && !pullRefreshBlocked(); resetPullRefresh();
+  if (doRefresh) setTimeout(() => { if (!pullRefreshBlocked()) { persistCurrentReaderPosition(); location.reload(); } }, 80);
 }, { passive:true, capture:true });
+document.addEventListener("touchcancel", resetPullRefresh, { passive:true, capture:true });
+
+/* Keep modal scrolling inside the card, including browsers without overscroll containment. */
+let profileTouch=null;
+document.addEventListener("touchstart", e => {
+  profileTouch=null;
+  if(!profileRefreshBlocked() || e.touches.length!==1)return;
+  const card=e.target.closest?.(".accountCard") || null;
+  const scroller=card || (authScreen.classList.contains("active")?authScreen:null);
+  profileTouch={x:e.touches[0].clientX,y:e.touches[0].clientY,scroller};
+}, { passive:true, capture:true });
+document.addEventListener("touchmove", e => {
+  if(!profileTouch || !profileRefreshBlocked() || e.touches.length!==1){profileTouch=null;return;}
+  const dy=e.touches[0].clientY-profileTouch.y,dx=e.touches[0].clientX-profileTouch.x;
+  if(Math.abs(dy)<8 || Math.abs(dy)<=Math.abs(dx))return;
+  const card=profileTouch.scroller;
+  const atTop=!card || card.scrollTop<=0;
+  const atBottom=!card || card.scrollTop+card.clientHeight>=card.scrollHeight-1;
+  if(!card || (dy>0 && atTop) || (dy<0 && atBottom)) { if(e.cancelable)e.preventDefault(); }
+  profileTouch.x=e.touches[0].clientX;profileTouch.y=e.touches[0].clientY;
+}, { passive:false, capture:true });
+document.addEventListener("touchend", () => {profileTouch=null;}, { passive:true, capture:true });
+document.addEventListener("touchcancel", () => {profileTouch=null;}, { passive:true, capture:true });
 
 /* ---------- Pinch changes EPUB text size only ---------- */
 function installPinchTextZoom(doc) {
