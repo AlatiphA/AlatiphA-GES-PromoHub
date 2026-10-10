@@ -13,6 +13,7 @@
   <!-- Font Awesome -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
 
+  <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.classList.add("faqEmbedded");</script>
   <script src="./ui-theme.js"></script>
 
   <style>
@@ -277,7 +278,22 @@ html[data-ui-theme] button:focus-visible,html[data-ui-theme] select:focus-visibl
 html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var(--ui-surface);--border:var(--ui-border);--accent:var(--ui-accent); }
 .themeToggle { display:none!important; }
 
-</style>
+
+    /* FAQ has its own viewport and must not inherit unbounded control widths. */
+    html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
+    body { width:100%; }
+    body > .uiAppearance { width:calc(100% - 32px);max-width:680px;margin:12px auto;padding:0;gap:8px;min-width:0;flex-wrap:wrap; }
+    body > .uiAppearance select { width:132px;flex:0 1 132px;min-width:0;max-width:100%;padding:6px 10px; }
+    html.faqEmbedded body > .uiAppearance { display:none; }
+    .faqQuestion { min-width:0;min-height:44px;padding:12px 14px;overflow-wrap:anywhere; }
+    @media(max-width:480px) {
+      .faqHero { padding:20px 16px 16px; }
+      .faqHero img { width:52px;height:52px;margin-bottom:8px; }
+      .faqHero h1 { font-size:22px; }
+      .faqHero p { font-size:13px; }
+      .faqQuestion { font-size:13px;padding:11px 12px; }
+    }
+  </style>
 
 </head>
 <body>

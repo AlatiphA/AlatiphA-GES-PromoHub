@@ -1532,3 +1532,37 @@ html[data-ui-theme] .bookMeta,html[data-ui-theme] #readingInfo { color:var(--ui-
 html[data-ui-theme] #searchResults,html[data-ui-theme] #closeSearch { background:var(--ui-surface);color:var(--ui-text); }
 html[data-ui-theme] .searchItem,html[data-ui-theme] #bookmarksList a { border-color:var(--ui-border); }
 html[data-ui-theme] #toc a:hover,html[data-ui-theme] #bookmarksList a:hover { background:var(--ui-selected); }
+
+/* Compact interface controls with bounded widths on mobile. */
+html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
+.uiAppearance { min-width:0;max-width:100%;gap:8px;flex-wrap:wrap;margin:12px 0; }
+.uiAppearance select { flex:0 1 132px;width:132px;min-width:0;max-width:100%;min-height:44px;padding:6px 10px;font-size:14px; }
+#securityControls .uiAppearance select { width:132px;max-width:100%; }
+.accountCard { min-width:0;gap:8px; }
+#securityControls,#securityControls .securityBlock { min-width:0; }
+#securityControls button { max-width:100%;min-width:0;padding:8px 10px;white-space:normal;overflow-wrap:anywhere; }
+#securityControls select,#securityControls input { min-width:0;max-width:100%;box-sizing:border-box; }
+.accountTabs { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;margin-bottom:12px; }
+.securityAdminNavigation { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px; }
+.securityActions { gap:6px; }
+.securityBlock { padding:10px 0; }
+.securityRecord { padding:10px;margin:8px 0; }
+@media (max-width:480px) {
+ .accountCard { padding:14px;gap:6px; }
+ .accountAvatar { width:44px;height:44px;font-size:18px; }
+ #accountName { font-size:18px; }
+ #accountEmail,#accountType { font-size:13px;line-height:1.4; }
+ #securityControls { font-size:13px; }
+ #securityControls h3 { font-size:17px;margin:6px 0 8px; }
+ #securityControls h4 { font-size:15px;margin:6px 0 8px; }
+ #securityControls button { font-size:13px; }
+ .uiAppearance { font-size:13px;margin:10px 0; }
+ .securityActions button { flex:1 1 100px; }
+}
+
+.sidebarSubscription { padding:12px 4px;border-top:1px solid var(--ui-border);margin-top:8px;flex-shrink:0; }
+.sidebarSubscription h3 { font-size:14px;margin-bottom:6px;color:var(--ui-accent); }
+.sidebarSubscription p { font-size:12px;line-height:1.45;margin:5px 0;overflow-wrap:anywhere; }
+#sidebarSubscriptionHint { color:var(--ui-muted); }
+#sidebarSubscriptionButton { min-height:44px;max-width:100%;margin-top:6px;padding:8px 12px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);color:var(--ui-text);font-size:13px;white-space:normal; }
+#sidebarSubscriptionButton[hidden] { display:none; }

@@ -216,56 +216,13 @@
       <div id="bookmarksList"></div>
     </div>
 
-    <!-- MoMo Support Section -->
-    <div class="momoSection" id="momoSection">
-
-      <div class="momoTitle">
-        <i class="fa-solid fa-heart"></i> Support AlatiphA
-      </div>
-
-      <p class="momoDesc">
-        Built with love, shared for free. Support the developer.
-      </p>
-
-      <div class="momoCard">
-
-        <div class="momoCardLeft">
-          <div class="momoNetwork">
-            <i class="fa-solid fa-mobile-screen-button"></i> MTN MoMo
-          </div>
-          <div class="momoNumber" id="momoNumber">0243443688</div>
-          <div class="momoName">Name: Abdul-Latif Ahmed</div>
-        </div>
-
-        <button class="momoCopyBtn" id="momoCopyBtn" onclick="
-          navigator.clipboard.writeText('0243443688').then(function() {
-            var btn = document.getElementById('momoCopyBtn');
-            btn.textContent = 'Copied!';
-            setTimeout(function() { btn.textContent = 'Copy Number'; }, 2000);
-          });
-        ">
-          Copy Number
-        </button>
-
-      </div>
-
-      <button class="supporterKeyLink" id="supporterKeyLink">
-        Already supported? Enter your key
-      </button>
-
-    </div>
-
-    <!-- SUPPORTER THANK YOU (shown after valid key) -->
-    <div class="supporterThanks" id="supporterThanks" style="display:none">
-      <i class="fa-solid fa-circle-check"></i>
-      <span>Thank you for supporting AlatiphA!</span>
-    </div>
-
-    <div class="sidebarFaqWrap">
-      <button id="sidebarFaqBtn" class="sidebarFaqBtn">
-        <i class="fa-solid fa-circle-question"></i> Help & FAQ
-      </button>
-    </div>
+    <!-- Subscription access replaces the old donation and key-entry section. -->
+    <section class="sidebarSubscription" aria-labelledby="sidebarSubscriptionTitle">
+      <h3 id="sidebarSubscriptionTitle">Subscription</h3>
+      <p id="sidebarSubscriptionStatus" aria-live="polite">Checking access...</p>
+      <p id="sidebarSubscriptionHint">Paid plans include cloud saving and device syncing.</p>
+      <button id="sidebarSubscriptionButton" type="button">View plans</button>
+    </section>
 
     <!-- About --> 
     <div class="aboutSection">
@@ -536,12 +493,14 @@
       <button data-security="name">Save name</button>
     </div>
     <div class="securityBlock"><h3>Subscription</h3>
-      <p id="subscriptionStatus"></p><p>The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
+      <p id="subscriptionStatus"></p><p id="subscriptionHint">The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
+      <div id="subscriptionPurchaseControls">
       <label for="subscriptionPlan">Choose a plan</label><select id="subscriptionPlan"><option value="m1">1 month - GH₵20</option><option value="m3">3 months - GH₵50</option><option value="m6">6 months - GH₵80</option><option value="m12">12 months - GH₵100</option></select>
       <p id="subscriptionPaymentDetails">Pay to MTN MoMo 0243443688, Abdul-Latif Ahmed.</p>
       <label for="subscriptionReference">MoMo transaction reference</label><input id="subscriptionReference" maxlength="80" autocomplete="off" placeholder="Reference from your MoMo receipt">
       <button id="securityPremiumButton" data-security="premium">Submit payment for review</button>
       <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
+      </div>
     </div>
     <details class="securityBlock securityDanger"><summary>Delete account</summary>
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>

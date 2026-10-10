@@ -22,11 +22,31 @@ function subscriptionReadable(){
  return Date.now()<start+subscriptionTrialMs;
 }
 function subscriptionDate(ms){return Number(ms)>0?new Date(Number(ms)).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'Not active';}
+function subscriptionSidebarRender(){
+ const status=document.getElementById('sidebarSubscriptionStatus'),button=document.getElementById('sidebarSubscriptionButton'),hint=document.getElementById('sidebarSubscriptionHint');
+ if(!status || !button || !hint)return;
+ const p=securityProfile || subscriptionCachedProfile();
+ button.hidden=false;button.textContent='View plans';hint.textContent='Paid plans include cloud saving and device syncing.';
+ if(securityIsAdmin()){status.textContent='Administrator access';button.hidden=true;hint.textContent='Full access. No subscription purchase required.';return;}
+ if(cloudUser && !cloudUser.emailVerified){status.textContent='Email verification required';return;}
+ if(p?.accountStatus && p.accountStatus!=='active'){status.textContent='Account inactive';button.textContent='My Account';return;}
+ if(subscriptionLegacy(p)){status.textContent='Existing Premium access';button.textContent='My Account';return;}
+ if(subscriptionPaid(p)){status.textContent=`Subscribed · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`;button.textContent='Renew subscription';return;}
+ if(p){status.textContent=Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · device only`:'Trial/subscription expired';return;}
+ if(cloudUser || securityLocalOwner){status.textContent='Checking account access...';return;}
+ subscriptionReadable();
+ const start=Number(subscriptionLocalRead('ges-promohub-guest-trial-start'));
+ status.textContent=Date.now()<start+subscriptionTrialMs?`Guest trial · ends ${subscriptionDate(start+subscriptionTrialMs)} · device only`:'Guest trial expired';
+ button.textContent='Sign in / View plans';
+}
 function subscriptionRender(){
+ subscriptionSidebarRender();
  const p=securityProfile;if(!p)return;
  subscriptionLocalWrite('ges-promohub-subscription-'+cloudUser.uid,JSON.stringify(p));
  const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionPaid(p)?`Paid subscription · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
  document.getElementById('subscriptionStatus').textContent=text;
+ const admin=securityIsAdmin();document.getElementById('subscriptionPurchaseControls').hidden=admin;
+ document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
  document.getElementById('accountType').textContent=text;
  const premium=document.getElementById('securityPremiumButton');premium.textContent='Submit payment for review';
  document.getElementById('subscriptionPaymentDetails').textContent=`Pay GH₵${subscriptionPlans[document.getElementById('subscriptionPlan').value].price} to MTN MoMo 0243443688, Abdul-Latif Ahmed. Then enter the MoMo transaction reference below.`;
@@ -76,8 +96,15 @@ openReader=function(){
  return subscriptionOpenReader();
 };
 function subscriptionCheckExpiry(){
+ subscriptionSidebarRender();
  if(securityProfile){const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();subscriptionRender();if(wasReady&&!cloudReady){clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);}}
  if(!subscriptionReadable() && rendition){persistCurrentReaderPosition();backBtn.click();if(cloudUser){accountPanel.classList.add('open');securitySelectTab('account');}else showAuth();}
 }
 setInterval(subscriptionCheckExpiry,30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')subscriptionCheckExpiry();});
+
+document.getElementById('sidebarSubscriptionButton')?.addEventListener('click',e=>{
+ e.stopPropagation();openAccount();
+ if(cloudUser){securitySelectTab('account');document.getElementById('subscriptionStatus')?.scrollIntoView?.({block:'nearest'});}
+});
+subscriptionSidebarRender();
