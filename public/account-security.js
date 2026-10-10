@@ -52,7 +52,9 @@ async function requestPromoHubLoginEmail(user,current,newEmail,epoch=securityEpo
  await accountSecurityReauthenticate(user,current,epoch);
  const result=await securityCall('preparePromoHubLoginEmail',{newEmail});
  if(!accountSecurityCurrent(user,epoch))throw Error('Your account changed. Sign in again.');
- await user.verifyBeforeUpdateEmail(result.newEmail,{url:location.origin+'/?account-security=1'});
+ const continueUrl=new URL('./index.html',location.href);
+ continueUrl.search='?account-security=1';continueUrl.hash='';
+ await user.verifyBeforeUpdateEmail(result.newEmail,{url:continueUrl.href});
  return result.newEmail;
 }
 async function refreshPromoHubLoginEmail(user,epoch=securityEpoch){

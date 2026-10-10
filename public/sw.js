@@ -1,5 +1,5 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.6.4';
+const APP_VERSION='v1.6.5';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const CORE=['./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];

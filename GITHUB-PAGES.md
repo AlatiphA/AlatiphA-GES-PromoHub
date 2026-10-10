@@ -1,11 +1,23 @@
-# GitHub Pages compatibility address
+# Independent PromoHub sites from one source folder
 
-The application is hosted at https://ges-promohub.web.app/. Website files remain in public/ and Firebase Hosting serves that folder.
+Both addresses run the complete app without redirecting:
+- https://ges-promohub.web.app/
+- https://alatipha.github.io/AlatiphA-GES-PromoHub/
 
-The repository-root index.html is a small compatibility page for https://alatipha.github.io/AlatiphA-GES-PromoHub/. It redirects to Firebase using JavaScript and HTML refresh, with an accessible Open PromoHub link if automatic navigation fails. It contains no duplicate application code or backend SDK.
+Website source remains in public/. Firebase Hosting deploys that folder. The workflow .github/workflows/promohub-pages.yml tests the repository, uploads only public, then deploys GitHub Pages. It runs on main pushes and can be started manually. No second website source copy is needed.
 
-For the existing GitHub Pages branch publication, keep source main and folder /(root). Do not change Firebase Hosting's public folder back to the repository root.
+## Required one-time settings
 
-GitHub Pages and Firebase have separate browser storage. This compatibility page does not clear or copy data. Paid cloud progress can restore when using the same verified active account. Guest or trial-only local progress from the old GitHub address does not automatically transfer to Firebase. Keep the old site's browser data if you need to recover it.
+In https://github.com/AlatiphA/AlatiphA-GES-PromoHub/settings/pages, select GitHub Actions under Build and deployment > Source. Do this before pushing the workflow. The former Deploy from a branch setting serves the wrong folder.
 
-The fix requires a GitHub commit and push, followed by completion of the Pages deployment. No Firebase deployment is needed. App v1.7.4 and service-worker cache v1.6.4 remain unchanged. An installed app with an old GitHub scope may open Firebase in a browser; reinstall from the Firebase address after confirming it works. Do not clear local storage as part of this fix.
+In the Firebase project ges-promohub, open Authentication > Settings > Authorized domains. Ensure alatipha.github.io is present. Add the hostname if missing, without https or the repository path. Retain the existing Firebase domains. Google sign-in and email-action return links require allowed domains.
+
+Both sites use the same Firebase project, accounts, subscriptions and cloud reader data. Local storage, installed apps, login sessions and caches belong to their respective origins. Guest/trial-only reading data does not automatically transfer between origins. Nothing in this update clears either site's storage.
+
+Email-change verification links return to the current app index.html, preserving the GitHub repository path. App v1.7.5; SW cache v1.6.5. Both sites need the same release: deploy Firebase Hosting and push to GitHub. Functions, security rules and database records do not change.
+
+## Verify
+
+After the Publish PromoHub to GitHub Pages workflow succeeds, open both addresses. Each should stay on its own address and show the library/login, not a repository README or redirect. Test sign-in, the same account subscription status, a book, footnotes, refresh restoration, FAQ and the user guide. Close existing app windows and reopen if the previous worker is still active. Do not clear data as part of deployment.
+
+The workflow packages public at the website root, so GitHub URLs do not include /public/. Do not move app files back to the repository root. The obsolete root redirect index.html is removed.
