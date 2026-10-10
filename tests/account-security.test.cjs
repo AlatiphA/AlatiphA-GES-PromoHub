@@ -2,8 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
 const source=fs.readFileSync(require.resolve('../public/account-security.js'),'utf8');
 function client(){
- const calls=[],elements={},user={uid:'u',email:'u@example.test',providerData:[{providerId:'password'}],async reauthenticateWithCredential(c){calls.push(['reauth',c]);},async getIdToken(){calls.push(['token']);},async updatePassword(p){calls.push(['password',p]);},async verifyBeforeUpdateEmail(e){calls.push(['email',e]);},async reload(){calls.push(['reload']);}};
- const scope={securityEpoch:1,cloudUser:user,cloudAuth:{currentUser:user},securityProfile:{accountStatus:'active'},navigator:{onLine:true},firebase:{auth:{EmailAuthProvider:{credential:(email,password)=>({email,password})}}},location:{origin:'https://example.test',search:''},URLSearchParams,document:{getElementById:id=>elements[id]||={textContent:'',value:'',addEventListener(){},open:false},querySelectorAll:()=>[]},securityCall:async(name,data)=>{calls.push([name,data]);return name==='preparePromoHubLoginEmail'?{newEmail:data.newEmail}:{email:'new@example.test',pendingEmail:''};},securitySelectTab(){},accountPanel:{classList:{add(){}}},Date,Number,String};
+ const calls=[],elements={},user={uid:'u',email:'u@example.test',providerData:[{providerId:'password'}],async reauthenticateWithCredential(c){calls.push(['reauth',c]);},async getIdToken(){calls.push(['token']);},async updatePassword(p){calls.push(['password',p]);},async verifyBeforeUpdateEmail(e,options){calls.push(['email',e,options]);},async reload(){calls.push(['reload']);}};
+ const scope={securityEpoch:1,cloudUser:user,cloudAuth:{currentUser:user},securityProfile:{accountStatus:'active'},navigator:{onLine:true},firebase:{auth:{EmailAuthProvider:{credential:(email,password)=>({email,password})}}},location:{origin:'https://example.test',href:'https://example.test/index.html',search:''},URL,URLSearchParams,document:{getElementById:id=>elements[id]||={textContent:'',value:'',addEventListener(){},open:false},querySelectorAll:()=>[]},securityCall:async(name,data)=>{calls.push([name,data]);return name==='preparePromoHubLoginEmail'?{newEmail:data.newEmail}:{email:'new@example.test',pendingEmail:''};},securitySelectTab(){},accountPanel:{classList:{add(){}}},Date,Number,String};
  vm.createContext(scope);vm.runInContext(source,scope);return {scope,user,calls,elements};
 }
 test('password changes require matching new passwords and current-password reauthentication',async()=>{
@@ -53,4 +53,12 @@ test('disabled, suspended, deleting, Google-only and stale-email sessions cannot
 test('email synchronisation trusts verified Auth, clears completed pending email and preserves subscription',async()=>{
  const b=backend();b.data.get('users/u').pendingLoginEmail='new@example.test';b.user.email='new@example.test';const r=await b.out.synchronizePromoHubLoginEmail(b.req({email:'new@example.test'},{email:'injected@example.test'}));assert.equal(r.email,'new@example.test');const p=b.data.get('users/u');assert.equal(p.email,'new@example.test');assert.equal(p.pendingLoginEmail,'');assert.equal(p.accountTier,'premium');assert.equal(b.events.at(-1).action,'account.emailChanged');
  b.user.emailVerified=false;await assert.rejects(b.out.synchronizePromoHubLoginEmail(b.req({email:'new@example.test'})),e=>e.code==='permission-denied');
+});
+
+test('email verification returns to the current app path on Firebase and GitHub Pages',async()=>{
+ for(const base of ['https://ges-promohub.web.app/','https://alatipha.github.io/AlatiphA-GES-PromoHub/']){
+  const c=client();c.scope.location.href=base+'index.html?old=1#chapter';
+  await c.scope.requestPromoHubLoginEmail(c.user,'old123','new@example.test');
+  assert.equal(c.calls.at(-1)[2].url,base+'index.html?account-security=1');
+ }
 });

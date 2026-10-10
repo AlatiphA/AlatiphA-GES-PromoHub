@@ -329,3 +329,8 @@ GitHub: [github.com/AlatiphA](https://github.com/AlatiphA)
 ## Current project layout
 
 Website files are in public/. Deploy and push from this repository. See PROJECT-LAYOUT.md for commands.
+
+
+## Independent Firebase and GitHub Pages hosting
+
+Both sites publish the same public/ folder without redirecting. See GITHUB-PAGES.md for the required GitHub Actions publishing source and Firebase authorised domain.

@@ -5,7 +5,7 @@ test('Hosting serves only public while Functions and rules retain their root pat
  const config=JSON.parse(fs.readFileSync(path.join(root,'firebase.json'),'utf8'));
  assert.equal(config.hosting.public,'public');assert.equal(config.functions.source,'functions');assert.equal(config.firestore.rules,'firestore.rules');
  assert.ok(config.hosting.headers.some(h=>h.source==='sw.js'&&h.headers.some(v=>v.key==='Cache-Control'&&v.value==='no-cache')));
- for(const name of ['app.js','sw.js','faq.html','user-guide.html','library','fonts']){assert.ok(fs.existsSync(path.join(publicDir,name)));assert.ok(!fs.existsSync(path.join(root,name)));}
+ for(const name of ['index.html','app.js','sw.js','faq.html','user-guide.html','library','fonts']){assert.ok(fs.existsSync(path.join(publicDir,name)));assert.ok(!fs.existsSync(path.join(root,name)));}
  for(const name of ['functions','tests','firebase.json','firestore.rules','.firebaserc'])assert.ok(!fs.existsSync(path.join(publicDir,name)));
 });
 test('service-worker local precache paths still exist at the same deployed URLs',()=>{
@@ -25,12 +25,3 @@ test('HTML scripts, styles and manifest icons resolve inside Hosting root',()=>{
  for(const icon of manifest.icons)assert.ok(fs.existsSync(path.join(publicDir,icon.src)));
 });
 
-test('GitHub Pages entry sends visitors to the fixed Firebase origin without changing stored data',()=>{
- const vm=require('node:vm'),html=fs.readFileSync(path.join(root,'index.html'),'utf8');let target;
- const script=html.match(/<script>([\s\S]*?)<\/script>/)[1];
- vm.runInNewContext(script,{window:{location:{replace:url=>{target=url;},search:'?redirect=https://example.test',hash:'#old-book'}}});
- assert.equal(target,'https://ges-promohub.web.app/');
- assert.match(html,/http-equiv="refresh" content="0; url=https:\/\/ges-promohub\.web\.app\/"/);
- assert.match(html,/href="https:\/\/ges-promohub\.web\.app\/">Open PromoHub/);
- assert.ok(fs.existsSync(path.join(publicDir,'index.html')));
-});
