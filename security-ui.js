@@ -54,7 +54,7 @@ async function securityActivate(user){
 async function securityAuthChanged(user){
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
- cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};
+ cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
  if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  hideAuth();if(securityRegistering)return;
  resumeReaderAfterStartup();
