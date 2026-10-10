@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm');
-const source = fs.readFileSync(require.resolve('../app.js'), 'utf8');
+const source = fs.readFileSync(require.resolve('../public/app.js'), 'utf8');
 const start = source.indexOf('function readReaderView()');
 const code = source.slice(start, source.indexOf('setAuthMode("login");', start));
 function setup(record, owner = 'alice', broken = false) {
@@ -59,7 +59,7 @@ test('reader renderer sends saved local CFI to EPUB display', () => {
   assert.deepEqual(displayed, ['saved-cfi']);
 });
 test('startup restoration waits for account scope but does not wait on server operations', () => {
-  const security = fs.readFileSync(require.resolve('../security-ui.js'), 'utf8');
+  const security = fs.readFileSync(require.resolve('../public/security-ui.js'), 'utf8');
   const fn = security.slice(security.indexOf('async function securityAuthChanged'), security.indexOf('let securityCursor'));
   assert.ok(fn.indexOf('securitySwitchLocal(user)') < fn.indexOf('resumeReaderAfterStartup()'));
   assert.ok(fn.lastIndexOf('resumeReaderAfterStartup()') < fn.indexOf('await securityActivate(user)'));

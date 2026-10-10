@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),path=require('node:path'),vm=require('node:vm');
-const root=path.resolve(__dirname,'..'),faq=fs.readFileSync(path.join(root,'faq.html'),'utf8');
+const root=path.resolve(__dirname,'../public'),faq=fs.readFileSync(path.join(root,'faq.html'),'utf8');
 function harness(clipboard){
  const status={textContent:''},copy={addEventListener(_,fn){this.click=fn;}};
  const questions=[0,1].map(()=>({attrs:{},setAttribute(k,v){this.attrs[k]=v;},addEventListener(_,fn){this.click=fn;}}));

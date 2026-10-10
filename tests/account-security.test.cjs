@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-const source=fs.readFileSync(require.resolve('../account-security.js'),'utf8');
+const source=fs.readFileSync(require.resolve('../public/account-security.js'),'utf8');
 function client(){
  const calls=[],elements={},user={uid:'u',email:'u@example.test',providerData:[{providerId:'password'}],async reauthenticateWithCredential(c){calls.push(['reauth',c]);},async getIdToken(){calls.push(['token']);},async updatePassword(p){calls.push(['password',p]);},async verifyBeforeUpdateEmail(e){calls.push(['email',e]);},async reload(){calls.push(['reload']);}};
  const scope={securityEpoch:1,cloudUser:user,cloudAuth:{currentUser:user},securityProfile:{accountStatus:'active'},navigator:{onLine:true},firebase:{auth:{EmailAuthProvider:{credential:(email,password)=>({email,password})}}},location:{origin:'https://example.test',search:''},URLSearchParams,document:{getElementById:id=>elements[id]||={textContent:'',value:'',addEventListener(){},open:false},querySelectorAll:()=>[]},securityCall:async(name,data)=>{calls.push([name,data]);return name==='preparePromoHubLoginEmail'?{newEmail:data.newEmail}:{email:'new@example.test',pendingEmail:''};},securitySelectTab(){},accountPanel:{classList:{add(){}}},Date,Number,String};

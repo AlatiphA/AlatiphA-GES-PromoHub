@@ -1,7 +1,7 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm');
-const html = fs.readFileSync(require.resolve('../index.html'), 'utf8');
-const source = fs.readFileSync(require.resolve('../app.js'), 'utf8');
+const html = fs.readFileSync(require.resolve('../public/index.html'), 'utf8');
+const source = fs.readFileSync(require.resolve('../public/app.js'), 'utf8');
 const boot = html.match(/<script id="readerResumeBoot">([\s\S]*?)<\/script>/)[1];
 function bootClasses(record, owner = 'alice', blocked = false) {
   const classes = new Set();
