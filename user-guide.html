@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GES PromoHub - Complete User Guide</title>
+
+  <link rel="manifest" href="./manifest.json" />
+  <meta name="theme-color" content="#111111" />
+  <link rel="apple-touch-icon" href="icon-192.png" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css" />
+
+  <script>if(new URLSearchParams(location.search).get("embedded")==="1")document.documentElement.classList.add("faqEmbedded");</script>
+  <script src="./ui-theme.js"></script>
+
+  <style>
+
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    html, body {
+      font-family: Arial, sans-serif;
+      min-height: 100%;
+    }
+
+    /* THEMES */
+    body {
+      background: #f5f5f5;
+      color: #111111;
+      --bg: #f5f5f5;
+      --text: #111111;
+      --surface: #ffffff;
+      --border: #dddddd;
+      --accent: #956433;
+    }
+
+    html.dark body {
+      background: #111111;
+      color: #eeeeee;
+      --bg: #111111;
+      --text: #eeeeee;
+      --surface: #1e1e1e;
+      --border: #333333;
+      --accent: #5aa3f0;
+    }
+
+    /* HEADER */
+    .faqHeader {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      padding: 14px 16px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .backLink {
+      color: var(--accent);
+      text-decoration: none;
+      font-size: 18px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .backLink span {
+      font-size: 14px;
+      font-weight: 600;
+    }
+
+    .faqHeaderTitle {
+      font-size: 16px;
+      font-weight: 700;
+      flex: 1;
+      text-align: center;
+    }
+
+    .themeToggle {
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      border: 1px solid var(--border);
+      background: var(--bg);
+      color: var(--text);
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* HERO */
+    .faqHero {
+      text-align: center;
+      padding: 32px 20px 24px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faqHero img {
+      width: 72px;
+      height: 72px;
+      border-radius: 16px;
+      margin-bottom: 12px;
+    }
+
+    .faqHero h1 {
+      font-size: 22px;
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .faqHero p {
+      font-size: 13px;
+      opacity: 0.6;
+    }
+
+    /* CONTENT */
+    .faqContent {
+      max-width: 680px;
+      margin: 0 auto;
+      padding: 20px 16px 48px;
+    }
+
+    .faqSection {
+      margin-bottom: 28px;
+    }
+
+    .faqSectionTitle {
+      font-size: 11px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent);
+      margin-bottom: 10px;
+      padding-bottom: 6px;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .faqItem {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      margin-bottom: 8px;
+      overflow: hidden;
+    }
+
+    .faqQuestion {
+      width: 100%;
+      text-align: left;
+      padding: 14px 16px;
+      background: none;
+      border: none;
+      color: var(--text);
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .faqQuestion .icon {
+      flex-shrink: 0;
+      font-size: 12px;
+      opacity: 0.5;
+      transition: transform 0.2s ease;
+    }
+
+    .faqItem.open .faqQuestion .icon {
+      transform: rotate(180deg);
+    }
+
+    .faqAnswer {
+      display: none;
+      padding: 0 16px 14px;
+      font-size: 13px;
+      line-height: 1.7;
+      opacity: 0.85;
+    }
+
+    .faqItem.open .faqAnswer {
+      display: block;
+    }
+
+    /* SUPPORT BOX */
+    .supportBox {
+      background: var(--surface);
+      border: 1px solid rgba(255,196,0,0.3);
+      border-radius: 12px;
+      padding: 16px;
+      margin-top: 8px;
+    }
+
+    .supportBox .momoNetwork {
+      font-size: 11px;
+      font-weight: 700;
+      color: #ffcc00;
+      margin-bottom: 4px;
+    }
+
+    .supportBox .momoNumber {
+      font-size: 20px;
+      font-weight: 800;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .supportBox .momoName {
+      font-size: 12px;
+      opacity: 0.6;
+      margin-bottom: 10px;
+    }
+
+    .copyBtn {
+      background: #ffcc00;
+      color: #111;
+      border: none;
+      border-radius: 6px;
+      padding: 7px 14px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .copyBtn:active { opacity: 0.8; }
+
+    /* FOOTER */
+    .faqFooter {
+      text-align: center;
+      padding: 20px 16px;
+      font-size: 11px;
+      opacity: 0.4;
+      border-top: 1px solid var(--border);
+    }
+
+
+/* Shared interface colours. EPUB iframe styling remains controlled by the reader. */
+html[data-ui-theme] { --ui-bg:#f4f2ed;--ui-surface:#fff;--ui-raised:#faf8f4;--ui-text:#242b29;--ui-muted:#606b66;--ui-border:#d4d9d4;--ui-accent:#805025;--ui-button:#956433;--ui-on-button:#fff;--ui-selected:#f4e9dc;--ui-danger:#a63032;--ui-overlay:rgba(19,26,23,.4); }
+html[data-ui-theme="dark"] { --ui-bg:#151a1c;--ui-surface:#20282a;--ui-raised:#293335;--ui-text:#f0f3f0;--ui-muted:#b5c1bc;--ui-border:#47534f;--ui-accent:#e1b583;--ui-selected:#3d332a;--ui-danger:#ffb4b4;--ui-overlay:rgba(0,0,0,.65); }
+html[data-ui-theme] body { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] #libraryScreen { --lib-bg:var(--ui-bg);--lib-text:var(--ui-text);--lib-surface:var(--ui-surface);--lib-border:var(--ui-border); }
+html[data-ui-theme] .libraryHeader,html[data-ui-theme] .libraryFooter { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] .librarySubtitle,html[data-ui-theme] .bookDesc { color:var(--ui-muted);opacity:1; }
+html[data-ui-theme] header,html[data-ui-theme] footer,html[data-ui-theme] .sidebar,html[data-ui-theme] .faqOverlayBar { background:var(--ui-surface);color:var(--ui-text);border-color:var(--ui-border); }
+html[data-ui-theme] .title,html[data-ui-theme] .iconBtn,html[data-ui-theme] .bottomBtn,html[data-ui-theme] .navBtn,html[data-ui-theme] #progressText,html[data-ui-theme] .sidebarTab,html[data-ui-theme] #toc a,html[data-ui-theme] .bookmarkLink { color:var(--ui-text); }
+html[data-ui-theme] .sidebarTabs,html[data-ui-theme] .tocItem,html[data-ui-theme] .bookmarkRow,html[data-ui-theme] .aboutSection { border-color:var(--ui-border); }
+html[data-ui-theme] .aboutText,html[data-ui-theme] .noBookmarks,html[data-ui-theme] .fontPickerLabel,html[data-ui-theme] .themePickerLabel { color:var(--ui-muted); }
+html[data-ui-theme] .sidebarTab.active,html[data-ui-theme] .tocItem.active a,html[data-ui-theme] .libraryFooterLink,html[data-ui-theme] .supporterKeyLink { color:var(--ui-accent); }
+html[data-ui-theme] .authScreen,html[data-ui-theme] .faqOverlay,html[data-ui-theme] #faqFrame { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] .accountPanel,html[data-ui-theme] #searchModal,html[data-ui-theme] .supporterKeyModal { background:var(--ui-overlay); }
+html[data-ui-theme] .authCard,html[data-ui-theme] .accountCard,html[data-ui-theme] .searchBox,html[data-ui-theme] .supporterKeyBox,html[data-ui-theme] .themePickerInner,html[data-ui-theme] .fontPickerInner { background:var(--ui-surface);color:var(--ui-text);border-color:var(--ui-border); }
+html[data-ui-theme] .authCard h2,html[data-ui-theme] .authCard .authModeBtn { color:var(--ui-text); }
+html[data-ui-theme] .authCard #authSubtitle,html[data-ui-theme] .authCard .authSignupRow,html[data-ui-theme] .authDivider,html[data-ui-theme] .authCard .authOfflineBtn,html[data-ui-theme] .authCard .authGuestNote,html[data-ui-theme] #authPasswordToggle { color:var(--ui-muted); }
+html[data-ui-theme] .authDivider::before,html[data-ui-theme] .authDivider::after { background:var(--ui-border); }
+html[data-ui-theme] .authCard .authGuestNote,html[data-ui-theme] .securityBlock,html[data-ui-theme] .securityRecord { border-color:var(--ui-border); }
+html[data-ui-theme] .authCard input,html[data-ui-theme] #securityControls input,html[data-ui-theme] #securityControls select,html[data-ui-theme] #searchInput,html[data-ui-theme] #supporterKeyInput,html[data-ui-theme] [data-ui-theme-choice] { background:var(--ui-raised);color:var(--ui-text);border:1px solid var(--ui-border); }
+html[data-ui-theme] input::placeholder { color:var(--ui-muted);opacity:1; }
+html[data-ui-theme] #securityControls button,html[data-ui-theme] .logoutBtn,html[data-ui-theme] .authCard .authGoogleBtn,html[data-ui-theme] .themeOption,html[data-ui-theme] .fontOption { background:var(--ui-raised);color:var(--ui-text);border:1px solid var(--ui-border); }
+html[data-ui-theme] .authCard .authPrimaryBtn,html[data-ui-theme] #securityControls .accountTabs [aria-selected="true"] { background:var(--ui-button);color:var(--ui-on-button);border-color:var(--ui-button); }
+html[data-ui-theme] #securityControls .securityAdminNavigation [aria-pressed="true"],html[data-ui-theme] .fontOption.active,html[data-ui-theme] .themeOption.active { background:var(--ui-selected);color:var(--ui-accent);border-color:var(--ui-accent); }
+html[data-ui-theme] .securityBlock p,html[data-ui-theme] .securityIdentity span { color:var(--ui-muted); }
+html[data-ui-theme] .securityStatus,html[data-ui-theme] #securityMessage { color:var(--ui-accent); }
+html[data-ui-theme] #securityControls .securityDanger button,html[data-ui-theme] .authCard .authError,html[data-ui-theme] .bookmarkDelete { color:var(--ui-danger);border-color:var(--ui-danger); }
+html[data-ui-theme] #pullRefreshIndicator { background:var(--ui-surface);color:var(--ui-text);border:1px solid var(--ui-border); }
+.uiAppearance { display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0;font-size:14px; }
+.uiAppearance select { min-height:44px;padding:8px 12px;border-radius:10px;font-size:14px;max-width:180px; }
+#securityControls .uiAppearance select { width:auto;margin:0; }
+html[data-ui-theme] button:focus-visible,html[data-ui-theme] select:focus-visible,html[data-ui-theme] input:focus-visible { outline:2px solid var(--ui-accent);outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) { .authCard,.accountCard,.libraryScreen { scroll-behavior:auto; } }
+
+html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var(--ui-surface);--border:var(--ui-border);--accent:var(--ui-accent); }
+.themeToggle { display:none!important; }
+
+
+    /* FAQ has its own viewport and must not inherit unbounded control widths. */
+    html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
+    body { width:100%; }
+    body > .uiAppearance { width:calc(100% - 32px);max-width:680px;margin:12px auto;padding:0;gap:8px;min-width:0;flex-wrap:wrap; }
+    body > .uiAppearance select { width:132px;flex:0 1 132px;min-width:0;max-width:100%;padding:6px 10px; }
+    html.faqEmbedded body > .uiAppearance { display:none; }
+    .faqQuestion { min-width:0;min-height:44px;padding:12px 14px;overflow-wrap:anywhere; }
+    @media(max-width:480px) {
+      .faqHero { padding:20px 16px 16px; }
+      .faqHero img { width:52px;height:52px;margin-bottom:8px; }
+      .faqHero h1 { font-size:22px; }
+      .faqHero p { font-size:13px; }
+      .faqQuestion { font-size:13px;padding:11px 12px; }
+    }
+
+.userGuide { margin:28px 0 12px;padding:18px;border:1px solid var(--ui-border);border-radius:12px;background:var(--ui-surface);color:var(--ui-text);overflow-wrap:anywhere; }
+.userGuide h2 { font-size:22px;margin-bottom:8px; }
+.userGuide h3 { font-size:17px;margin:22px 0 10px; }
+.userGuide p,.userGuide li { font-size:14px;line-height:1.65; }
+.userGuide p { margin:10px 0; }
+.userGuide ol { padding-left:22px; }
+.userGuide li { margin:6px 0; }
+.userGuide a { color:var(--ui-accent); }
+.userGuide nav { padding:12px;background:var(--ui-raised);border-radius:8px;margin-top:14px; }
+.userGuide table { border-collapse:collapse;width:100%;table-layout:fixed;font-size:13px;margin:12px 0; }
+.userGuide th,.userGuide td { border:1px solid var(--ui-border);padding:8px;text-align:left;vertical-align:top;overflow-wrap:anywhere; }
+.userGuide caption { text-align:left;font-weight:600;margin-bottom:6px; }
+.userGuide section { scroll-margin-top:16px; }
+.guideIntro { color:var(--ui-muted); }
+.faqQuestion:focus-visible,.userGuide a:focus-visible { outline:2px solid var(--ui-accent);outline-offset:3px; }
+@media(max-width:480px) { .userGuide { padding:14px; } .userGuide h2 { font-size:20px; } }
+@media print { .uiAppearance,.faqHero,.faqFooter,.copyBtn { display:none!important; } .userGuide { border:0;background:white;color:black; } }
+
+
+.guideSite .faqContent { max-width:960px; }
+.guideBrand { display:flex;align-items:center;gap:12px;color:var(--ui-text);text-decoration:none;font-weight:700; }
+.guideBrand img { width:44px;height:44px;border-radius:10px; }
+.guideActions { display:flex;gap:12px;flex-wrap:wrap;align-items:center;margin:18px 0; }
+.guideActions a,.guideActions button { padding:10px 14px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-surface);color:var(--ui-text);font:inherit;cursor:pointer; }
+.guideSite .userGuide nav ol { display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px 24px; }
+.guideSite .userGuide h2 { font-size:clamp(26px,5vw,36px); }
+@media(max-width:560px) { .guideSite .userGuide nav ol { display:block; } }
+@media print { .guideActions,.guideBrand { display:none; } .guideSite .faqContent { max-width:none;padding:0; } .userGuide h3 { break-after:avoid; } }
+</style>
+
+</head>
+<body class="guideSite">
+<label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
+<main class="faqContent"><a class="guideBrand" href="./index.html"><img src="./icon-192.png" alt="">AlatiphA GES PromoHub</a><nav class="guideActions" aria-label="Guide actions"><a href="./faq.html">Help &amp; FAQ</a><a href="./index.html">Open PromoHub</a><button id="printGuide" type="button">Print / Save PDF</button></nav><section class="userGuide" id="user-guide" aria-labelledby="userGuideTitle"><h2 id="userGuideTitle">Complete User Guide</h2><p class="guideIntro">AlatiphA GES PromoHub · v1.7.4 · Updated 10 October 2026</p><p>Use your browser’s Print option to print or save this guide as PDF.</p><nav aria-label="User guide contents"><ol><li><a href="#guide-start">Start and install</a></li><li><a href="#guide-signin">Create an account and sign in</a></li><li><a href="#guide-read">Read and move through a book</a></li><li><a href="#guide-tools">Text, bookmarks and search</a></li><li><a href="#guide-themes">Choose app and reading appearance</a></li><li><a href="#guide-plans">Trial, plans and renewal</a></li><li><a href="#guide-payment">Submit a manual MoMo payment</a></li><li><a href="#guide-sync">Local data, cloud sync and offline use</a></li><li><a href="#guide-profile">My Account and account security</a></li><li><a href="#guide-admin">Administration and payment review</a></li><li><a href="#guide-delete">Deletion, account recovery and Clear Data</a></li><li><a href="#guide-support">Optional support and older supporter keys</a></li><li><a href="#guide-help">Troubleshoot and verify an update</a></li></ol></nav><section id="guide-start"><h3>1. Start and install</h3><p>Open <a href="https://ges-promohub.web.app/">ges-promohub.web.app</a>. Install from your browser when supported, or continue in the browser. For offline study, keep the internet connected while the app and required books download, open each book you need, then test access offline.</p><p>The library contains GES Promotion Aptitude Test Pasco, Model Aptitude Test for GES 1 and 2, Effective Teaching Methods, Notes for Aptitude Test for GES, and Education in Ghana. Select a book to open it. This is a study resource, not a replacement for official GES notices or exam requirements.</p></section><section id="guide-signin"><h3>2. Create an account and sign in</h3><ol><li>Select Sign up, enter your profile name, email and password, then submit.</li><li>Open the verification email. Registration returns you to login.</li><li>Sign in and, if necessary, select Check verification in My Account.</li></ol><p>Continue with Google uses your Google account. Continue offline starts or resumes a guest device trial. A guest session has no cloud account. First login and account verification require internet. Use the same account on another device when you want paid cloud sync.</p><p>Forgot password on login sends a reset email for email/password accounts. Changing your profile name does not change your login email.</p></section><section id="guide-read"><h3>3. Read and move through a book</h3><p>Use the bottom arrows or a horizontal swipe to move pages. Ordinary desktop clicks use left, centre and right reading zones. The centre toggles reader controls. Use the menu button for the sidebar. Contents lists chapters and nested headings; Bookmarks lists saved locations in the current book.</p><p>Choose a contents heading or search result to jump to it. Click book links and footnote references directly; these should not trigger page turning. External links can need internet and browser permission. Use Back to return to the library and choose another book.</p><p>Refresh restores the same book and its saved location in the current account or guest scope. After Back returns to the library, a refresh stays there. Missing or invalid saved sessions fall back to the library. Pull-to-refresh is contained while login or profile is open.</p></section><section id="guide-tools"><h3>4. Text, bookmarks and search</h3><p>A− reduces text size and A+ increases it. Two-finger pinch handling inside the reader adjusts text size within limits. The font menu offers Serif, Open Sans and Arial. Images such as book covers do not resize as normal text.</p><p>Use the bookmark button to save your location. Open Bookmarks in the sidebar to return to a saved location or delete a bookmark. Lists are separate for each book. Use the search button, enter a term and choose a result in the current book.</p></section><section id="guide-themes"><h3>5. Choose app and reading appearance</h3><p>App appearance offers System, Light and Dark on login and My Account. The library appearance button cycles those choices. System follows the device’s light/dark preference. A manual choice is saved on that device. Login, library, account, administration and FAQ use the app appearance.</p><p>The reader palette offers Light, Sepia, Dark and Night for book content independently. Font and reading preferences are separate from app appearance. Embedded FAQ inherits the app theme and has no duplicate appearance dropdown; standalone FAQ retains its selector.</p></section><section id="guide-plans"><h3>6. Trial, plans and renewal</h3><p>The 7-day trial saves reading progress, bookmarks and preferences on this device only. It does not provide cloud reader storage or device syncing. Signed-in account and trial metadata still live on the server; guest trial state is device-local.</p><table><caption>Subscription plans</caption><thead><tr><th>Duration</th><th>Price</th></tr></thead><tbody><tr><td>1 month</td><td>GH₵20</td></tr><tr><td>3 months</td><td>GH₵50</td></tr><tr><td>6 months</td><td>GH₵80</td></tr><tr><td>12 months</td><td>GH₵100</td></tr></tbody></table><p>Paid plans enable cloud saving and device syncing for a verified active account. The sidebar shows access status and expiry. View plans opens My Account; an active paid subscriber sees Renew subscription. Administrators have full access without purchasing.</p><p>Approved renewal extends an active expiry, or starts from approval after expiry. Durations are calendar months. Expired trial or paid access blocks reading and cloud reader access, but local saved reading data is retained for renewal.</p></section><section id="guide-payment"><h3>7. Submit a manual MoMo payment</h3><ol><li>Open My Account and choose your plan.</li><li>Confirm the displayed amount and recipient. Pay that exact amount externally to MTN MoMo <strong>0243443688</strong>, <strong>Abdul-Latif Ahmed</strong>.</li><li>Copy the transaction reference from your MoMo receipt into the reference field.</li><li>Select Submit payment for review. This submits a request; it does not charge your wallet.</li><li>Use Check payment status. Wait for administrator verification and approval before expecting paid access.</li></ol><p>Pending means awaiting review. Approved activates the verified plan. Rejected does not grant access. Keep your receipt. A previously credited reference cannot be used to activate another account. Payment approval can take time; the app does not promise an automatic approval deadline.</p></section><section id="guide-sync"><h3>8. Local data, cloud sync and offline use</h3><p>Reading position and bookmarks are scoped by book and account, with a separate guest scope. Paid verified active accounts and administrators can use cloud reader storage; trials use local storage. Sign in with the same account, connect to the internet and allow saving/restoration before checking a second device.</p><p>Offline reading depends on retained cached files and valid access. New login, verification, password/email changes, payment submission/review and account management require internet. The presence of a cached book does not prove that the latest progress reached the server. If a sync error appears, reconnect before relying on another device’s saved position.</p><p>Browser storage can be cleared or evicted. Keep important study notes separately. Clear Data is not a backup or subscription-cancellation button.</p></section><section id="guide-profile"><h3>9. My Account and account security</h3><p>Open the profile button to see your name, login email and access. Save name updates the profile name. Resend verification sends a verification email; Check verification refreshes its status. Log out ends the current session. The Administration tab appears only for authorised administrators.</p><p>Expand Account Security. For Change password, enter current password, new password and matching confirmation, then submit online. Passwords must satisfy Firebase’s policy. For Change login email, enter current password and the new address, then select Send verification link. The old login remains until verification. Open the link and use Refresh verified email, or sign in again with the new verified address if requested.</p><p>Your UID remains unchanged, so subscription, reading data and administrator role remain associated with your account. Google-only users are directed to Google Account Security. Password fields are cleared after operations or closing, and credentials are not stored in Firestore or offline queues.</p></section><section id="guide-admin"><h3>10. Administration and payment review</h3><table><caption>Administration controls</caption><thead><tr><th>Control</th><th>Purpose</th></tr></thead><tbody><tr><td>Users</td><td>Load accounts and available lifecycle actions.</td></tr><tr><td>Next page</td><td>Load another user batch when a cursor is available.</td></tr><tr><td>Subscription payments</td><td>Review pending paid-plan submissions.</td></tr><tr><td>Recent audit</td><td>View recorded administrative activity.</td></tr></tbody></table><p>For payment approval, check the actual MoMo history, match recipient, transaction reference and exact plan amount, enter amount received, tick the verification checkbox, then Verify and activate. Reject payment leaves access unapproved. A screenshot or typed reference alone is not verification.</p><p>User lifecycle controls include Set to Free, Suspend, Reactivate and Disable sign-in, where permitted. Set to Free removes subscription entitlement. Suspend and Disable sign-in restrict PromoHub account access and revoke refresh tokens. Reactivate restores active profile status. These controls do not delete the account. Do not use these as a substitute for payment approval. Administrator accounts must be managed through the project-owner process.</p></section><section id="guide-delete"><h3>11. Deletion, account recovery and Clear Data</h3><p>Delete account requires typing DELETE and confirming recent authentication. It removes the cloud account and reader data. Local copies and retained audit/payment records may remain. This is irreversible. An administrator cannot self-delete while the admin claim remains; appoint another administrator before removing the existing one.</p><p>Deleting only a Firebase Authentication user directly is a different operation and does not run the app’s Firestore cleanup. Recreating the same email does not restore the old UID or automatically restore administrator claims. The project owner can appoint a replacement administrator using the owner process.</p><p>The library Clear Data button clears localStorage and origin Cache Storage, then reloads. It does not cancel a server subscription or delete the Firebase account. It can remove guest/trial-only progress, bookmarks, settings and cached books. First try ordinary reconnect, reload and reopen steps.</p></section><section id="guide-support"><h3>12. Optional support and older supporter keys</h3><p>Optional support remains available: MTN MoMo <strong>0243443688</strong>, <strong>Abdul-Latif Ahmed</strong>. Donations support continued development. They are separate from plan payments and do not automatically activate subscriptions. To buy a plan, follow the My Account payment workflow.</p><p>Older supporter keys and existing stored flags are legacy support features. Established server-managed Premium access is retained. The sidebar no longer exposes the earlier key-entry link. Keep original keys and payment references; do not treat an old key or donation reference as a new plan payment.</p><p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia. Related work: <a href="https://alatipha.blogspot.com" target="_blank" rel="noopener noreferrer">alatipha.blogspot.com</a>.</p></section><section id="guide-help"><h3>13. Troubleshoot and verify an update</h3><ol><li>Check internet access and reconnect.</li><li>Reload, close all PromoHub tabs/app windows, then reopen if an old version remains.</li><li>Open a required book online and test it offline.</li><li>Confirm the same account, verification, active status and valid subscription when cloud sync is needed.</li><li>For payment questions, check status and keep the original MoMo receipt.</li><li>For credential errors, use current password or sign in again with the verified email. Use Google Account Security for Google-only credentials.</li><li>Use Clear Data only after considering the loss of local-only reading data.</li></ol><p>This guide covers app v1.7.4 and the features introduced through v1.7.3. App version and service-worker cache version are independent numbers. Updates do not require creating a new account.</p></section></section></main>
+<script>document.getElementById("printGuide").addEventListener("click",()=>window.print());</script></body></html>

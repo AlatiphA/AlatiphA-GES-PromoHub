@@ -293,7 +293,26 @@ html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var
       .faqHero p { font-size:13px; }
       .faqQuestion { font-size:13px;padding:11px 12px; }
     }
-  </style>
+
+.userGuide { margin:28px 0 12px;padding:18px;border:1px solid var(--ui-border);border-radius:12px;background:var(--ui-surface);color:var(--ui-text);overflow-wrap:anywhere; }
+.userGuide h2 { font-size:22px;margin-bottom:8px; }
+.userGuide h3 { font-size:17px;margin:22px 0 10px; }
+.userGuide p,.userGuide li { font-size:14px;line-height:1.65; }
+.userGuide p { margin:10px 0; }
+.userGuide ol { padding-left:22px; }
+.userGuide li { margin:6px 0; }
+.userGuide a { color:var(--ui-accent); }
+.userGuide nav { padding:12px;background:var(--ui-raised);border-radius:8px;margin-top:14px; }
+.userGuide table { border-collapse:collapse;width:100%;table-layout:fixed;font-size:13px;margin:12px 0; }
+.userGuide th,.userGuide td { border:1px solid var(--ui-border);padding:8px;text-align:left;vertical-align:top;overflow-wrap:anywhere; }
+.userGuide caption { text-align:left;font-weight:600;margin-bottom:6px; }
+.userGuide section { scroll-margin-top:16px; }
+.guideIntro { color:var(--ui-muted); }
+.faqQuestion:focus-visible,.userGuide a:focus-visible { outline:2px solid var(--ui-accent);outline-offset:3px; }
+@media(max-width:480px) { .userGuide { padding:14px; } .userGuide h2 { font-size:20px; } }
+@media print { .uiAppearance,.faqHero,.faqFooter,.copyBtn { display:none!important; } .userGuide { border:0;background:white;color:black; } }
+
+</style>
 
 </head>
 <body>
@@ -303,230 +322,58 @@ html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var
   <div class="faqHero">
     <img src="icon-192.png" alt="GES PromoHub" />
     <h1>GES PromoHub</h1>
-    <p>Frequently Asked Questions</p>
+    <p>Frequently Asked Questions</p><p><a href="#user-guide" style="color:var(--ui-accent)">Complete User Guide</a></p>
   </div>
 
-  <!-- FAQ CONTENT -->
   <div class="faqContent">
-
-    <!-- GETTING STARTED -->
-    <div class="faqSection">
-      <div class="faqSectionTitle">Getting Started</div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          What is GES PromoHub?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          GES PromoHub is a free offline EPUB reader for Ghana Education Service (GES) workers preparing for promotion aptitude exams. It contains past questions, model questions, and study notes.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I install the app?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Visit the app link in your browser and wait for the install prompt, then tap <strong>Install</strong>. If the prompt doesn't appear, tap the 3 dots in your browser and select <strong>Add to Home Screen</strong>. On iPhone, tap the Share button then <strong>Add to Home Screen</strong>.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          Does the app work without internet?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Yes. Once installed and opened at least once with internet, all books and the app itself load fully offline.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- READING -->
-    <div class="faqSection">
-      <div class="faqSectionTitle">Reading</div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I switch between books?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Tap the back arrow (←) in the top left of the reader to return to the library, then select another book.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I navigate between pages?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Swipe left or right on the reading area, or use the arrow buttons at the bottom of the screen.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I adjust the font size?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Use the <strong>A−</strong> and <strong>A+</strong> buttons in the bottom toolbar to decrease or increase the font size.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I search inside a book?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Tap the magnifying glass icon (🔍) in the bottom toolbar and type your search term. Results will appear as a list — tap any result to jump to that location.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- THEMES & BOOKMARKS -->
-    <div class="faqSection">
-      <div class="faqSectionTitle">Themes & Bookmarks</div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I change the reading theme?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Tap the palette icon (🎨) in the top right of the reader to choose between Light, Dark, Sepia, and Night themes. The library screen has its own separate Day/Night toggle in the top right corner.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I bookmark a page?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Tap the bookmark icon (🔖) in the bottom toolbar while reading. Your bookmark is saved automatically with the chapter name and progress.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          How do I find my bookmarks?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Tap the menu icon at the bottom of the reader, then tap the <strong>Bookmarks</strong> tab in the sidebar. Each book has its own separate bookmark list.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- TROUBLESHOOTING -->
-    <div class="faqSection">
-      <div class="faqSectionTitle">Troubleshooting</div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          A book is not loading. What do I do?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Make sure you opened the app at least once with internet so books can be cached. If the problem persists, tap the trash icon (🗑) on the library screen to clear app data, then reopen with internet on.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          What does the Clear Data button do?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          It resets all app data including bookmarks, themes, and cached files. Use it only if the app is misbehaving. You will need internet to reload the books after clearing.
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          The app is stuck or not responding. What should I do?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Close the app completely and reopen it. If it still doesn't work, clear app data using the trash icon on the library screen, then reopen with internet on.
-        </div>
-      </div>
-
-    </div>
-
-    <!-- SUPPORT -->
-    <div class="faqSection">
-      <div class="faqSectionTitle">Support the Developer</div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          Is GES PromoHub free?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Yes, completely free with no ads. If the app has helped your studies, consider sending a small tip to support continued development.
-        </div>
-      </div>
-
-      <div class="faqItem open">
-        <button class="faqQuestion">
-          How can I support the developer?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Send a tip via MTN Mobile Money:
-          <div class="supportBox" style="margin-top:10px">
-            <div class="momoNetwork"><i class="fa-solid fa-mobile-screen-button"></i> MTN MoMo</div>
-            <div class="momoNumber">0243443688</div>
-            <div class="momoName">Name: Abdul-Latif Ahmed</div>
-            <button class="copyBtn" id="copyBtn">Copy Number</button>
-          </div>
-        </div>
-      </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          Is it possible to hide the support section?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Yes! By supporting the developer through MOMO for a KEY which when activated on the support section, will hide it.
-        </div>
-       </div>
-
-       <div class="faqItem">
-        <button class="faqQuestion">
-          How do I retrieve lost key?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          Check the message sent to you via SMS, WhatsApp or email after donating the tip. If you can't find it, SORRY! You have to donate a tip again ♥️.
-        </div>
-       </div>
-
-      <div class="faqItem">
-        <button class="faqQuestion">
-          Who developed the PWA (app)?
-          <i class="fa-solid fa-chevron-down icon"></i>
-        </button>
-        <div class="faqAnswer">
-          The PWA (app) was developed independently by <strong>Abdul-Latif Ahmed (AlatiphA)</strong>, a Ghanaian developer passionate about education, politics, music and technology. You can find his blog at
-          <a href="https://alatipha.blogspot.com" target="_blank" rel="noopener" style="color:var(--accent);">alatipha.blogspot.com</a>.
-        </div>
-      </div>
-
-    </div>
-
-  </div>
+<section class="faqSection"><h2 class="faqSectionTitle">Getting started</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What is GES PromoHub?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">AlatiphA GES PromoHub helps Ghana Education Service workers prepare for promotion aptitude exams with past questions, model questions and study notes. It has a 7-day trial and paid subscription plans.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I install the app?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Open <a href="https://ges-promohub.web.app/">ges-promohub.web.app</a> in a supported browser. Use its Install app or Add to Home Screen option when available. On iPhone, check the browser Share menu for Add to Home Screen. You can also read in the browser without installing.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I create an account or sign in?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Use Sign up to register with your name, email and password. Open the verification email, then sign in. Continue with Google is also available. Continue offline starts or resumes the device guest trial; it does not create a cloud account.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Does the app work without internet?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">The app shell and books are cached when available. Open your required books while online, then test them offline before relying on them. Offline availability depends on successful downloads and retained browser storage. Account changes, payment submission, verification and administration require internet access.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Reading and saved position</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I switch books and navigate pages?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Use Back to return to the library, then choose a book. Swipe across the reading area or use the page arrows. Ordinary desktop clicks use left, centre and right zones for previous page, controls and next page. Book links and footnotes should open without turning a page.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What happens when I refresh?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">A refresh restores the same book and the saved position for the current account or guest scope. If you first return to the library using Back, refreshing stays in the library. Opening My Account does not intentionally reset the book. Pull-to-refresh is blocked while the profile or login panel is open.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I use contents, bookmarks and search?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Open the reader menu to switch between Contents and Bookmarks. Choose a heading to jump to it. Use the bookmark button to save the current location and the bookmark list to return or delete it. Bookmarks are book-specific. The search button finds text in the current book; choose a result to jump to it.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I change text size and font?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Use A− and A+ for text size. A two-finger pinch inside the reader adjusts text size rather than browser zoom where the reader gesture is handled. The font control offers Serif, Open Sans and Arial. Some book cover images or fixed book formatting may not change like ordinary text.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Appearance</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What is the difference between app and book themes?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">App appearance controls login, library, account, administration and FAQ. Choose System, Light or Dark in login or My Account. System follows your device appearance; a manual choice stays fixed on that device. The library appearance button cycles these choices. The reader palette independently offers Light, Sepia, Dark and Night for book content.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Why is there no appearance dropdown inside FAQ?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">When FAQ opens inside PromoHub, it follows the app appearance and hides the duplicate selector. A standalone FAQ page retains its own app-appearance selector. Changing the book theme does not change the app interface theme.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Trial, subscriptions and payments</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What does the 7-day trial include?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">The trial allows local reading. It does not enable cloud saving or device syncing for reading positions, bookmarks or reader preferences. Account and trial metadata still exist on the server for signed-in users. A guest trial is device-local.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What are the subscription prices?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">1 month: GH₵20. 3 months: GH₵50. 6 months: GH₵80. 12 months: GH₵100. Paid access includes cloud saving and device syncing for verified active accounts. The Subscription panel shows your access and expiry.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I pay and activate a plan?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Open My Account, choose your plan, and pay the exact displayed amount to MTN MoMo <strong>0243443688</strong>, <strong>Abdul-Latif Ahmed</strong>. Enter the reference from your MoMo receipt and select Submit payment for review. This button does not make a payment or charge your wallet. Access activates only after an administrator verifies the recipient, reference and amount.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What does pending, approved or rejected mean?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Pending means an administrator has not completed review. Approved means the verified plan has been activated. Rejected does not activate access. Use Check payment status for the latest result. A transaction reference cannot be credited to a second account.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do renewal and expiry work?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">For an active subscription, an approved renewal extends the existing expiry. If paid access has expired, the approved plan starts from approval. Plans use calendar months. After trial or paid expiry, reading is blocked by the app and cloud reader access stops; local reading data is retained for a later renewal.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Does an administrator need to buy a plan?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">No. A verified, active administrator has free administrator access. The app hides purchase prompts for administrators. Admin status is a protected role, separate from a paid subscription.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">My Account and Account Security</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What do the My Account controls do?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">The profile shows your name, email and access. Save name changes your profile name. Resend verification sends another verification email; Check verification refreshes the account after you verify. Log out ends the current app session. Administration is visible only to authorised administrators.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How do I change my password or login email?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Expand Account Security in My Account. Email/password users confirm their current password to change password or send a verification link to a new login email. The login email changes only after verification. Use Refresh verified email afterward, or sign in with the new verified address if Firebase asks. Your UID, subscription, reading data and administrator claim remain attached to the same account.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What if I sign in with Google or forget my password?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Google-only users should use the Google Account Security link to manage Google credentials. Email/password users can select Forgot password on the login screen and enter their login email. Password operations require internet and are not queued offline.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Can I delete my account?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Delete account requires confirmation and recent authentication. App deletion removes the cloud account and its reader data; local copies, audit history and payment verification records may remain. Deletion is irreversible. Administrator self-deletion is blocked until the project owner removes admin privileges. App Clear Data is a different operation.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Administration</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What do the administration buttons do?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Users loads account records and management actions. Next page loads another batch when available. Subscription payments opens pending payment reviews. Recent audit shows recorded administrative activity. User names and emails are shown when available.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">How should I approve a subscription payment?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Check your actual MoMo transaction history first. In Subscription payments, confirm the recipient, transaction reference and exact selected-plan amount. Enter the amount received, tick the verification checkbox and select Verify and activate. Reject payment does not grant access. Never approve based only on a screenshot or a typed reference.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What if the administrator account is removed?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">The app blocks admin self-deletion. Direct deletion in Firebase Authentication can remove the only administrator, leaving payment approval unavailable until the project owner appoints another account. Appoint and verify a replacement before removing an administrator. Recreating an email does not automatically restore the admin role.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Troubleshooting</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">A book or the update is not loading. What should I do?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Connect to the internet, reload, then close and reopen the app. Try the book again while online. If an old release remains, close all PromoHub tabs or app windows and reopen so the new service worker can activate. Avoid clearing data as the first step.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What does Clear Data do?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">The library trash button clears this origin’s localStorage and browser Cache Storage, including locally saved reader data and cached files, then reloads. It does not delete your Firebase account or cancel a server-managed paid subscription. Trial-only or guest reading data may be lost. Use it only after ordinary reload and reopen checks, and reconnect to download books again.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Why is my progress different on another device?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Use the same verified active account with paid or administrator cloud access. Connect both devices so saving and restoration can occur. Trial and guest data remain local. A sync error should be resolved before assuming local changes have reached the cloud.</div></div>
+</section>
+<section class="faqSection"><h2 class="faqSectionTitle">Support the Developer</h2>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Can I still support the developer?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Yes. Optional support remains available through MTN MoMo <strong>0243443688</strong>, name <strong>Abdul-Latif Ahmed</strong>. Support helps maintain PromoHub. A donation is separate from subscription payment and does not automatically activate a paid plan.<div class="supportBox" style="margin-top:10px"><div class="momoNetwork">MTN MoMo</div><div class="momoNumber">0243443688</div><div class="momoName">Name: Abdul-Latif Ahmed</div><button class="copyBtn" id="copyBtn" type="button">Copy Number</button><p id="supportCopyStatus" role="status"></p></div></div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What about my earlier supporter key?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Earlier supporter keys are legacy support features. Existing stored supporter flags and established server-managed Premium access have been retained. The current reader sidebar uses Subscription rather than a supporter-key entry link. A legacy key does not activate a new paid subscription.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">What if I cannot find an earlier key or payment reference?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">Check your original SMS, WhatsApp, email or MoMo receipt. Keep a copy of your reference and any previous key when asking the developer for help. A missing key is not a reason to submit the same transaction as a new subscription payment.</div></div>
+<div class="faqItem"><button class="faqQuestion" type="button" aria-expanded="false">Who developed PromoHub?<i class="fa-solid fa-chevron-down icon" aria-hidden="true"></i></button><div class="faqAnswer">PromoHub was developed by <strong>Abdul-Latif Ahmed (AlatiphA)</strong>, AlatiphA Multimedia. Visit <a href="https://alatipha.blogspot.com" target="_blank" rel="noopener noreferrer">alatipha.blogspot.com</a> for related work.</div></div>
+</section>
+<section class="userGuide" id="user-guide" aria-labelledby="userGuideTitle"><h2 id="userGuideTitle">Complete User Guide</h2><p class="guideIntro">AlatiphA GES PromoHub · v1.7.4 · Updated 10 October 2026</p><p><a href="./user-guide.html" target="_blank" rel="noopener noreferrer">Open the guide on its own</a></p><nav aria-label="User guide contents"><ol><li><a href="#guide-start">Start and install</a></li><li><a href="#guide-signin">Create an account and sign in</a></li><li><a href="#guide-read">Read and move through a book</a></li><li><a href="#guide-tools">Text, bookmarks and search</a></li><li><a href="#guide-themes">Choose app and reading appearance</a></li><li><a href="#guide-plans">Trial, plans and renewal</a></li><li><a href="#guide-payment">Submit a manual MoMo payment</a></li><li><a href="#guide-sync">Local data, cloud sync and offline use</a></li><li><a href="#guide-profile">My Account and account security</a></li><li><a href="#guide-admin">Administration and payment review</a></li><li><a href="#guide-delete">Deletion, account recovery and Clear Data</a></li><li><a href="#guide-support">Optional support and older supporter keys</a></li><li><a href="#guide-help">Troubleshoot and verify an update</a></li></ol></nav><section id="guide-start"><h3>1. Start and install</h3><p>Open <a href="https://ges-promohub.web.app/">ges-promohub.web.app</a>. Install from your browser when supported, or continue in the browser. For offline study, keep the internet connected while the app and required books download, open each book you need, then test access offline.</p><p>The library contains GES Promotion Aptitude Test Pasco, Model Aptitude Test for GES 1 and 2, Effective Teaching Methods, Notes for Aptitude Test for GES, and Education in Ghana. Select a book to open it. This is a study resource, not a replacement for official GES notices or exam requirements.</p></section><section id="guide-signin"><h3>2. Create an account and sign in</h3><ol><li>Select Sign up, enter your profile name, email and password, then submit.</li><li>Open the verification email. Registration returns you to login.</li><li>Sign in and, if necessary, select Check verification in My Account.</li></ol><p>Continue with Google uses your Google account. Continue offline starts or resumes a guest device trial. A guest session has no cloud account. First login and account verification require internet. Use the same account on another device when you want paid cloud sync.</p><p>Forgot password on login sends a reset email for email/password accounts. Changing your profile name does not change your login email.</p></section><section id="guide-read"><h3>3. Read and move through a book</h3><p>Use the bottom arrows or a horizontal swipe to move pages. Ordinary desktop clicks use left, centre and right reading zones. The centre toggles reader controls. Use the menu button for the sidebar. Contents lists chapters and nested headings; Bookmarks lists saved locations in the current book.</p><p>Choose a contents heading or search result to jump to it. Click book links and footnote references directly; these should not trigger page turning. External links can need internet and browser permission. Use Back to return to the library and choose another book.</p><p>Refresh restores the same book and its saved location in the current account or guest scope. After Back returns to the library, a refresh stays there. Missing or invalid saved sessions fall back to the library. Pull-to-refresh is contained while login or profile is open.</p></section><section id="guide-tools"><h3>4. Text, bookmarks and search</h3><p>A− reduces text size and A+ increases it. Two-finger pinch handling inside the reader adjusts text size within limits. The font menu offers Serif, Open Sans and Arial. Images such as book covers do not resize as normal text.</p><p>Use the bookmark button to save your location. Open Bookmarks in the sidebar to return to a saved location or delete a bookmark. Lists are separate for each book. Use the search button, enter a term and choose a result in the current book.</p></section><section id="guide-themes"><h3>5. Choose app and reading appearance</h3><p>App appearance offers System, Light and Dark on login and My Account. The library appearance button cycles those choices. System follows the device’s light/dark preference. A manual choice is saved on that device. Login, library, account, administration and FAQ use the app appearance.</p><p>The reader palette offers Light, Sepia, Dark and Night for book content independently. Font and reading preferences are separate from app appearance. Embedded FAQ inherits the app theme and has no duplicate appearance dropdown; standalone FAQ retains its selector.</p></section><section id="guide-plans"><h3>6. Trial, plans and renewal</h3><p>The 7-day trial saves reading progress, bookmarks and preferences on this device only. It does not provide cloud reader storage or device syncing. Signed-in account and trial metadata still live on the server; guest trial state is device-local.</p><table><caption>Subscription plans</caption><thead><tr><th>Duration</th><th>Price</th></tr></thead><tbody><tr><td>1 month</td><td>GH₵20</td></tr><tr><td>3 months</td><td>GH₵50</td></tr><tr><td>6 months</td><td>GH₵80</td></tr><tr><td>12 months</td><td>GH₵100</td></tr></tbody></table><p>Paid plans enable cloud saving and device syncing for a verified active account. The sidebar shows access status and expiry. View plans opens My Account; an active paid subscriber sees Renew subscription. Administrators have full access without purchasing.</p><p>Approved renewal extends an active expiry, or starts from approval after expiry. Durations are calendar months. Expired trial or paid access blocks reading and cloud reader access, but local saved reading data is retained for renewal.</p></section><section id="guide-payment"><h3>7. Submit a manual MoMo payment</h3><ol><li>Open My Account and choose your plan.</li><li>Confirm the displayed amount and recipient. Pay that exact amount externally to MTN MoMo <strong>0243443688</strong>, <strong>Abdul-Latif Ahmed</strong>.</li><li>Copy the transaction reference from your MoMo receipt into the reference field.</li><li>Select Submit payment for review. This submits a request; it does not charge your wallet.</li><li>Use Check payment status. Wait for administrator verification and approval before expecting paid access.</li></ol><p>Pending means awaiting review. Approved activates the verified plan. Rejected does not grant access. Keep your receipt. A previously credited reference cannot be used to activate another account. Payment approval can take time; the app does not promise an automatic approval deadline.</p></section><section id="guide-sync"><h3>8. Local data, cloud sync and offline use</h3><p>Reading position and bookmarks are scoped by book and account, with a separate guest scope. Paid verified active accounts and administrators can use cloud reader storage; trials use local storage. Sign in with the same account, connect to the internet and allow saving/restoration before checking a second device.</p><p>Offline reading depends on retained cached files and valid access. New login, verification, password/email changes, payment submission/review and account management require internet. The presence of a cached book does not prove that the latest progress reached the server. If a sync error appears, reconnect before relying on another device’s saved position.</p><p>Browser storage can be cleared or evicted. Keep important study notes separately. Clear Data is not a backup or subscription-cancellation button.</p></section><section id="guide-profile"><h3>9. My Account and account security</h3><p>Open the profile button to see your name, login email and access. Save name updates the profile name. Resend verification sends a verification email; Check verification refreshes its status. Log out ends the current session. The Administration tab appears only for authorised administrators.</p><p>Expand Account Security. For Change password, enter current password, new password and matching confirmation, then submit online. Passwords must satisfy Firebase’s policy. For Change login email, enter current password and the new address, then select Send verification link. The old login remains until verification. Open the link and use Refresh verified email, or sign in again with the new verified address if requested.</p><p>Your UID remains unchanged, so subscription, reading data and administrator role remain associated with your account. Google-only users are directed to Google Account Security. Password fields are cleared after operations or closing, and credentials are not stored in Firestore or offline queues.</p></section><section id="guide-admin"><h3>10. Administration and payment review</h3><table><caption>Administration controls</caption><thead><tr><th>Control</th><th>Purpose</th></tr></thead><tbody><tr><td>Users</td><td>Load accounts and available lifecycle actions.</td></tr><tr><td>Next page</td><td>Load another user batch when a cursor is available.</td></tr><tr><td>Subscription payments</td><td>Review pending paid-plan submissions.</td></tr><tr><td>Recent audit</td><td>View recorded administrative activity.</td></tr></tbody></table><p>For payment approval, check the actual MoMo history, match recipient, transaction reference and exact plan amount, enter amount received, tick the verification checkbox, then Verify and activate. Reject payment leaves access unapproved. A screenshot or typed reference alone is not verification.</p><p>User lifecycle controls include Set to Free, Suspend, Reactivate and Disable sign-in, where permitted. Set to Free removes subscription entitlement. Suspend and Disable sign-in restrict PromoHub account access and revoke refresh tokens. Reactivate restores active profile status. These controls do not delete the account. Do not use these as a substitute for payment approval. Administrator accounts must be managed through the project-owner process.</p></section><section id="guide-delete"><h3>11. Deletion, account recovery and Clear Data</h3><p>Delete account requires typing DELETE and confirming recent authentication. It removes the cloud account and reader data. Local copies and retained audit/payment records may remain. This is irreversible. An administrator cannot self-delete while the admin claim remains; appoint another administrator before removing the existing one.</p><p>Deleting only a Firebase Authentication user directly is a different operation and does not run the app’s Firestore cleanup. Recreating the same email does not restore the old UID or automatically restore administrator claims. The project owner can appoint a replacement administrator using the owner process.</p><p>The library Clear Data button clears localStorage and origin Cache Storage, then reloads. It does not cancel a server subscription or delete the Firebase account. It can remove guest/trial-only progress, bookmarks, settings and cached books. First try ordinary reconnect, reload and reopen steps.</p></section><section id="guide-support"><h3>12. Optional support and older supporter keys</h3><p>Optional support remains available: MTN MoMo <strong>0243443688</strong>, <strong>Abdul-Latif Ahmed</strong>. Donations support continued development. They are separate from plan payments and do not automatically activate subscriptions. To buy a plan, follow the My Account payment workflow.</p><p>Older supporter keys and existing stored flags are legacy support features. Established server-managed Premium access is retained. The sidebar no longer exposes the earlier key-entry link. Keep original keys and payment references; do not treat an old key or donation reference as a new plan payment.</p><p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia. Related work: <a href="https://alatipha.blogspot.com" target="_blank" rel="noopener noreferrer">alatipha.blogspot.com</a>.</p></section><section id="guide-help"><h3>13. Troubleshoot and verify an update</h3><ol><li>Check internet access and reconnect.</li><li>Reload, close all PromoHub tabs/app windows, then reopen if an old version remains.</li><li>Open a required book online and test it offline.</li><li>Confirm the same account, verification, active status and valid subscription when cloud sync is needed.</li><li>For payment questions, check status and keep the original MoMo receipt.</li><li>For credential errors, use current password or sign in again with the verified email. Use Google Account Security for Google-only credentials.</li><li>Use Clear Data only after considering the loss of local-only reading data.</li></ol><p>This guide covers app v1.7.4 and the features introduced through v1.7.3. App version and service-worker cache version are independent numbers. Updates do not require creating a new account.</p></section></section>
+</div>
 
   <!-- FOOTER -->
   <div class="faqFooter">
@@ -540,41 +387,18 @@ html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var
       btn.addEventListener("click", () => {
         const item = btn.closest(".faqItem");
         const isOpen = item.classList.contains("open");
-        document.querySelectorAll(".faqItem").forEach(i => i.classList.remove("open"));
-        if (!isOpen) item.classList.add("open");
+        document.querySelectorAll(".faqItem").forEach(i => { i.classList.remove("open");i.querySelector('.faqQuestion').setAttribute('aria-expanded','false'); });
+        if (!isOpen) { item.classList.add('open');btn.setAttribute('aria-expanded','true'); }
       });
     });
 
-    /* Theme toggle */
-    const themeToggle = document.getElementById("themeToggle");
-
-    function applyFaqTheme(theme) {
-      localStorage.setItem("library-theme", theme);
-      document.documentElement.classList.toggle("dark", theme === "dark");
-      themeToggle.innerHTML = theme === "dark"
-        ? '<i class="fa-solid fa-moon"></i>'
-        : '<i class="fa-solid fa-sun"></i>';
-    }
-
-    /* Init icon */
-    const savedTheme = localStorage.getItem("library-theme") || "dark";
-    applyFaqTheme(savedTheme);
-
-    themeToggle.addEventListener("click", () => {
-      const current = localStorage.getItem("library-theme") || "dark";
-      applyFaqTheme(current === "dark" ? "light" : "dark");
+    /* Optional support remains separate from paid subscription activation. */
+    const copyBtn=document.getElementById('copyBtn');
+    if(copyBtn)copyBtn.addEventListener('click',async()=>{
+      const status=document.getElementById('supportCopyStatus');
+      try { await navigator.clipboard.writeText('0243443688');status.textContent='Number copied.'; }
+      catch { status.textContent='Copy this number manually: 0243443688'; }
     });
-
-    /* Copy MoMo number */
-    const copyBtn = document.getElementById("copyBtn");
-    if (copyBtn) {
-      copyBtn.addEventListener("click", () => {
-        navigator.clipboard.writeText("0243443688").then(() => {
-          copyBtn.textContent = "Copied!";
-          setTimeout(() => { copyBtn.textContent = "Copy Number"; }, 2000);
-        });
-      });
-    }
 
   </script>
 
