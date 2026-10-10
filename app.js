@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.9";
+const APP_VERSION = "1.7.0";
 
 const versionEl =
   document.getElementById(
@@ -2903,7 +2903,7 @@ function resumeReaderAfterStartup() {
     selectedBookFile = selectedBook.file;
     localStorage.setItem("lastBook", selectedBookFile);
     if (readerTitle) readerTitle.textContent = selectedBook.title;
-    openReader();
+    if(openReader()===false)return false;
     return true;
   } finally {
     document.documentElement.classList.remove("reader-resuming");

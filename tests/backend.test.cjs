@@ -8,7 +8,7 @@ function setup(){
  const auth={getUser:async uid=>{if(!authUsers.has(uid))throw new Error('No Auth user');return authUsers.get(uid);},revokeRefreshTokens:async()=>{},deleteUser:async uid=>authUsers.delete(uid)};
  const firestore=()=>db;firestore.FieldValue={serverTimestamp:()=>123};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
- const output={};vm.runInNewContext(fs.readFileSync(require.resolve('../functions/index'),'utf8'),{exports:output,require:name=>name==='firebase-admin'?{initializeApp(){},firestore,auth:()=>auth}:name==='firebase-functions/v2/https'?{onCall:(o,f)=>f,HttpsError}:require('../functions/policy'),Date,Promise});
+ const output={};vm.runInNewContext(fs.readFileSync(require.resolve('../functions/index'),'utf8'),{exports:output,require:name=>name==='firebase-admin'?{initializeApp(){},firestore,auth:()=>auth}:name==='firebase-functions/v2/https'?{onCall:(o,f)=>f,HttpsError}:require('../functions/'+name.replace('./','')),Date,Promise});
  const request=(uid,token={},input={})=>({auth:{uid,token:{email_verified:true,auth_time:Date.now()/1000,...token}},data:input});
  return {data,authUsers,output,request,reads};
 }
@@ -27,11 +27,11 @@ test('ordinary users cannot approve their own request',async()=>{
  const s=setup();s.data.set('users/u',{accountStatus:'active'});s.authUsers.set('u',{customClaims:{}});
  await assert.rejects(s.output.reviewPremiumRequest(s.request('u',{}, {uid:'u',decision:'approved'})),e=>e.code==='permission-denied');
 });
-test('request retry is idempotent; approval updates tier and creates audit event',async()=>{
+test('legacy request retry is idempotent; rejection retains Free tier and records an audit event',async()=>{
  const s=setup();s.data.set('users/u',{accountStatus:'active',accountTier:'free'});s.data.set('users/a',{accountStatus:'active'});s.authUsers.set('a',{customClaims:{promohubAdmin:true}});
  await s.output.requestPremiumAccess(s.request('u'));const n=s.data.size;await s.output.requestPremiumAccess(s.request('u'));assert.equal(s.data.size,n);
- await s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved'}));assert.equal(s.data.get('users/u').accountTier,'premium');assert.equal(s.data.get('premiumRequests/u').status,'approved');
- await assert.rejects(s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved'})),e=>e.code==='failed-precondition');
+ await s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'rejected'}));assert.equal(s.data.get('users/u').accountTier,'free');assert.equal(s.data.get('premiumRequests/u').status,'rejected');
+ await assert.rejects(s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'rejected'})),e=>e.code==='failed-precondition');
 });
 test('deleted accounts have a durable marker blocking profile recreation',async()=>{
  const s=setup();s.data.set('users/u',{accountStatus:'active'});s.authUsers.set('u',{emailVerified:true});
@@ -75,4 +75,40 @@ test('missing profiles have an explicit unavailable identity',async()=>{
 test('admin records reject ordinary users, revoked claims and unknown views',async()=>{
  const s=adminSetup();await assert.rejects(s.output.getPromoHubAdminRecords(s.request('a',{},{})),e=>e.code==='permission-denied');
  await assert.rejects(s.output.getPromoHubAdminRecords(s.request('a',{promohubAdmin:true},{kind:'unknown'})),e=>e.code==='invalid-argument');s.authUsers.set('a',{customClaims:{}});await assert.rejects(s.output.getPromoHubAdminRecords(s.request('a',{promohubAdmin:true},{})),e=>e.code==='permission-denied');
+});
+
+function subscriberSetup(){const s=adminSetup();s.authUsers.set('u',{customClaims:{}});s.data.set('users/u',{accountStatus:'active',accountTier:'free',subscriptionSchema:1,trialEndsAtMs:Date.now()+604800000});return s;}
+test('seven-day trial is created once and cannot be extended by sign-in or browser fields',async()=>{
+ const s=setup();s.authUsers.set('u',{emailVerified:true,email:'u@example.test'});await s.output.initializePromoHubAccount(s.request('u',{}, {trialEndsAtMs:9999999999999,subscriptionEndsAtMs:9999999999999}));
+ const p=s.data.get('users/u');assert.equal(p.subscriptionSchema,1);assert.equal(p.trialEndsAtMs-p.trialStartedAtMs,604800000);assert.equal(p.subscriptionEndsAtMs,0);
+ await s.output.initializePromoHubAccount(s.request('u'));assert.equal(s.data.get('users/u').trialEndsAtMs,p.trialEndsAtMs);
+});
+test('manual payment requires a known plan and a valid reference and retries are idempotent',async()=>{
+ const s=subscriberSetup();await assert.rejects(s.output.submitPromoHubPayment(s.request('u',{}, {planId:'fake',reference:'123456'})),e=>e.code==='invalid-argument');
+ await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m3',reference:'abc12345'}));const n=s.data.size;await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m3',reference:'ABC12345'}));assert.equal(s.data.size,n);assert.equal(s.data.get('subscriptionRequests/u').amountGhs,50);
+ await assert.rejects(s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m6',reference:'DEF12345'})),e=>e.code==='failed-precondition');
+});
+test('approval requires verified payment and exact amount and grants the selected duration once',async()=>{
+ const s=subscriberSetup();await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m1',reference:'ABC12345'}));
+ for(const input of [{amountGhs:20},{amountGhs:1,verifiedPayment:true}])await assert.rejects(s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',...input})),e=>e.code==='failed-precondition');
+ await s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',amountGhs:20,verifiedPayment:true}));const p=s.data.get('users/u');assert.equal(p.accountTier,'premium');assert.ok(p.subscriptionEndsAtMs>Date.now()+27*86400000);
+ await assert.rejects(s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',amountGhs:20,verifiedPayment:true})),e=>e.code==='failed-precondition');
+ await assert.rejects(s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m1',reference:'ABC12345'})),e=>e.code==='already-exists');
+});
+test('active renewal extends expiry while rejection never grants access',async()=>{
+ const s=subscriberSetup();const old=Date.UTC(2030,0,31);s.data.set('users/u',{accountStatus:'active',accountTier:'premium',subscriptionSchema:1,subscriptionEndsAtMs:old});
+ await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m1',reference:'RENEW123'}));await s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',amountGhs:20,verifiedPayment:true}));assert.equal(s.data.get('users/u').subscriptionEndsAtMs,Date.UTC(2030,1,28));
+ await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m6',reference:'REJECT123'}));const expiry=s.data.get('users/u').subscriptionEndsAtMs;await s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'rejected'}));assert.equal(s.data.get('users/u').subscriptionEndsAtMs,expiry);
+});
+test('ordinary and stale-admin accounts cannot approve; legacy approval cannot bypass paid verification',async()=>{
+ const s=subscriberSetup();await s.output.submitPromoHubPayment(s.request('u',{}, {planId:'m1',reference:'ABC12345'}));
+ await assert.rejects(s.output.reviewPromoHubPayment(s.request('u',{}, {uid:'u',decision:'approved',verifiedPayment:true,amountGhs:20})),e=>e.code==='permission-denied');
+ s.authUsers.set('a',{customClaims:{}});await assert.rejects(s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',verifiedPayment:true,amountGhs:20})),e=>e.code==='permission-denied');
+ s.authUsers.set('a',{customClaims:{promohubAdmin:true}});s.data.set('premiumRequests/u',{status:'pending'});await assert.rejects(s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved'})),e=>e.code==='failed-precondition');
+});
+test('payment references cannot be credited to a second account',async()=>{
+ const s=subscriberSetup();s.data.set('users/v',{accountStatus:'active',accountTier:'free',subscriptionSchema:1});
+ for(const uid of ['u','v'])await s.output.submitPromoHubPayment(s.request(uid,{}, {planId:'m1',reference:'SHARED123'}));
+ await s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved',verifiedPayment:true,amountGhs:20}));
+ await assert.rejects(s.output.reviewPromoHubPayment(s.request('a',{promohubAdmin:true},{uid:'v',decision:'approved',verifiedPayment:true,amountGhs:20})),e=>e.code==='already-exists');assert.equal(s.data.get('users/v').accountTier,'free');
 });

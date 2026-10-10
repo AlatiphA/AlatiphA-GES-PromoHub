@@ -22,5 +22,5 @@ test('keyboard form submission invokes existing sign-in button and prevents page
 test('auth markup preserves existing action IDs and provides explicit field labels',()=>{
  for(const id of ['authName','authEmail','authPassword','authPrimaryBtn','googleSignInBtn','authModeBtn','authResetBtn','authOfflineBtn','authError'])assert.equal((html.match(new RegExp('id="'+id+'"','g'))||[]).length,1);
  for(const id of ['authName','authEmail','authPassword'])assert.match(html,new RegExp('for="'+id+'"'));
- assert.match(html,/Continue offline/);assert.doesNotMatch(html,/7-day|seven.day/);assert.match(html,/id="authError"[^>]*role="status"/);
+ assert.match(html,/Continue offline/);assert.match(html,/7 days/);assert.match(html,/id="authError"[^>]*role="status"/);
 });

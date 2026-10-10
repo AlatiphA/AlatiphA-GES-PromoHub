@@ -37,7 +37,7 @@ function securityRender(){
  document.getElementById('administrationTab').hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
  document.getElementById('securityVerification').hidden=!!cloudUser?.emailVerified;
- const premium=document.getElementById('securityPremiumButton');premium.disabled=securityProfile?.accountTier==='premium';premium.textContent=premium.disabled?'Premium active':'Request Premium';
+ subscriptionRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
 async function securityActivate(user){
@@ -46,19 +46,19 @@ async function securityActivate(user){
  securityClaims=(await user.getIdTokenResult()).claims;
  securityProfile=await securityCall('initializePromoHubAccount');
  if(epoch!==securityEpoch)return false;
- cloudReady=securityProfile.accountStatus==='active';securityRender();
+ cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();cloudReady=!!(user.emailVerified && securityProfile?.accountStatus==='active');securityRender();if(!cloudReady)securityMessage('Cloud access is restricted. Local reader data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud sync is unavailable during trial or after expiry. Local reader data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
  return cloudReady;
 }
 async function securityAuthChanged(user){
- securityEpoch++;securityResetAdmin();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
+ securityEpoch++;securityResetAdmin();subscriptionResetPayment();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};
  if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  hideAuth();if(securityRegistering)return;
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);await updateAccountUI(user);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else accountPanel.classList.add('open');}
+ try{const ready=await securityActivate(user);await updateAccountUI(user);securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
  catch(e){cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 let securityCursor=null,securityAdminView='',securityAdminEpoch=0;
@@ -120,7 +120,7 @@ async function securityUsers(more=false){
   if(!result.users.length)state.host.textContent='No users on this page.';
   document.getElementById('securityNextPage').disabled=!securityCursor;
   const summary=await securityCall('getPromoHubAdminSummary');
-  if(securityAdminCurrent(state))document.getElementById('securitySummary').textContent=`Users: ${summary.users} · Premium: ${summary.premium} · Pending requests: ${summary.pending}`;
+  if(securityAdminCurrent(state))document.getElementById('securitySummary').textContent=`Users: ${summary.users} · Premium profiles: ${summary.premium} · Pending requests: ${summary.pending}`;
  }catch(e){if(securityAdminCurrent(state)){securityMessage(e.message || 'Unable to load users.');if(state.host.textContent==='Loading…')state.host.textContent='Select Users to try again.';}}
 }
 async function securityRecords(kind){
@@ -128,7 +128,7 @@ async function securityRecords(kind){
  const state=securityAdminStart(kind,kind==='audit'?'Recent audit':'Premium requests');
  try{
   const result=await securityCall('getPromoHubAdminRecords',{kind});if(!securityAdminCurrent(state))return;state.host.replaceChildren();
-  const labels={'premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free'};
+  const labels={'subscription.request':'Subscription payment submitted','subscription.approved':'Subscription activated','subscription.rejected':'Subscription payment rejected','premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free'};
   for(const r of result.records){
    const row=document.createElement('article');row.className='securityRecord';
    if(kind==='audit'){
