@@ -502,6 +502,35 @@
       <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
       </div>
     </div>
+    <details class="securityBlock accountSecurity" id="accountSecuritySection">
+      <summary>Account Security</summary>
+      <p>Login email: <strong id="accountSecurityEmail"></strong></p>
+      <p>Your reading data, subscription and administrator role stay attached to the same account.</p>
+      <p id="accountSecurityPending"></p>
+      <p id="accountSecurityStatus" role="status" aria-live="polite"></p>
+      <div id="accountSecurityPasswordControls">
+        <form id="accountSecurityPasswordForm">
+          <h4>Change password</h4>
+          <label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+          <label>New password<input name="newPassword" type="password" autocomplete="new-password" minlength="6" required></label>
+          <label>Confirm new password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></label>
+          <button type="submit">Change password</button>
+        </form>
+        <form id="accountSecurityEmailForm">
+          <h4>Change login email</h4>
+          <label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+          <label>New login email<input id="accountSecurityNewEmail" name="newEmail" type="email" autocomplete="email" maxlength="254" required></label>
+          <p>A verification link will be sent to the new address. Your login email changes only after verification.</p>
+          <button type="submit">Send verification link</button>
+        </form>
+      </div>
+      <div id="accountSecurityGoogleControls" hidden>
+        <p>You sign in with Google. Manage your Google email and password in your Google account.</p>
+        <a href="https://myaccount.google.com/security" target="_blank" rel="noopener noreferrer">Open Google Account Security</a>
+      </div>
+      <button id="accountSecurityRefresh" type="button">Refresh verified email</button>
+      <p>These changes require internet access. Passwords are never saved as offline drafts.</p>
+    </details>
     <details class="securityBlock securityDanger"><summary>Delete account</summary>
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
@@ -540,6 +569,7 @@
 <script src="./app.js"></script>
 <script src="./security-ui.js"></script>
 <script src="./subscription-ui.js"></script>
+<script src="./account-security.js"></script>
 <script src="./install.js"></script>
 
 </body>

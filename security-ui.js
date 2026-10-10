@@ -37,7 +37,7 @@ function securityRender(){
  document.getElementById('administrationTab').hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
  document.getElementById('securityVerification').hidden=!!cloudUser?.emailVerified;
- subscriptionRender();
+ subscriptionRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
 async function securityActivate(user){
@@ -52,7 +52,7 @@ async function securityActivate(user){
  return cloudReady;
 }
 async function securityAuthChanged(user){
- securityEpoch++;securityResetAdmin();subscriptionResetPayment();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
+ securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
  if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}

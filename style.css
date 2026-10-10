@@ -1566,3 +1566,10 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
 #sidebarSubscriptionHint { color:var(--ui-muted); }
 #sidebarSubscriptionButton { min-height:44px;max-width:100%;margin-top:6px;padding:8px 12px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);color:var(--ui-text);font-size:13px;white-space:normal; }
 #sidebarSubscriptionButton[hidden] { display:none; }
+
+.accountSecurity summary { cursor:pointer;min-height:44px;padding:10px 0;font-weight:600; }
+.accountSecurity form { margin:12px 0;padding:10px 0;border-top:1px solid var(--ui-border); }
+#accountSecuritySection input,#accountSecuritySection button { max-width:100%;min-width:0; }
+#accountSecuritySection p { margin:6px 0; }
+#accountSecuritySection a { color:var(--ui-accent);overflow-wrap:anywhere; }
+#accountSecurityStatus:empty,#accountSecurityPending:empty { display:none; }
