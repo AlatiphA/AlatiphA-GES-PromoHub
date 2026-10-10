@@ -1492,3 +1492,43 @@ html,body { overscroll-behavior-y:none; }
 #securityControls select { width:100%;min-height:44px;font-size:16px;padding:10px;border:1px solid #777;border-radius:8px;background:#222;color:white;margin:8px 0 12px; }
 .subscriptionVerification { display:flex;align-items:flex-start;gap:8px;margin:14px 0;line-height:1.5; }
 #securityControls .subscriptionVerification input { width:20px;min-height:20px;flex-shrink:0;margin:2px 0; }
+
+/* Shared interface colours. EPUB iframe styling remains controlled by the reader. */
+html[data-ui-theme] { --ui-bg:#f4f2ed;--ui-surface:#fff;--ui-raised:#faf8f4;--ui-text:#242b29;--ui-muted:#606b66;--ui-border:#d4d9d4;--ui-accent:#805025;--ui-button:#956433;--ui-on-button:#fff;--ui-selected:#f4e9dc;--ui-danger:#a63032;--ui-overlay:rgba(19,26,23,.4); }
+html[data-ui-theme="dark"] { --ui-bg:#151a1c;--ui-surface:#20282a;--ui-raised:#293335;--ui-text:#f0f3f0;--ui-muted:#b5c1bc;--ui-border:#47534f;--ui-accent:#e1b583;--ui-selected:#3d332a;--ui-danger:#ffb4b4;--ui-overlay:rgba(0,0,0,.65); }
+html[data-ui-theme] body { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] #libraryScreen { --lib-bg:var(--ui-bg);--lib-text:var(--ui-text);--lib-surface:var(--ui-surface);--lib-border:var(--ui-border); }
+html[data-ui-theme] .libraryHeader,html[data-ui-theme] .libraryFooter { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] .librarySubtitle,html[data-ui-theme] .bookDesc { color:var(--ui-muted);opacity:1; }
+html[data-ui-theme] header,html[data-ui-theme] footer,html[data-ui-theme] .sidebar,html[data-ui-theme] .faqOverlayBar { background:var(--ui-surface);color:var(--ui-text);border-color:var(--ui-border); }
+html[data-ui-theme] .title,html[data-ui-theme] .iconBtn,html[data-ui-theme] .bottomBtn,html[data-ui-theme] .navBtn,html[data-ui-theme] #progressText,html[data-ui-theme] .sidebarTab,html[data-ui-theme] #toc a,html[data-ui-theme] .bookmarkLink { color:var(--ui-text); }
+html[data-ui-theme] .sidebarTabs,html[data-ui-theme] .tocItem,html[data-ui-theme] .bookmarkRow,html[data-ui-theme] .aboutSection { border-color:var(--ui-border); }
+html[data-ui-theme] .aboutText,html[data-ui-theme] .noBookmarks,html[data-ui-theme] .fontPickerLabel,html[data-ui-theme] .themePickerLabel { color:var(--ui-muted); }
+html[data-ui-theme] .sidebarTab.active,html[data-ui-theme] .tocItem.active a,html[data-ui-theme] .libraryFooterLink,html[data-ui-theme] .supporterKeyLink { color:var(--ui-accent); }
+html[data-ui-theme] .authScreen,html[data-ui-theme] .faqOverlay,html[data-ui-theme] #faqFrame { background:var(--ui-bg);color:var(--ui-text); }
+html[data-ui-theme] .accountPanel,html[data-ui-theme] #searchModal,html[data-ui-theme] .supporterKeyModal { background:var(--ui-overlay); }
+html[data-ui-theme] .authCard,html[data-ui-theme] .accountCard,html[data-ui-theme] .searchBox,html[data-ui-theme] .supporterKeyBox,html[data-ui-theme] .themePickerInner,html[data-ui-theme] .fontPickerInner { background:var(--ui-surface);color:var(--ui-text);border-color:var(--ui-border); }
+html[data-ui-theme] .authCard h2,html[data-ui-theme] .authCard .authModeBtn { color:var(--ui-text); }
+html[data-ui-theme] .authCard #authSubtitle,html[data-ui-theme] .authCard .authSignupRow,html[data-ui-theme] .authDivider,html[data-ui-theme] .authCard .authOfflineBtn,html[data-ui-theme] .authCard .authGuestNote,html[data-ui-theme] #authPasswordToggle { color:var(--ui-muted); }
+html[data-ui-theme] .authDivider::before,html[data-ui-theme] .authDivider::after { background:var(--ui-border); }
+html[data-ui-theme] .authCard .authGuestNote,html[data-ui-theme] .securityBlock,html[data-ui-theme] .securityRecord { border-color:var(--ui-border); }
+html[data-ui-theme] .authCard input,html[data-ui-theme] #securityControls input,html[data-ui-theme] #securityControls select,html[data-ui-theme] #searchInput,html[data-ui-theme] #supporterKeyInput,html[data-ui-theme] [data-ui-theme-choice] { background:var(--ui-raised);color:var(--ui-text);border:1px solid var(--ui-border); }
+html[data-ui-theme] input::placeholder { color:var(--ui-muted);opacity:1; }
+html[data-ui-theme] #securityControls button,html[data-ui-theme] .logoutBtn,html[data-ui-theme] .authCard .authGoogleBtn,html[data-ui-theme] .themeOption,html[data-ui-theme] .fontOption { background:var(--ui-raised);color:var(--ui-text);border:1px solid var(--ui-border); }
+html[data-ui-theme] .authCard .authPrimaryBtn,html[data-ui-theme] #securityControls .accountTabs [aria-selected="true"] { background:var(--ui-button);color:var(--ui-on-button);border-color:var(--ui-button); }
+html[data-ui-theme] #securityControls .securityAdminNavigation [aria-pressed="true"],html[data-ui-theme] .fontOption.active,html[data-ui-theme] .themeOption.active { background:var(--ui-selected);color:var(--ui-accent);border-color:var(--ui-accent); }
+html[data-ui-theme] .securityBlock p,html[data-ui-theme] .securityIdentity span { color:var(--ui-muted); }
+html[data-ui-theme] .securityStatus,html[data-ui-theme] #securityMessage { color:var(--ui-accent); }
+html[data-ui-theme] #securityControls .securityDanger button,html[data-ui-theme] .authCard .authError,html[data-ui-theme] .bookmarkDelete { color:var(--ui-danger);border-color:var(--ui-danger); }
+html[data-ui-theme] #pullRefreshIndicator { background:var(--ui-surface);color:var(--ui-text);border:1px solid var(--ui-border); }
+.uiAppearance { display:flex;align-items:center;justify-content:space-between;gap:12px;margin:18px 0;font-size:14px; }
+.uiAppearance select { min-height:44px;padding:8px 12px;border-radius:10px;font-size:14px;max-width:180px; }
+#securityControls .uiAppearance select { width:auto;margin:0; }
+html[data-ui-theme] button:focus-visible,html[data-ui-theme] select:focus-visible,html[data-ui-theme] input:focus-visible { outline:2px solid var(--ui-accent);outline-offset:3px; }
+@media(prefers-reduced-motion:reduce) { .authCard,.accountCard,.libraryScreen { scroll-behavior:auto; } }
+
+html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var(--ui-surface);--border:var(--ui-border); }
+html[data-ui-theme] .bookMeta,html[data-ui-theme] #readingInfo { color:var(--ui-muted);opacity:1; }
+html[data-ui-theme] #searchResults,html[data-ui-theme] #closeSearch { background:var(--ui-surface);color:var(--ui-text); }
+html[data-ui-theme] .searchItem,html[data-ui-theme] #bookmarksList a { border-color:var(--ui-border); }
+html[data-ui-theme] #toc a:hover,html[data-ui-theme] #bookmarksList a:hover { background:var(--ui-selected); }

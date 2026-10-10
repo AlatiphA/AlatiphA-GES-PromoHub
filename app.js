@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.7.0";
+const APP_VERSION = "1.7.1";
 
 const versionEl =
   document.getElementById(
@@ -1620,6 +1620,7 @@ const THEMES = {
 ========================= */
 
 function applyLibraryDayNight(forceTheme) {
+  if(typeof applyInterfaceTheme === "function")return applyInterfaceTheme();
 
   let theme = forceTheme;
 
@@ -1647,6 +1648,7 @@ function applyLibraryDayNight(forceTheme) {
 }
 
 function toggleLibraryDayNight() {
+  if(typeof cycleInterfaceTheme === "function")return cycleInterfaceTheme();
 
   const current =
     localStorage.getItem("library-theme") || "dark";
@@ -2784,7 +2786,7 @@ document.getElementById("logoutBtn")?.addEventListener("click", async () => { ac
 /* ---------- In-app FAQ ---------- */
 const faqOverlay = document.getElementById("faqOverlay");
 const faqFrame = document.getElementById("faqFrame");
-function postFaqTheme(theme) { try { faqFrame?.contentWindow?.postMessage({ type:"GES_PROMOHUB_THEME", theme }, location.origin); } catch (_) {} }
+function postFaqTheme(theme) { theme=document.documentElement.dataset.uiTheme || "light"; try { faqFrame?.contentWindow?.postMessage({ type:"GES_PROMOHUB_THEME", theme }, location.origin); } catch (_) {} }
 function openFaq() { faqOverlay.classList.add("open"); postFaqTheme(localStorage.getItem("reader-theme") || localStorage.getItem("library-theme") || "dark"); }
 function closeFaq() { faqOverlay.classList.remove("open"); }
 document.getElementById("sidebarFaqBtn")?.addEventListener("click", openFaq);
