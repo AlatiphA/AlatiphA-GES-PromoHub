@@ -14,7 +14,7 @@ test('migration retains established Premium but does not trust older injected ti
  assert.equal(policy.legacy({accountTier:'premium',securitySchemaVersion:1}),false);
 });
 test('client and server agree on trial, paid and expired access and guest expiry',()=>{
- const source=fs.readFileSync(require.resolve('../subscription-ui.js'),'utf8'),store=new Map(),elements={subscriptionPlan:{value:'m1'}};
+ const source=fs.readFileSync(require.resolve('../public/subscription-ui.js'),'utf8'),store=new Map(),elements={subscriptionPlan:{value:'m1'}};
  const scope={cloudUser:{uid:'u',emailVerified:true},securityProfile:{accountStatus:'active',accountTier:'free',subscriptionSchema:1,trialEndsAtMs:Date.now()+86400000},securityLocalOwner:'u',securityIsAdmin:()=>false,localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},document:{getElementById:id=>elements[id]||={}},Date,JSON,Number};vm.createContext(scope);vm.runInContext(source.slice(0,source.indexOf('securityActions.premium=')),scope);
  assert.equal(vm.runInContext('subscriptionCloudAllowed()',scope),false);assert.equal(vm.runInContext('subscriptionReadable()',scope),true);
  scope.securityProfile.trialEndsAtMs=Date.now()-1;assert.equal(vm.runInContext('subscriptionReadable()',scope),false);

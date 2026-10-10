@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-const app=fs.readFileSync(require.resolve('../app.js'),'utf8'),html=fs.readFileSync(require.resolve('../index.html'),'utf8');
+const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8'),html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');
 function setup(){
  const ids={};function element(id){return ids[id] ||= {value:'',type:'password',style:{},attributes:{},listeners:{},classList:{add(){},remove(){}},setAttribute(k,v){this.attributes[k]=v;},addEventListener(k,f){this.listeners[k]=f;},reportValidity(){return true;},click(){this.clicks=(this.clicks||0)+1;}};}
  const context={document:{getElementById:element},authMode:'login',authName:element('authName'),authPassword:element('authPassword'),authPrimaryBtn:element('authPrimaryBtn'),authModeBtn:element('authModeBtn'),authError:element('authError')};vm.createContext(context);

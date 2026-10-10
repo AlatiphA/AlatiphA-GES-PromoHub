@@ -3,7 +3,7 @@ const assert=require('node:assert/strict');
 const fs=require('node:fs');
 const vm=require('node:vm');
 const path=require('node:path');
-const root=path.join(__dirname,'..');
+const root=path.join(__dirname,'../public');
 function boot({saved=null,dark=false,blocked=false}={}){
  const values=new Map(saved?[['ges-promohub-ui-theme',saved]]:[]),writes=[],events={},domEvents={},messages=[];
  const selects=[{value:'',addEventListener(k,fn){this[k]=fn;}},{value:'',addEventListener(k,fn){this[k]=fn;}}];

@@ -324,3 +324,8 @@ SOFTWARE.
 
 **Abdul-Latif Ahmed [AlatiphA]**  
 GitHub: [github.com/AlatiphA](https://github.com/AlatiphA)
+
+
+## Current project layout
+
+Website files are in public/. Deploy and push from this repository. See PROJECT-LAYOUT.md for commands.

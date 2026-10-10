@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-const source=fs.readFileSync(require.resolve('../security-ui.js'),'utf8');
+const source=fs.readFileSync(require.resolve('../public/security-ui.js'),'utf8');
 function setup(){
  class Element {
   constructor(){this.children=[];this.hidden=false;this.dataset={};this.attributes={};this.textContent='';}
@@ -40,5 +40,5 @@ test('Premium and audit records show enriched identities and no raw identifiers'
  await s.run("securityRecords('audit')");row=s.ids.securityRecords.children[0];assert.equal(row.children[1].children[0].textContent,'Account: Reader');assert.equal(row.children[2].children[0].textContent,'By: Owner');
 });
 test('account markup has accessible tabs and Next page label',()=>{
- const html=fs.readFileSync(require.resolve('../index.html'),'utf8');assert.match(html,/role="tablist"/);assert.match(html,/id="myAccountPanel" role="tabpanel"/);assert.match(html,/id="securityAdmin" role="tabpanel"/);assert.match(html,/>Next page<\/button>/);assert.doesNotMatch(html,/Next users/);
+ const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');assert.match(html,/role="tablist"/);assert.match(html,/id="myAccountPanel" role="tabpanel"/);assert.match(html,/id="securityAdmin" role="tabpanel"/);assert.match(html,/>Next page<\/button>/);assert.doesNotMatch(html,/Next users/);
 });

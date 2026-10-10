@@ -3,7 +3,7 @@ const test = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const vm = require('node:vm');
-const app = fs.readFileSync(require.resolve('../app.js'), 'utf8');
+const app = fs.readFileSync(require.resolve('../public/app.js'), 'utf8');
 const desktop = app.slice(app.indexOf('    /* Desktop content clicks:'), app.indexOf('    /* Use document-level capture listener'));
 const linksStart = app.indexOf('    /* Use document-level capture listener');
 const links = app.slice(linksStart, app.indexOf('    }, true);', linksStart) + '    }, true);'.length);
@@ -58,7 +58,7 @@ test('clicking ordinary content dismisses popup or sidebar without turning a pag
   const s = harness({sidebar: true}); s.click(800); assert.deepEqual(s.calls, ['closeSidebar']);
 });
 test('navigation overlay never enables desktop pointer interception', () => {
-  const css = fs.readFileSync(require.resolve('../style.css'), 'utf8');
+  const css = fs.readFileSync(require.resolve('../public/style.css'), 'utf8');
   assert.match(css, /\.navZone\s*\{[^}]*pointer-events:\s*none/);
   assert.doesNotMatch(css, /\.navZone\s*\{[^}]*pointer-events:\s*(all|auto)/);
 });

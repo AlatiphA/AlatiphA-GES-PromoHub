@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
-const app=fs.readFileSync(require.resolve('../app.js'),'utf8');
+const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8');
 function setup(){
  const state={profile:false,auth:false,sidebar:false,faq:false,reloads:0,saves:0},events={},timers=[];
  const classes={add(){},remove(){},toggle(){}};

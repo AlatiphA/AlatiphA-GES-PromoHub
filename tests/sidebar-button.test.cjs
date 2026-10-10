@@ -1,6 +1,6 @@
 'use strict';
 const test = require('node:test'), assert = require('node:assert/strict'), fs = require('node:fs'), vm = require('node:vm');
-const source = fs.readFileSync(require.resolve('../app.js'), 'utf8');
+const source = fs.readFileSync(require.resolve('../public/app.js'), 'utf8');
 function setup(open = false) {
   const state = {open, header: false, footer: false, popup: true, documentClicks: 0};
   const buttons = {};
