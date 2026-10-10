@@ -1483,3 +1483,8 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 .authCard .authError { color:#9c3a26;font-size:14px;line-height:1.5;opacity:1;margin:12px 0 0!important;min-height:0; }
 .authCard .authError:empty { display:none; }
 @media(max-width:380px) { .authCard { padding:26px 20px; }.authBrand { font-size:15px;gap:10px; }.authCard h2 { font-size:29px; }.authDivider { font-size:10px;gap:8px; } }
+
+/* Suppress native browser refresh; the explicit app refresh gesture remains guarded. */
+html,body { overscroll-behavior-y:none; }
+.accountPanel,.authScreen,.accountCard,.authCard { overscroll-behavior-y:none; }
+.accountCard,.authCard { touch-action:pan-y pinch-zoom; }
