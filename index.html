@@ -499,18 +499,24 @@
 <!-- AUTH SCREEN -->
 <div id="authScreen" class="authScreen">
   <div class="authCard">
-    <img src="icon-192.png" class="authLogo" alt="GES PromoHub">
-    <h2>AlatiphA GES PromoHub</h2>
+    <div class="authBrand"><img src="icon-192.png" class="authLogo" alt=""><span>AlatiphA GES PromoHub</span></div>
+    <h2 id="authHeading">Welcome back</h2>
     <p id="authSubtitle">Sign in to sync your reading across devices.</p>
-    <input id="authName" type="text" placeholder="Full name" autocomplete="name" style="display:none">
-    <input id="authEmail" type="email" placeholder="Email" autocomplete="email">
-    <input id="authPassword" type="password" placeholder="Password" autocomplete="current-password">
-    <button id="authPrimaryBtn" class="authPrimaryBtn">Login</button>
-    <button id="googleSignInBtn" class="authGoogleBtn"><i class="fa-brands fa-google"></i> Continue with Google</button>
-    <button id="authModeBtn" class="authModeBtn">Create an account</button>
-    <button id="authResetBtn" class="authModeBtn">Forgot password</button>
-    <button id="authOfflineBtn" class="authModeBtn">Continue offline</button>
-    <p id="authError" class="authError"></p>
+    <form id="authForm">
+      <div id="authNameField" class="authField" hidden><label for="authName">Full name</label><input id="authName" type="text" placeholder="Enter your name" autocomplete="name" style="display:none"></div>
+      <div class="authField"><label for="authEmail">Email</label><input id="authEmail" type="email" placeholder="Enter your email" autocomplete="email" required></div>
+      <div class="authField">
+        <div class="authLabelRow"><label for="authPassword">Password</label><button id="authResetBtn" class="authModeBtn" type="button">Forgot password?</button></div>
+        <div class="authPasswordField"><input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required><button id="authPasswordToggle" type="button" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+      </div>
+      <button id="authPrimaryBtn" class="authPrimaryBtn" type="submit">Sign in</button>
+    </form>
+    <p id="authError" class="authError" role="status" aria-live="polite"></p>
+    <p class="authSignupRow"><span id="authModePrompt">Don't have an account?</span> <button id="authModeBtn" class="authModeBtn" type="button">Sign up</button></p>
+    <div class="authDivider"><span>Or continue with Google</span></div>
+    <button id="googleSignInBtn" class="authGoogleBtn" type="button"><span class="authGoogleMark" aria-hidden="true">G</span> Continue with Google</button>
+    <button id="authOfflineBtn" class="authModeBtn authOfflineBtn" type="button">Continue offline</button>
+    <p class="authGuestNote">Read offline without an account. Guest reading progress and bookmarks stay on this device.</p>
   </div>
 </div>
 

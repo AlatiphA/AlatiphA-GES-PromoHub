@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.6.7";
+const APP_VERSION = "1.6.8";
 
 const versionEl =
   document.getElementById(
@@ -2677,15 +2677,20 @@ const authError = document.getElementById("authError");
 
 function setAuthMode(mode) {
   authMode = mode;
+  resetAuthPasswordVisibility();
   const signup = mode === "signup";
   authName.style.display = signup ? "block" : "none";
-  authPrimaryBtn.textContent = signup ? "Create account" : "Login";
-  authModeBtn.textContent = signup ? "Already have an account? Login" : "Create an account";
+  document.getElementById("authNameField").hidden = !signup;
+  document.getElementById("authHeading").textContent = signup ? "Create your account" : "Welcome back";
+  document.getElementById("authSubtitle").textContent = signup ? "Save your reading progress across devices." : "Sign in to sync your reading across devices.";
+  document.getElementById("authModePrompt").textContent = signup ? "Already have an account?" : "Don't have an account?";
+  authPrimaryBtn.textContent = signup ? "Create account" : "Sign in";
+  authModeBtn.textContent = signup ? "Sign in" : "Sign up";
   authPassword.autocomplete = signup ? "new-password" : "current-password";
   authError.textContent = "";
 }
 
-function showAuth() { if (authScreen) authScreen.classList.add("active"); }
+function showAuth() { resetAuthPasswordVisibility(); if (authScreen) authScreen.classList.add("active"); }
 function hideAuth() { if (authScreen) authScreen.classList.remove("active"); }
 
 function initials(name, email) {
@@ -2726,9 +2731,24 @@ async function initFirebaseFeatures() {
   } catch (e) { console.warn("Firebase startup:", e); resumeReaderAfterStartup(); }
 }
 
+const authPasswordToggle = document.getElementById("authPasswordToggle");
+function resetAuthPasswordVisibility() {
+  authPassword.type = "password";
+  authPasswordToggle.setAttribute("aria-label", "Show password");
+  authPasswordToggle.setAttribute("aria-pressed", "false");
+}
+authPasswordToggle.addEventListener("click", () => {
+  const show = authPassword.type === "password";
+  authPassword.type = show ? "text" : "password";
+  authPasswordToggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
+  authPasswordToggle.setAttribute("aria-pressed", String(show));
+});
+document.getElementById("authForm").addEventListener("submit", e => { e.preventDefault(); authPrimaryBtn.click(); });
 if (authModeBtn) authModeBtn.addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));
 if (authOfflineBtn) authOfflineBtn.addEventListener("click", () => { hideAuth(); resumeReaderAfterStartup(); });
-if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async () => {
+if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
+  e.preventDefault();
+  if (!document.getElementById("authForm").reportValidity()) return;
   if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
   authError.textContent = "";
   try {
