@@ -516,7 +516,7 @@
     <div class="authDivider"><span>Or continue with Google</span></div>
     <button id="googleSignInBtn" class="authGoogleBtn" type="button"><span class="authGoogleMark" aria-hidden="true">G</span> Continue with Google</button>
     <button id="authOfflineBtn" class="authModeBtn authOfflineBtn" type="button">Continue offline</button>
-    <p class="authGuestNote">Read offline without an account. Guest reading progress and bookmarks stay on this device.</p>
+    <p class="authGuestNote">Try reading free for 7 days. Trial progress and bookmarks stay on this device. Sign in to choose a paid plan.</p>
   </div>
 </div>
 
@@ -543,8 +543,13 @@
       <label for="securityName">Profile name</label><input id="securityName" maxlength="100" autocomplete="nickname">
       <button data-security="name">Save name</button>
     </div>
-    <div class="securityBlock"><h3>Membership</h3><p>Premium requests are reviewed by an administrator. Requesting access does not charge you.</p>
-      <button id="securityPremiumButton" data-security="premium">Request Premium</button>
+    <div class="securityBlock"><h3>Subscription</h3>
+      <p id="subscriptionStatus"></p><p>The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
+      <label for="subscriptionPlan">Choose a plan</label><select id="subscriptionPlan"><option value="m1">1 month - GH₵20</option><option value="m3">3 months - GH₵50</option><option value="m6">6 months - GH₵80</option><option value="m12">12 months - GH₵100</option></select>
+      <p id="subscriptionPaymentDetails">Pay to MTN MoMo 0243443688, Abdul-Latif Ahmed.</p>
+      <label for="subscriptionReference">MoMo transaction reference</label><input id="subscriptionReference" maxlength="80" autocomplete="off" placeholder="Reference from your MoMo receipt">
+      <button id="securityPremiumButton" data-security="premium">Submit payment for review</button>
+      <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
     </div>
     <details class="securityBlock securityDanger"><summary>Delete account</summary>
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
@@ -553,7 +558,7 @@
   </section>
   <section id="securityAdmin" role="tabpanel" aria-labelledby="administrationTab" hidden>
     <h3>Administration</h3><p id="securitySummary"></p>
-    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="requests" aria-pressed="false">Premium requests</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
+    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="payments" aria-pressed="false">Subscription payments</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
     <h4 id="securityRecordsTitle">Choose a view above</h4><div id="securityRecords" aria-live="polite"></div>
     <div id="securityPagination" hidden><button id="securityNextPage" data-security="more" disabled>Next page</button></div>
   </section>
@@ -583,6 +588,7 @@
 
 <script src="./app.js"></script>
 <script src="./security-ui.js"></script>
+<script src="./subscription-ui.js"></script>
 <script src="./install.js"></script>
 
 </body>

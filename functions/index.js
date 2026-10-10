@@ -8,6 +8,7 @@ if (typeof admin.firestore !== 'function') {
 if (typeof admin.auth !== 'function') admin.auth = require('firebase-admin/auth').getAuth;
 const {onCall,HttpsError} = require('firebase-functions/v2/https');
 const policy = require('./policy');
+const subscriptions = require('./subscriptions.cjs');
 admin.initializeApp();
 const db = admin.firestore();
 const stamp = () => admin.firestore.FieldValue.serverTimestamp();
@@ -46,6 +47,7 @@ exports.initializePromoHubAccount = onCall(options,async req => {
   // Never accept tier, status, or role from a browser. Preserve valid existing server-managed values.
   if (!old.exists || !p.accountStatus) data.accountStatus='active';
   if (!old.exists || p.securitySchemaVersion !== 2 || !['free','premium'].includes(p.accountTier)) data.accountTier='free';
+  Object.assign(data,subscriptions.initial(p));
   data.securitySchemaVersion=2;
   if (!old.exists) data.createdAt=stamp();
   tx.set(ref,data,{merge:true});
@@ -57,6 +59,7 @@ exports.requestPremiumAccess = onCall(options,async req => {
  await db.runTransaction(async tx => {
   const [u,r]=await Promise.all([tx.get(user),tx.get(ref)]);
   if (!policy.active(u.data())) throw new HttpsError('permission-denied','Account is not active.');
+  if(u.data().subscriptionSchema===1)throw new HttpsError('failed-precondition','Select a subscription plan and submit your MoMo payment reference.');
   if (u.data().accountTier==='premium') throw new HttpsError('failed-precondition','Premium is already active.');
   if (r.data()?.status==='pending') return;
   tx.set(ref,{uid,status:'pending',requestedAt:stamp(),updatedAt:stamp()});
@@ -73,6 +76,7 @@ exports.reviewPremiumRequest = onCall(options,async req => {
   if (!policy.administrator(req.auth.token,a.data())) throw new HttpsError('permission-denied','Administrator access required.');
   if (r.data()?.status!=='pending' || !policy.active(u.data())) throw new HttpsError('failed-precondition','No active pending request.');
   tx.update(ref,{status:decision,reviewedBy:actor,reviewedAt:stamp(),updatedAt:stamp()});
+  if(decision==='approved')throw new HttpsError('failed-precondition','Approve paid plans through subscription payment verification.');
   if (decision==='approved') tx.update(user,{accountTier:'premium',updatedAt:stamp()});
   audit(tx,actor,`premium.${decision}`,uid);
  });
@@ -89,7 +93,7 @@ exports.managePromoHubUser = onCall(options,async req => {
   if (!policy.administrator(req.auth.token,a.data())) throw new HttpsError('permission-denied','Administrator access required.');
   if (!u.exists) throw new HttpsError('not-found','Account not found.');
   const changes={updatedAt:stamp()};
-  if(action==='free') changes.accountTier='free';
+  if(action==='free'){changes.accountTier='free';changes.subscriptionSchema=1;changes.subscriptionEndsAtMs=0;changes.subscriptionStatus='cancelled';}
   else changes.accountStatus={suspend:'suspended',disable:'disabled',reactivate:'active'}[action];
   tx.update(u.ref,changes); audit(tx,actor,`account.${action}`,uid);
  });
@@ -106,14 +110,14 @@ exports.getPromoHubUsers = onCall(options,async req => {
 });
 exports.getPromoHubAdminSummary = onCall(options,async req => {
  await member(req,true);
- const [users,pending,premium]=await Promise.all([db.collection('users').count().get(),db.collection('premiumRequests').where('status','==','pending').count().get(),db.collection('users').where('accountTier','==','premium').count().get()]);
+ const [users,pending,premium]=await Promise.all([db.collection('users').count().get(),db.collection('subscriptionRequests').where('status','==','pending').count().get(),db.collection('users').where('accountTier','==','premium').count().get()]);
  return {users:users.data().count,pending:pending.data().count,premium:premium.data().count};
 });
 exports.getPromoHubAdminRecords = onCall(options,async req => {
  await member(req,true);
  const kind=req.data?.kind || 'requests';
- if(!['requests','audit'].includes(kind))throw new HttpsError('invalid-argument','Invalid records view.');
- const query=kind==='audit' ? db.collection('auditLogs').orderBy('createdAt','desc').limit(50) : db.collection('premiumRequests').where('status','==','pending').limit(50);
+ if(!['requests','payments','audit'].includes(kind))throw new HttpsError('invalid-argument','Invalid records view.');
+ const query=kind==='audit' ? db.collection('auditLogs').orderBy('createdAt','desc').limit(50) : db.collection(kind==='payments'?'subscriptionRequests':'premiumRequests').where('status','==','pending').limit(50);
  const snap=await query.get(), accounts=new Map();
  function account(uid){
   if(typeof uid!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(uid))return Promise.resolve({displayName:'',email:'',available:false});
@@ -141,6 +145,9 @@ exports.deletePromoHubAccount = onCall(options,async req => {
  await ref.set({accountStatus:'disabled',updatedAt:stamp()},{merge:true});
  await db.recursiveDelete(ref);
  await db.doc(`premiumRequests/${uid}`).delete();
+ await db.doc(`subscriptionRequests/${uid}`).delete();
  await admin.auth().deleteUser(uid);
  return {ok:true};
 });
+
+Object.assign(exports,require('./payments.cjs')({onCall,options,HttpsError,db,member,identity,target,stamp,audit,policy}));

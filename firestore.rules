@@ -4,6 +4,12 @@ service cloud.firestore {
   function verified() { return request.auth != null && request.auth.token.email_verified == true; }
   function active(uid) { return exists(/databases/$(database)/documents/users/$(uid)) && get(/databases/$(database)/documents/users/$(uid)).data.accountStatus == 'active'; }
   function owner(uid) { return verified() && request.auth.uid == uid && active(uid); }
+  function cloudOwner(uid) {
+   let p=get(/databases/$(database)/documents/users/$(uid)).data;
+   return owner(uid) && (request.auth.token.get('promohubAdmin',false)==true
+    || (p.get('subscriptionSchema',0)==1 && p.accountTier=='premium' && p.get('subscriptionEndsAtMs',0)>request.time.toMillis())
+    || (p.get('subscriptionSchema',0)!=1 && p.get('securitySchemaVersion',0)==2 && p.accountTier=='premium'));
+  }
   function readerDataValid() {
    return request.resource.data.keys().hasOnly(['bookId','location','progress','chapter','updatedAt'])
     && request.resource.data.bookId is string && request.resource.data.bookId.size() <= 100
@@ -21,8 +27,8 @@ service cloud.firestore {
     && request.resource.data.updatedAt == request.time;
    allow create, delete: if false;
    match /reading/{bookId} {
-    allow read, delete: if owner(uid);
-    allow create, update: if owner(uid)
+    allow read, delete: if cloudOwner(uid);
+    allow create, update: if cloudOwner(uid)
      && request.resource.data.keys().hasOnly(['bookFile','cfi','progress','chapter','updatedAtMs','updatedAt'])
      && request.resource.data.bookFile in ['./library/gespasco.epub','./library/mat1.epub','./library/mat2.epub','./library/etmala.epub','./library/nfatfges.epub','./library/eigala.epub']
      && request.resource.data.cfi is string && request.resource.data.cfi.size() <= 4096
@@ -32,12 +38,12 @@ service cloud.firestore {
      && request.resource.data.updatedAt == request.time;
    }
    match /readerData/{bookId} {
-    allow read, delete: if owner(uid);
-    allow create, update: if owner(uid) && readerDataValid() && request.resource.data.bookId == bookId;
+    allow read, delete: if cloudOwner(uid);
+    allow create, update: if cloudOwner(uid) && readerDataValid() && request.resource.data.bookId == bookId;
    }
    match /bookmarks/{id} {
-    allow read: if owner(uid);
-    allow create, update: if owner(uid) && (
+    allow read: if cloudOwner(uid);
+    allow create, update: if cloudOwner(uid) && (
      (request.resource.data.keys().hasOnly(['bookFile','cfi','chapter','progress','date','updatedAtMs','updatedAt'])
       && request.resource.data.bookFile in ['./library/gespasco.epub','./library/mat1.epub','./library/mat2.epub','./library/etmala.epub','./library/nfatfges.epub','./library/eigala.epub']
       && request.resource.data.cfi is string && request.resource.data.cfi.size() <= 4096
@@ -50,11 +56,11 @@ service cloud.firestore {
      && request.resource.data.chapter is string && request.resource.data.chapter.size() <= 2048
      && request.resource.data.progress is number && request.resource.data.progress >= 0 && request.resource.data.progress <= 100
      && request.resource.data.deleted is bool && request.resource.data.updatedAt == request.time));
-    allow delete: if owner(uid) && resource.data.keys().hasAny(['bookFile']);
+    allow delete: if cloudOwner(uid) && resource.data.keys().hasAny(['bookFile']);
    }
    match /preferences/{id} {
-    allow read: if owner(uid);
-    allow create, update: if owner(uid) && id in ['default','reader']
+    allow read: if cloudOwner(uid);
+    allow create, update: if cloudOwner(uid) && id in ['default','reader']
      && request.resource.data.keys().hasOnly(['theme','libraryTheme','fontSize','fontFamily','updatedAtMs','updatedAt'])
      && request.resource.data.theme in ['light','dark','sepia','night']
      && request.resource.data.fontSize is number && request.resource.data.fontSize >= 70 && request.resource.data.fontSize <= 200

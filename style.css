@@ -1488,3 +1488,7 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 html,body { overscroll-behavior-y:none; }
 .accountPanel,.authScreen,.accountCard,.authCard { overscroll-behavior-y:none; }
 .accountCard,.authCard { touch-action:pan-y pinch-zoom; }
+
+#securityControls select { width:100%;min-height:44px;font-size:16px;padding:10px;border:1px solid #777;border-radius:8px;background:#222;color:white;margin:8px 0 12px; }
+.subscriptionVerification { display:flex;align-items:flex-start;gap:8px;margin:14px 0;line-height:1.5; }
+#securityControls .subscriptionVerification input { width:20px;min-height:20px;flex-shrink:0;margin:2px 0; }
