@@ -5,12 +5,12 @@ module.exports=function({onCall,options,HttpsError,db,member,identity,target,sta
  return {
  submitPromoHubPayment:onCall(options,async req=>{
   const uid=await member(req),planId=req.data?.planId,plan=Object.hasOwn(subscriptions.plans,planId)?subscriptions.plans[planId]:null,reference=subscriptions.reference(req.data?.reference);
-  if(!plan || !reference)throw new HttpsError('invalid-argument','Select a plan and enter a valid MoMo transaction reference (6 to 80 letters, numbers or hyphens).');
+  if(!plan || !reference)throw new HttpsError('invalid-argument','Select a plan and enter a valid MoMo transaction ID from your SMS or receipt, not the payment description (6 to 80 letters, numbers or hyphens).');
   const ref=db.doc(`subscriptionRequests/${uid}`);
   await db.runTransaction(async tx=>{
    const [u,r,used]=await Promise.all([tx.get(db.doc(`users/${uid}`)),tx.get(ref),tx.get(db.doc(`subscriptionPayments/${hash(reference)}`))]);
    if(!policy.active(u.data()))throw new HttpsError('permission-denied','Account is not active.');
-   if(used.exists)throw new HttpsError('already-exists','This payment reference has already been approved.');
+   if(used.exists)throw new HttpsError('already-exists','This MoMo transaction ID has already been approved.');
    if(r.data()?.status==='pending'){
     if(r.data().reference===reference && r.data().planId===planId)return;
     throw new HttpsError('failed-precondition','Your previous payment is still awaiting review.');

@@ -495,7 +495,8 @@
       <div id="subscriptionPurchaseControls">
       <label for="subscriptionPlan">Choose a plan</label><select id="subscriptionPlan"><option value="m1">1 month - GH₵20</option><option value="m3">3 months - GH₵50</option><option value="m6">6 months - GH₵80</option><option value="m12">12 months - GH₵100</option></select>
       <p id="subscriptionPaymentDetails">Pay to MTN MoMo 0243443688, Abdul-Latif Ahmed.</p>
-      <label for="subscriptionReference">MoMo transaction reference</label><input id="subscriptionReference" maxlength="80" autocomplete="off" placeholder="Reference from your MoMo receipt">
+      <label for="subscriptionReference">MoMo transaction ID</label><input id="subscriptionReference" maxlength="80" autocomplete="off" placeholder="Unique ID from your MoMo SMS or receipt" aria-describedby="subscriptionTransactionIdHelp">
+      <p id="subscriptionTransactionIdHelp">Enter the unique transaction ID, not the payment description or your name.</p>
       <button id="securityPremiumButton" data-security="premium">Submit payment for review</button>
       <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
       </div>

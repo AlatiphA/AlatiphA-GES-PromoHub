@@ -134,9 +134,9 @@ async function subscriptionAdminPayments(){
   const result=await securityCall('getPromoHubAdminRecords',{kind:'payments'});if(!securityAdminCurrent(state))return;state.host.replaceChildren();
   for(const r of result.records){
    const row=document.createElement('article');row.className='securityRecord';securityIdentity(row,r.account);
-   const detail=document.createElement('p');detail.textContent=`${({m1:'1 month',m3:'3 months',m6:'6 months',m12:'12 months'})[r.planId] || 'Unknown plan'} · GH₵${r.amountGhs}\nMoMo reference: ${r.reference}`;row.append(detail);
+   const detail=document.createElement('p');detail.textContent=`${({m1:'1 month',m3:'3 months',m6:'6 months',m12:'12 months'})[r.planId] || 'Unknown plan'} · GH₵${r.amountGhs}\nMoMo transaction ID: ${r.reference}`;row.append(detail);
    const label=document.createElement('label');label.textContent='Amount actually received (GH₵)';const amount=document.createElement('input');amount.type='number';amount.min='0';amount.step='0.01';label.append(amount);row.append(label);
-   const verify=document.createElement('label');verify.className='subscriptionVerification';const checkbox=document.createElement('input');checkbox.type='checkbox';verify.append(checkbox,document.createTextNode(' I checked the recipient, reference and amount in my MoMo transaction history.'));row.append(verify);
+   const verify=document.createElement('label');verify.className='subscriptionVerification';const checkbox=document.createElement('input');checkbox.type='checkbox';verify.append(checkbox,document.createTextNode(' I checked the recipient, transaction ID and amount in my MoMo transaction history.'));row.append(verify);
    const actions=document.createElement('div');actions.className='securityActions';
    for(const decision of ['approved','rejected']){
     const b=document.createElement('button');b.textContent=decision==='approved'?'Verify and activate':'Reject payment';b.disabled=!r.account?.available;
