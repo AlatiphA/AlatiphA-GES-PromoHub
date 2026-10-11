@@ -152,3 +152,5 @@ Object.assign(exports,require('./account-security.cjs')({onCall,options,HttpsErr
 Object.assign(exports,require('./reader-sessions.cjs')({onCall,options,HttpsError,db,admin,policy}));
 
 Object.assign(exports,require('./admin-directory.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member}));
+
+Object.assign(exports,require('./notifications.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member,stamp,audit}));

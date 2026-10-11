@@ -52,3 +52,27 @@ test('clients cannot change login email or pending email metadata',async()=>{
   await assertFails(updateDoc(doc(client('alice'),'users/alice'),{...update,updatedAt:serverTimestamp()}));
  }
 });
+
+test('inbox notices are private, server-created, and permit only true read marks',async()=>{
+ await env.withSecurityRulesDisabled(async c=>{const db=c.firestore();await setDoc(doc(db,'users/trial/notifications/n'),{title:'Notice',body:'Private',read:false,createdAt:serverTimestamp()});await setDoc(doc(db,'users/suspended/notifications/n'),{title:'Access changed',body:'Suspended',read:false,createdAt:serverTimestamp()});});
+ await assertSucceeds(getDoc(doc(client('trial'),'users/trial/notifications/n')));
+ await assertSucceeds(getDoc(doc(client('suspended'),'users/suspended/notifications/n')));
+ await assertFails(getDoc(doc(client('bob'),'users/trial/notifications/n')));
+ await assertFails(getDoc(doc(client('trial',false),'users/trial/notifications/n')));
+ await assertFails(setDoc(doc(client('trial'),'users/trial/notifications/fake'),{title:'Fake',read:false}));
+ await assertFails(updateDoc(doc(client('trial'),'users/trial/notifications/n'),{body:'Changed',read:true,readAt:serverTimestamp()}));
+ await assertFails(updateDoc(doc(client('trial'),'users/trial/notifications/n'),{read:true,readAt:1}));
+ await assertSucceeds(updateDoc(doc(client('trial'),'users/trial/notifications/n'),{read:true,readAt:serverTimestamp()}));
+ await assertFails(updateDoc(doc(client('trial'),'users/trial/notifications/n'),{read:false,readAt:serverTimestamp()}));
+});
+test('announcements work for trial and expired active accounts; receipts cannot forge content or another account',async()=>{
+ await env.withSecurityRulesDisabled(async c=>{await setDoc(doc(c.firestore(),'announcements/notice'),{title:'Announcement',body:'Study reminder',createdAt:serverTimestamp()});});
+ for(const uid of ['trial','expired'])await assertSucceeds(getDoc(doc(client(uid),'announcements/notice')));
+ await assertFails(getDoc(doc(client('suspended'),'announcements/notice')));
+ await assertFails(setDoc(doc(client('trial'),'announcements/fake'),{body:'Fake'}));
+ await assertSucceeds(setDoc(doc(client('trial'),'users/trial/announcementReads/notice'),{read:true,readAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(client('bob'),'users/trial/announcementReads/notice'),{read:true,readAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(client('trial'),'users/trial/announcementReads/missing'),{read:true,readAt:serverTimestamp()}));
+ await assertFails(setDoc(doc(client('trial'),'users/trial/announcementReads/notice'),{read:true,readAt:serverTimestamp(),body:'Forged'}));
+ await assertFails(setDoc(doc(client('trial'),'notificationCommands/fake'),{audience:'all'}));
+});

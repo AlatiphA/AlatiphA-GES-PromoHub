@@ -1,0 +1,29 @@
+/* Keep the inbox independent of the absolute reader layout. */
+.inboxBell{position:relative;flex-shrink:0;min-width:44px;min-height:44px}
+.inboxBell svg{width:22px;height:22px;vertical-align:middle}
+.inboxBadge{position:absolute;top:0;right:0;min-width:17px;padding:1px 4px;border-radius:12px;background:#a82d25;color:#fff;font:600 11px/16px Arial,sans-serif}
+.libraryHeader .inboxBell{position:absolute;right:66px;top:20px}
+dialog.inboxDialog{position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);box-sizing:border-box;padding:18px;border:1px solid var(--ui-border,#aaa);border-radius:18px;background:var(--ui-surface,#fff);color:var(--ui-text,#222);overflow:auto;overscroll-behavior:contain;touch-action:pan-y pinch-zoom;z-index:2000}
+.inboxDialog::backdrop{background:rgba(0,0,0,.55)}
+.inboxDialog [hidden]{display:none!important}
+.inboxHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.inboxHeading h2{margin:0;font-size:1.25rem}
+.inboxDialog button,.messageComposer button{font:inherit;font-size:14px;min-height:44px;padding:8px 12px;white-space:normal;border:1px solid var(--ui-border,#aaa);border-radius:9px;background:var(--ui-surface,#fff);color:inherit;cursor:pointer}
+.inboxActions{display:flex;flex-wrap:wrap;gap:8px;margin:14px 0}
+.inboxDialog p{font-size:14px;line-height:1.5;overflow-wrap:anywhere}
+.inboxMessage{border:1px solid var(--ui-border,#aaa);border-radius:12px;padding:14px;margin:10px 0}
+.inboxMessage.unread{border-left:4px solid var(--ui-accent,#956433)}
+.inboxMessage h3{font-size:16px;margin:0 0 8px;overflow-wrap:anywhere}
+.inboxMessage p{white-space:pre-wrap;margin:8px 0}
+.inboxMeta{opacity:.75;font-size:12px!important}
+.messageComposer{max-width:650px;border:1px solid var(--ui-border,#aaa);border-radius:14px;padding:18px}
+.messageComposer label{display:grid;gap:6px;margin:12px 0}
+.messageComposer input,.messageComposer textarea{box-sizing:border-box;width:100%;max-width:100%;min-width:0;font:inherit;font-size:16px;padding:10px;border:1px solid var(--ui-border,#aaa);border-radius:9px;background:var(--ui-surface,#fff);color:inherit}
+.messageComposer textarea{min-height:150px;resize:vertical}
+.messageComposer p{overflow-wrap:anywhere;line-height:1.5}
+@media(max-width:480px){dialog.inboxDialog{padding:14px}.libraryHeader .inboxBell{right:64px}.messageComposer{padding:14px}}
+
+.inboxBell[hidden]{display:none!important}
+.adminShell .securityAdminNavigation{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
+.libraryHeader .inboxBell{top:calc(env(safe-area-inset-top,0px) + 14px);z-index:6}
+.libraryHeader #libraryDayNightBtn{right:114px}
