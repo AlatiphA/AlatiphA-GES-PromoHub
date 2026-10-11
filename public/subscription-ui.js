@@ -61,31 +61,7 @@ securityActions.premium=async()=>{
  securityMessage('Payment submitted. An administrator will check the MoMo transaction before activating your plan.');await subscriptionMyPayment();
 };
 securityActions.paymentStatus=subscriptionMyPayment;
-securityActions.payments=()=>subscriptionAdminPayments();
 document.getElementById('subscriptionPlan').addEventListener('change',subscriptionRender);
-async function subscriptionAdminPayments(){
- if(!securityIsAdmin())return;const state=securityAdminStart('payments','Subscription payments');
- try{
-  const result=await securityCall('getPromoHubAdminRecords',{kind:'payments'});if(!securityAdminCurrent(state))return;state.host.replaceChildren();
-  for(const r of result.records){
-   const row=document.createElement('article');row.className='securityRecord';securityIdentity(row,r.account);
-   const detail=document.createElement('p');detail.textContent=`${subscriptionPlans[r.planId]?.label || 'Unknown plan'} · GH₵${r.amountGhs}\nMoMo reference: ${r.reference}`;row.append(detail);
-   const label=document.createElement('label');label.textContent='Amount actually received (GH₵)';const amount=document.createElement('input');amount.type='number';amount.min='0';amount.step='0.01';label.append(amount);row.append(label);
-   const verify=document.createElement('label');verify.className='subscriptionVerification';const checkbox=document.createElement('input');checkbox.type='checkbox';verify.append(checkbox,document.createTextNode(' I checked the recipient, reference and amount in my MoMo transaction history.'));row.append(verify);
-   const actions=document.createElement('div');actions.className='securityActions';
-   for(const decision of ['approved','rejected']){
-    const b=document.createElement('button');b.textContent=decision==='approved'?'Verify and activate':'Reject payment';b.disabled=!r.account?.available;
-    b.onclick=()=>securityWork(async()=>{
-     if(!securityAdminCurrent(state))return;
-     if(decision==='approved' && (!checkbox.checked || Number(amount.value)!==r.amountGhs))throw new Error('Confirm the received payment and enter the exact plan amount.');
-     if(!confirm(`${b.textContent} for ${securityAccountLabel(r.account)}?`))return;
-     b.disabled=true;try{await securityCall('reviewPromoHubPayment',{uid:r.uid,decision,verifiedPayment:checkbox.checked,amountGhs:Number(amount.value)});if(securityAdminCurrent(state))await subscriptionAdminPayments();}finally{if(securityAdminCurrent(state))b.disabled=false;}
-    });actions.append(b);
-   }row.append(actions);state.host.append(row);
-  }
-  if(!result.records.length)state.host.textContent='No pending subscription payments.';
- }catch(e){if(securityAdminCurrent(state)){state.host.textContent='Select Subscription payments to try again.';securityMessage(e.message);}}
-}
 const subscriptionOpenReader=openReader;
 openReader=function(){
  if(!subscriptionReadable()){

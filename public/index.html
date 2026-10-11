@@ -479,10 +479,8 @@
 <section id="securityControls">
   <label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <p id="securityMessage" role="status"></p>
-  <div class="accountTabs" role="tablist" aria-label="Account sections">
-    <button id="myAccountTab" role="tab" aria-selected="true" aria-controls="myAccountPanel" data-account-tab="account">My Account</button>
-    <button id="administrationTab" role="tab" aria-selected="false" aria-controls="securityAdmin" data-account-tab="admin" tabindex="-1" hidden>Administration</button>
-  </div>
+  <a id="administrationLink" class="administrationLink" href="./admin.html" target="_blank" rel="noopener" hidden>Open Administration <span>(new tab)</span></a>
+  <h3 id="myAccountTab">My Account</h3>
   <section id="myAccountPanel" role="tabpanel" aria-labelledby="myAccountTab">
     <div id="securityVerification" class="securityBlock">
       <h3>Email verification</h3><p>Verify your email to use cloud account features.</p>
@@ -548,21 +546,7 @@
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </details>
   </section>
-  <section id="securityAdmin" role="tabpanel" aria-labelledby="administrationTab" hidden>
-    <h3>Administration</h3><p id="securitySummary"></p>
-    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="payments" aria-pressed="false">Subscription payments</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
-    <form id="securityUserFilters" class="securityUserFilters" hidden>
-      <label class="securityUserSearchLabel">Search starts with<input id="securityUserSearch" type="search" maxlength="100" placeholder="Name or email prefix" autocomplete="off"></label>
-      <label>Search in<select id="securityUserSearchField"><option value="name">Name</option><option value="email">Email</option></select></label>
-      <label>Profile tier<select id="securityUserTier"><option value="all">All tiers</option><option value="premium">Premium profiles</option><option value="free">Free profiles</option></select></label>
-      <label>Account status<select id="securityUserStatus"><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="disabled">Disabled</option></select></label>
-      <label>Reading mode<select id="securityUserMode"><option value="all">All modes</option><option value="strict">Online</option><option value="offline">Offline</option></select></label>
-      <div class="securityActions"><button type="submit">Search / Apply</button><button id="securityUserClear" type="button">Clear filters</button></div>
-      <p class="securityUserFilterHint">Search is case-insensitive and matches the start of the selected name or email. Premium profile tier includes expired subscriptions.</p>
-    </form>
-    <h4 id="securityRecordsTitle">Choose a view above</h4><div id="securityRecords" aria-live="polite"></div>
-    <div id="securityPagination" hidden><button id="securityPreviousPage" data-security="previous" disabled>Previous page</button><span id="securityPageLabel" role="status"></span><button id="securityNextPage" data-security="more" disabled>Next page</button></div>
-  </section>
+
 </section>
     <button id="logoutBtn" class="logoutBtn">Log out</button>
   </div>
