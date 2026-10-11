@@ -16,7 +16,7 @@ function setup(record, owner = 'alice', broken = false) {
     saveReaderData: value => data.set(context.securityLocalOwner + context.selectedBookFile, value),
     openReader: () => {opened.push({book: context.selectedBookFile, owner: context.securityLocalOwner, location: context.loadReaderData().location});context.rememberReaderView('reader');},
     window: {addEventListener: (name, handler) => listeners[name] = handler},
-    document: {documentElement: {classList: {remove() {}}}, visibilityState: 'hidden', addEventListener: (name, handler) => listeners[name] = handler},
+    document: {getElementById: id => id==='administrationLink' ? {addEventListener: (name, handler) => listeners['admin-'+name]=handler} : null, documentElement: {classList: {remove() {}}}, visibilityState: 'hidden', addEventListener: (name, handler) => listeners[name] = handler},
     console: {warn() {}}, Date
   };
   vm.createContext(context); vm.runInContext(code, context);
@@ -64,4 +64,10 @@ test('startup restoration waits for account scope but does not wait on server op
   assert.ok(fn.indexOf('securitySwitchLocal(user)') < fn.indexOf('resumeReaderAfterStartup()'));
   assert.ok(fn.lastIndexOf('resumeReaderAfterStartup()') < fn.indexOf('await securityActivate(user)'));
   assert.match(source, /if \(!firebaseConfigured\(\)\).*resumeReaderAfterStartup\(\)/);
+});
+
+test('leaving for Administration saves the latest reading location before navigation',()=>{
+ const h=setup(reading);h.context.selectedBookFile=reading.bookFile;h.context.currentLocation.start.cfi='latest-admin-cfi';
+ h.listeners['admin-click']();assert.equal(h.data.get('alice'+reading.bookFile).location,'latest-admin-cfi');
+ assert.equal(JSON.parse(h.storage.get('ges-promohub-reader-view')).view,'reader');
 });

@@ -59,9 +59,11 @@ async function securityAuthChanged(user){
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
  if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  hideAuth();if(securityRegistering)return;
+ const authEpoch=securityEpoch;
+ if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
- catch(e){if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
+ try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
+ catch(e){if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(){document.getElementById('myAccountPanel').hidden=false;}

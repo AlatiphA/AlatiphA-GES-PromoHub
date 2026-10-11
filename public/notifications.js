@@ -1,7 +1,7 @@
 /* Account-scoped inbox. Browser alerts are optional and require a running app. */
 (() => {
  'use strict';
- let uid='',generation=0,stops=[],personal=[],announcements=[],receipts={},message='',seen=new Set(),loaded={},opener=null,pendingTap=null;
+ let uid='',generation=0,stops=[],personal=[],announcements=[],receipts={},message='Restoring your account…',seen=new Set(),loaded={},opener=null,pendingTap=null;
  const dialog=document.getElementById('notificationDialog'),list=document.getElementById('notificationList'),status=document.getElementById('notificationStatus');
  const get=(key,fallback)=>{try{return JSON.parse(localStorage.getItem(key))??fallback;}catch(_){return fallback;}};
  const save=(key,value)=>{try{localStorage.setItem(key,JSON.stringify(value));}catch(_){}};
@@ -13,9 +13,10 @@
  function persist(){if(uid)save(cacheKey(),{personal,announcements,receipts});}
  function render(){
   const records=items(),unread=records.filter(n=>!n.read).length;
-  for(const button of document.querySelectorAll('[data-open-inbox]')){button.hidden=!uid;button.setAttribute('aria-label','Notifications'+(unread?', '+unread+' unread in recent messages':''));const badge=button.querySelector('[data-inbox-badge]');if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=!unread;}}
-  status.textContent=message || (!connected()?'Offline: showing previously loaded messages. Reconnect to receive messages or mark them read.':'Recent messages: up to 100 personal notices and 50 announcements.');
+  for(const button of document.querySelectorAll('[data-open-inbox]')){button.hidden=false;button.setAttribute('aria-label','Notifications'+(unread?', '+unread+' unread in recent messages':''));const badge=button.querySelector('[data-inbox-badge]');if(badge){badge.textContent=unread>99?'99+':String(unread);badge.hidden=!unread;}}
+  status.textContent=message || (!uid?'Sign in with a verified account to see notifications.':!connected()?'Offline: showing previously loaded messages. Reconnect to receive messages or mark them read.':'Recent messages: up to 100 personal notices and 50 announcements.');
   document.getElementById('notificationAlerts').textContent=enabled()?'Disable browser alerts':'Enable browser alerts';
+  document.getElementById('notificationAlerts').disabled=!uid;
   document.getElementById('notificationMarkAll').disabled=!uid || !connected() || !unread;
   list.replaceChildren();
   for(const n of records){
@@ -29,7 +30,7 @@
   }
   if(!records.length){const p=document.createElement('p');p.textContent=uid?'No messages loaded yet.':'Sign in to see your notifications.';list.append(p);}
  }
- function open(){if(!uid)return;opener=document.activeElement;if(typeof resetPullRefresh==='function')resetPullRefresh();if(!dialog.open)dialog.showModal();render();}
+ function open(){opener=document.activeElement;if(typeof resetPullRefresh==='function')resetPullRefresh();if(!dialog.open)dialog.showModal();render();}
  function close(){if(dialog.open)dialog.close();opener?.focus?.();}
  async function mark(records){
   if(!uid || !connected()){message='Reconnect to mark messages read.';render();return;}
@@ -60,11 +61,20 @@
   const url=new URL(location.href);url.searchParams.delete('inbox');url.searchParams.delete('noticeUid');history.replaceState(history.state,'',url.href);
  }
  function reset(){
-  generation++;for(const stop of stops)stop();stops=[];close();uid='';personal=[];announcements=[];receipts={};seen=new Set();loaded={};message='';render();
+  generation++;for(const stop of stops)stop();stops=[];close();uid='';personal=[];announcements=[];receipts={};seen=new Set();loaded={};message='Sign in with a verified account to see notifications.';render();
  }
- function start(user){
+ function prepare(user){
+  const keepOpen=dialog.open && (!uid || uid===user?.uid);
   reset();if(!user?.emailVerified)return;uid=user.uid;
   const cached=get(cacheKey(),{});personal=Array.isArray(cached.personal)?cached.personal.slice(0,100):[];announcements=Array.isArray(cached.announcements)?cached.announcements.slice(0,50):[];receipts=cached.receipts && typeof cached.receipts==='object'?cached.receipts:{};
+  message=connected()?'Loading latest messages…':'Offline: showing previously loaded messages. Reconnect to receive messages or mark them read.';
+  if(keepOpen)open();render();
+ }
+ function start(user){
+  if(!user?.emailVerified){reset();return;}
+  if(uid!==user.uid)prepare(user);
+  for(const stop of stops)stop();stops=[];
+  generation++;seen=new Set();loaded={};
   render();route();if(pendingTap){if(pendingTap.uid===uid && Date.now()-pendingTap.at<300000)open();pendingTap=null;}const epoch=generation,captured=uid,db=firebase.firestore();
   function receive(source,snapshot){
    if(epoch!==generation)return;
@@ -96,7 +106,7 @@
   if(typeof Notification==='undefined' || !navigator.serviceWorker){message='This browser does not support these alerts. Use the inbox.';render();return;}
   try{const result=await Notification.requestPermission();if(epoch!==generation)return;save('ges-promohub-alerts-'+captured,result==='granted');message=result==='granted'?'Browser alerts enabled while PromoHub is running. Closed-app push is not included.':'Permission was not granted. Your inbox still works.';render();}catch(e){if(epoch===generation){message=e.message;render();}}
  });
- for(const name of ['online','offline'])window.addEventListener(name,render);
+ for(const name of ['online','offline','pageshow'])window.addEventListener(name,render);
  navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type!=='PROMOHUB_OPEN_INBOX' || typeof e.data.uid!=='string')return;if(!uid)pendingTap={uid:e.data.uid,at:Date.now()};else if(e.data.uid===uid)open();});
- window.PromoHubInbox={start,reset,open,login};render();
+ window.PromoHubInbox={prepare,start,reset,open,login};render();
 })();
