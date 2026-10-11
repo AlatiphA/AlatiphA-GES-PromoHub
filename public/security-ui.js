@@ -97,6 +97,24 @@ function securityResetAdmin(){
  for(const b of document.querySelectorAll('.securityAdminNavigation button'))b.setAttribute('aria-pressed','false');
  securitySelectTab('account');
 }
+function securityReadingModeControl(row,u,state){
+ const field=document.createElement('div');field.className='securityActions readingModeControl';
+ const label=document.createElement('label');label.textContent='Reading access mode';
+ const select=document.createElement('select');select.setAttribute('aria-label','Reading access mode for '+securityAccountLabel(u));
+ for(const [value,text] of [['strict','Strict online'],['offline','Offline allowed (24 hours)']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
+ select.value=u.readingAccessMode==='strict'?'strict':'offline';
+ const save=document.createElement('button');save.textContent='Save mode';select.disabled=save.disabled=u.uid===cloudUser.uid;
+ if(save.disabled)save.title='Administrator access is exempt.';
+ save.onclick=()=>securityWork(async()=>{
+  if(!securityAdminCurrent(state))return;
+  const mode=select.value;
+  if(!confirm('Change reading access for '+securityAccountLabel(u)+' to '+(mode==='strict'?'Strict online':'Offline allowed (24 hours)')+'? A disconnected device retains any existing offline permission until it reconnects or that permission expires.'))return;
+  save.disabled=true;
+  try{await securityCall('setPromoHubReadingMode',{uid:u.uid,mode});if(securityAdminCurrent(state)){u.readingAccessMode=mode;securityMessage('Reading access mode saved.');}}
+  finally{if(securityAdminCurrent(state))save.disabled=false;}
+ });
+ label.append(select);field.append(label,save);row.append(field);
+}
 async function securityUsers(more=false){
  if(!securityIsAdmin())return;
  if(more && (securityAdminView!=='users'||!securityCursor))return;
@@ -108,6 +126,7 @@ async function securityUsers(more=false){
   for(const u of result.users){
    const row=document.createElement('article');row.className='securityRecord';securityIdentity(row,u);
    const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'}`;row.append(status);
+   securityReadingModeControl(row,u,state);
    const actions=document.createElement('div');actions.className='securityActions';
    for(const [action,label] of [['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Set to Free']]){
     const b=document.createElement('button');b.textContent=label;b.disabled=u.uid===cloudUser.uid;
@@ -129,7 +148,7 @@ async function securityRecords(kind){
  const state=securityAdminStart(kind,kind==='audit'?'Recent audit':'Premium requests');
  try{
   const result=await securityCall('getPromoHubAdminRecords',{kind});if(!securityAdminCurrent(state))return;state.host.replaceChildren();
-  const labels={'subscription.request':'Subscription payment submitted','subscription.approved':'Subscription activated','subscription.rejected':'Subscription payment rejected','premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free'};
+  const labels={'account.readingMode':'Reading access mode changed','subscription.request':'Subscription payment submitted','subscription.approved':'Subscription activated','subscription.rejected':'Subscription payment rejected','premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free'};
   for(const r of result.records){
    const row=document.createElement('article');row.className='securityRecord';
    if(kind==='audit'){
