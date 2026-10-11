@@ -1573,3 +1573,8 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
 #accountSecuritySection p { margin:6px 0; }
 #accountSecuritySection a { color:var(--ui-accent);overflow-wrap:anywhere; }
 #accountSecurityStatus:empty,#accountSecurityPending:empty { display:none; }
+
+.readingModeControl { align-items:flex-end;max-width:100%; }
+.readingModeControl label { flex:1 1 180px;min-width:0; }
+#securityControls .readingModeControl select { display:block;font-size:14px;margin:6px 0 0; }
+#securityControls .readingModeControl button { flex:0 1 auto;min-height:44px; }
