@@ -49,11 +49,11 @@ function subscriptionRender(){
  document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
  document.getElementById('accountType').textContent=text;
  const premium=document.getElementById('securityPremiumButton');premium.textContent='Submit payment for review';
- document.getElementById('subscriptionPaymentDetails').textContent=`Pay GH₵${subscriptionPlans[document.getElementById('subscriptionPlan').value].price} to MTN MoMo 0243443688, Abdul-Latif Ahmed. Then enter the MoMo transaction reference below.`;
+ document.getElementById('subscriptionPaymentDetails').textContent=`Pay GH₵${subscriptionPlans[document.getElementById('subscriptionPlan').value].price} to MTN MoMo 0243443688, Abdul-Latif Ahmed. Then enter the unique MoMo transaction ID from your SMS or receipt below, not the payment description.`;
 }
 async function subscriptionMyPayment(){
  const epoch=securityEpoch,result=await securityCall('getMyPromoHubPayment');if(epoch!==securityEpoch)return;
- const r=result.request;document.getElementById('subscriptionRequestStatus').textContent=r?`${subscriptionPlans[r.planId]?.label || 'Plan'} · GH₵${r.amountGhs} · ${r.status} · Reference: ${r.reference}`:'No payment submitted yet.';
+ const r=result.request;document.getElementById('subscriptionRequestStatus').textContent=r?`${subscriptionPlans[r.planId]?.label || 'Plan'} · GH₵${r.amountGhs} · ${r.status} · Transaction ID: ${r.reference}`:'No payment submitted yet.';
  document.getElementById('securityPremiumButton').disabled=r?.status==='pending';
 }
 securityActions.premium=async()=>{
