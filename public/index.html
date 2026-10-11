@@ -504,7 +504,12 @@
     </div>
     <section class="securityBlock" id="readerDevicesSection">
       <h3>Devices and sessions</h3>
-      <p>Subscribed accounts: 2 browser/PWA registrations and 1 online reading session. Your administrator assigns Strict online or Offline allowed. Offline allowed requires an online device check within the last 24 hours; Strict online requires an internet connection. Each hosting URL counts separately.</p>
+      <p>Subscribed accounts: 2 browser/PWA registrations and 1 online reading session. Online mode is the default and requires internet. Select Offline mode while connected to read with local saving until subscription expiry. Cloud syncing is paused in Offline mode. Each hosting URL counts separately.</p>
+      <div class="securityActions readingModeControl">
+        <label>Reading mode<select id="myReadingMode"><option value="strict">Online mode</option><option value="offline">Offline mode</option></select></label>
+        <button id="myReadingModeSave">Save mode</button>
+      </div>
+      <p>Changing mode requires internet. Download/open each book before going offline. Offline mode stays selected until changed; it cannot enforce one reader across disconnected devices.</p>
       <button id="readerDevicesRefresh">Manage devices</button>
       <p id="readerDevicesStatus" role="status" aria-live="polite"></p>
       <div id="readerDevicesList"></div>

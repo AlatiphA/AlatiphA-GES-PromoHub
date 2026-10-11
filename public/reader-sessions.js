@@ -7,7 +7,7 @@ let readerBrowserSessionId;
 try {readerBrowserSessionId=navigator.locks ? sessionStorage.getItem('ges-promohub-reader-session') : null;if(!/^[a-f0-9]{32}$/.test(readerBrowserSessionId||'')){readerBrowserSessionId=readerSessionId();sessionStorage.setItem('ges-promohub-reader-session',readerBrowserSessionId);}} catch {readerBrowserSessionId=readerSessionId();}
 function readerSessionKey(uid){return 'ges-promohub-reader-grant-'+uid;}
 function readerSessionPaid(){const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
-function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
+function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(securityProfile?.readingAccessMode!=='offline'&&readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
 function readerSessionMessage(message){securitySelectTab('account');securityMessage(message);accountPanel.classList.add('open');const status=document.getElementById('readerDevicesStatus');if(status)status.textContent=message;}
 function readerSessionStop(message){persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
 async function readerSessionLock(uid){
@@ -25,12 +25,17 @@ async function readerSessionClaim(renew=false){
   const p=securityProfile||subscriptionCachedProfile();
   if(!subscriptionPaid(p)&&!subscriptionLegacy(p))return {exempt:true};
   let saved;try{saved=JSON.parse(localStorage.getItem(readerSessionKey(uid)));}catch{}
-  if(saved?.readingAccessMode==='strict'||saved?.deviceId!==deviceId||!Number.isFinite(saved?.offlineUntilMs)||saved.offlineUntilMs<=Date.now())throw new Error('Connect to the internet to confirm this registered device before reading offline.');
+  if(p?.readingAccessMode==='strict'||saved?.readingAccessMode!=='offline'||saved?.deviceId!==deviceId||!Number.isFinite(saved?.offlineUntilMs)||saved.offlineUntilMs<=Date.now())throw new Error('Connect to the internet to confirm this registered device before reading offline.');
   return {...saved,uid,online:false};
  }
  if(!cloudUser)throw new Error('Sign in online to confirm this device.');
  const result=await securityCall('claimPromoHubReaderSession',{deviceId,sessionId,renew,label:(/Android|iPhone|iPad/i.test(navigator.userAgent)?'Mobile':'Computer')+' · '+location.hostname});
  if(epoch!==readerSessionEpoch||cloudUser?.uid!==uid)throw new Error('Account changed while opening the reader.');
+ if(!result.exempt&&securityProfile&&['strict','offline'].includes(result.readingAccessMode)&&securityProfile.readingAccessMode!==result.readingAccessMode){
+  securityProfile.readingAccessMode=result.readingAccessMode;
+  if(typeof subscriptionRender==='function')subscriptionRender();
+  readerModeRender();
+ }
  const grant={...result,deviceId,sessionId,uid,online:true};
  if(!result.exempt){try{localStorage.setItem(readerSessionKey(uid),JSON.stringify(grant));}catch{}}
  return grant;
@@ -46,7 +51,7 @@ async function readerSessionHeartbeat(){
  if(!rendition||!(cloudUser||securityLocalOwner)||readerSessionBusy)return;
  if(readerSessionGrant?.exempt&&!readerSessionPaid())return;
  readerSessionBusy=true;const epoch=readerSessionEpoch;
- try {const grant=await readerSessionClaim(!!readerSessionGrant?.online&&readerSessionGrant.expiresAtMs>Date.now());if(epoch!==readerSessionEpoch)return;readerSessionGrant=grant;readerSessionWatchExpiry();cloudReady=subscriptionCloudAllowed();}
+ try {const grant=await readerSessionClaim(!!readerSessionGrant?.online&&(readerSessionGrant.readingAccessMode==='offline'||readerSessionGrant.expiresAtMs>Date.now()));if(epoch!==readerSessionEpoch)return;readerSessionGrant=grant;readerSessionWatchExpiry();cloudReady=subscriptionCloudAllowed();}
  catch(e){if(epoch!==readerSessionEpoch)return;if(!navigator.onLine&&readerSessionGrant?.readingAccessMode!=='strict'&&readerSessionGrant?.offlineUntilMs>Date.now()){readerSessionGrant.online=false;cloudReady=false;}else{try{localStorage.removeItem(readerSessionKey(cloudUser?.uid||securityLocalOwner));}catch{}readerSessionStop(e.message||'Reader session ended.');}}
  finally{readerSessionBusy=false;}
 }
@@ -80,7 +85,7 @@ openReader=function(){
 backBtn.addEventListener('click',()=>{readerSessionEpoch++;readerSessionRelease();});
 window.addEventListener('online',readerSessionHeartbeat);
 window.addEventListener('offline',()=>{
- if(rendition&&readerSessionPaid()&&readerSessionGrant?.readingAccessMode==='strict')readerSessionStop('Strict online mode requires an internet connection. Reconnect to resume from your saved position.');
+ if(rendition&&readerSessionPaid()&&readerSessionGrant?.readingAccessMode==='strict')readerSessionStop('Online mode requires an internet connection. Reconnect to resume from your saved position.');
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')readerSessionHeartbeat();});
 // A matching press and click on the actual backdrop closes the profile, not a drag from the card.
@@ -95,7 +100,7 @@ async function readerDevicesRefresh(){
  try{
   const result=await securityCall('managePromoHubDevices',{operation:'list'});
   if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
-  list.replaceChildren();const access=result.readingAccessMode==='strict'?'Strict online, internet required':'Offline allowed, up to 24 hours';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
+  list.replaceChildren();const access=result.readingAccessMode==='strict'?'Online mode, internet required':'Offline mode, local saving until subscription expiry';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
   for(const d of result.devices){
    const row=document.createElement('article');row.className='securityRecord';
    const name=document.createElement('p');name.textContent=d.label+(d.id===readerDeviceId()?' · This browser':'')+(d.active?' · Reading now':'');row.append(name);
@@ -110,3 +115,30 @@ async function readerDevicesRefresh(){
  }catch(e){if(cloudUser?.uid===uid){status.textContent=e.message||'Unable to load devices.';}}
 }
 document.getElementById('readerDevicesRefresh').addEventListener('click',readerDevicesRefresh);
+
+function readerModeRender(){
+ const select=document.getElementById('myReadingMode'),button=document.getElementById('myReadingModeSave');
+ if(!select||!button)return;
+ select.value=securityProfile?.readingAccessMode==='offline'?'offline':'strict';
+ select.disabled=button.disabled=!cloudUser?.emailVerified||securityIsAdmin();
+}
+async function readerModeSave(){
+ const uid=cloudUser?.uid,epoch=securityEpoch,select=document.getElementById('myReadingMode'),button=document.getElementById('myReadingModeSave');
+ if(!uid||!navigator.onLine){securityMessage('Connect to the internet to change reading mode.');return;}
+ if(readerSessionBusy){securityMessage('Wait for the current reader access check, then try again.');return;}
+ const mode=select.value;button.disabled=true;
+ try{
+  await securityCall('setMyPromoHubReadingMode',{mode});
+  if(cloudUser?.uid!==uid||securityEpoch!==epoch)return;
+  const reopen=!!rendition;
+  if(reopen){persistCurrentReaderPosition();backBtn.click();}else readerSessionReset();
+  localStorage.removeItem(readerSessionKey(uid));
+  if(securityProfile)securityProfile.readingAccessMode=mode;
+  if(typeof subscriptionRender==='function')subscriptionRender();
+  cloudReady=false;readerModeRender();
+  securityMessage(mode==='offline'?'Offline mode selected. Open a book online once to confirm this browser; then read offline until subscription expiry. Cloud syncing is paused.':'Online mode selected. Internet is required while reading.');
+  if(reopen)openReader();
+ }catch(e){if(cloudUser?.uid===uid&&securityEpoch===epoch)securityMessage(e.message||'Unable to change reading mode.');}
+ finally{if(cloudUser?.uid===uid&&securityEpoch===epoch)button.disabled=securityIsAdmin();}
+}
+document.getElementById('myReadingModeSave').addEventListener('click',()=>securityWork(readerModeSave));

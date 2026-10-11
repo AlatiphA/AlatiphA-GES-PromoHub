@@ -1,7 +1,7 @@
 'use strict';
 const subscriptions=require('./subscriptions.cjs');
-function readingMode(p){return p?.readingAccessMode==='strict'?'strict':'offline';}
-const MAX_DEVICES=2,LEASE_MS=120000,OFFLINE_MS=86400000;
+function readingMode(p){return p?.readingAccessMode==='offline'?'offline':'strict';}
+const MAX_DEVICES=2,LEASE_MS=120000;
 module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
  function id(value){if(typeof value!=='string'||!/^[a-f0-9]{32}$/.test(value))throw new HttpsError('invalid-argument','Invalid device or session identifier.');return value;}
  async function account(req){
@@ -31,13 +31,24 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
     if(renew&&!device)throw new HttpsError('permission-denied','This device was removed. Open My Account to register again.');
     if(!device&&devices.length>=MAX_DEVICES)throw new HttpsError('resource-exhausted','Two devices are already registered. Remove an unused device in My Account, then try again.');
     const lease=state.lease;
-    if(lease&&lease.expiresAtMs>now&&(lease.deviceId!==deviceId||lease.sessionId!==sessionId))throw new HttpsError('already-exists','This account is reading in another session. Close that reader, or wait up to 2 minutes after it disconnects.');
-    if(renew&&(!lease||lease.deviceId!==deviceId||lease.sessionId!==sessionId||lease.expiresAtMs<=now))throw new HttpsError('failed-precondition','Your reader session ended. Open the book again.');
+    if(readingMode(p)==='strict'&&lease&&lease.expiresAtMs>now&&(lease.deviceId!==deviceId||lease.sessionId!==sessionId))throw new HttpsError('already-exists','This account is reading in another session. Close that reader, or wait up to 2 minutes after it disconnects.');
+    if(readingMode(p)==='strict'&&renew&&(!lease||lease.deviceId!==deviceId||lease.sessionId!==sessionId||lease.expiresAtMs<=now))throw new HttpsError('failed-precondition','Your reader session ended. Open the book again.');
     if(!device){device={id:deviceId,label:String(req.data?.label||'Browser / PWA').slice(0,80),registeredAtMs:now};devices.push(device);}
     device.lastSeenAtMs=now;
-    const expiresAtMs=now+LEASE_MS,offlineUntilMs=readingMode(p)==='strict'?0:Math.min(now+OFFLINE_MS,Number(p.subscriptionEndsAtMs)||now+OFFLINE_MS);
-    tx.set(ref,{devices,lease:{deviceId,sessionId,expiresAtMs},updatedAtMs:now});
+    const expiresAtMs=now+LEASE_MS,offlineUntilMs=readingMode(p)==='strict'?0:(subscriptions.legacy(p)?253402300799000:Number(p.subscriptionEndsAtMs));
+    tx.set(ref,{devices,lease:readingMode(p)==='strict'?{deviceId,sessionId,expiresAtMs}:(lease?.deviceId===deviceId&&lease?.sessionId===sessionId?null:lease),updatedAtMs:now});
     return {exempt:false,readingAccessMode:readingMode(p),expiresAtMs,offlineUntilMs,maxDevices:MAX_DEVICES,maxSessions:1};
+   });
+  }),
+  setMyPromoHubReadingMode:onCall(options,async req=>{
+   const mode=req.data?.mode;
+   if(!['strict','offline'].includes(mode)||req.data?.uid!==undefined)throw new HttpsError('invalid-argument','Choose Online or Offline mode for your own account.');
+   const event=db.collection('auditLogs').doc();
+   return transact(req,({who,p,tx})=>{
+    if(who.admin)throw new HttpsError('failed-precondition','Administrator reading is exempt from these modes.');
+    tx.update(db.doc(`users/${who.uid}`),{readingAccessMode:mode,updatedAt:admin.firestore.FieldValue.serverTimestamp()});
+    tx.set(event,{actor:who.uid,targetUid:who.uid,action:'account.readingMode',details:{previous:readingMode(p),mode,selfService:true},createdAt:admin.firestore.FieldValue.serverTimestamp()});
+    return {ok:true,readingAccessMode:mode};
    });
   }),
   setPromoHubReadingMode:onCall(options,async req=>{
