@@ -103,13 +103,6 @@ exports.managePromoHubUser = onCall(options,async req => {
  if(action==='suspend' || action==='disable') await admin.auth().revokeRefreshTokens(uid);
  return {ok:true};
 });
-exports.getPromoHubUsers = onCall(options,async req => {
- await member(req,true);
- let q=db.collection('users').orderBy(admin.firestore.FieldPath.documentId()).limit(25);
- if(typeof req.data?.cursor==='string') q=q.startAfter(req.data.cursor);
- const snap=await q.get();
- return {users:snap.docs.map(d=>({uid:d.id,...d.data()})),cursor:snap.size===25?snap.docs.at(-1).id:null};
-});
 exports.getPromoHubAdminSummary = onCall(options,async req => {
  await member(req,true);
  const [users,pending,premium]=await Promise.all([db.collection('users').count().get(),db.collection('subscriptionRequests').where('status','==','pending').count().get(),db.collection('users').where('accountTier','==','premium').count().get()]);
@@ -157,3 +150,5 @@ Object.assign(exports,require('./payments.cjs')({onCall,options,HttpsError,db,me
 Object.assign(exports,require('./account-security.cjs')({onCall,options,HttpsError,db,admin,stamp,audit,policy}));
 
 Object.assign(exports,require('./reader-sessions.cjs')({onCall,options,HttpsError,db,admin,policy}));
+
+Object.assign(exports,require('./admin-directory.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member}));
