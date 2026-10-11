@@ -155,3 +155,5 @@ exports.deletePromoHubAccount = onCall(options,async req => {
 Object.assign(exports,require('./payments.cjs')({onCall,options,HttpsError,db,member,identity,target,stamp,audit,policy}));
 
 Object.assign(exports,require('./account-security.cjs')({onCall,options,HttpsError,db,admin,stamp,audit,policy}));
+
+Object.assign(exports,require('./reader-sessions.cjs')({onCall,options,HttpsError,db,admin,policy}));
