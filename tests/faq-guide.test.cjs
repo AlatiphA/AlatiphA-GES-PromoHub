@@ -34,3 +34,17 @@ test('complete guide links resolve and optional support remains separate from su
  assert.ok(faq.indexOf('id="user-guide"')>faq.indexOf('Support the Developer'));
  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert.match(sw,/\.\/user-guide\.html/);
 });
+test('FAQ and complete guide document current persistent modes and live administration',()=>{
+ for(const name of ['faq.html','user-guide.html']){
+  const html=fs.readFileSync(path.join(root,name),'utf8');
+  for(const phrase of ['350-millisecond','25 matching users','Open Administration','no 24-hour timeout','2 browser/PWA registrations','1 online reading session','cloud syncing is paused','guide-modes','guide-devices','v1.8.7'])assert.ok(html.includes(phrase),name+' missing '+phrase);
+  assert.doesNotMatch(html,/The Administration tab|covers app v1\.7\.4/);
+  assert.match(html,/starts-with, not substring/);assert.match(html,/Premium profiles can include expired subscriptions/);assert.match(html,/cannot guarantee one reader across disconnected devices/);
+ }
+});
+test('shared complete guide chapters agree in embedded FAQ and standalone page',()=>{
+ const guide=fs.readFileSync(path.join(root,'user-guide.html'),'utf8');
+ for(const id of ['guide-sync','guide-modes','guide-devices','guide-admin','guide-support']){
+  const pattern=new RegExp('<section id="'+id+'">[\\s\\S]*?</section>');assert.equal(faq.match(pattern)[0],guide.match(pattern)[0],id);
+ }
+});
