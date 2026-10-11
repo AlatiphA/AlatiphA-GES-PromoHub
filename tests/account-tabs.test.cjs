@@ -1,6 +1,6 @@
 'use strict';
 const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
-const source=fs.readFileSync(require.resolve('../public/security-ui.js'),'utf8');
+const source=fs.readFileSync(require.resolve('../public/admin-ui.js'),'utf8');
 function setup(){
  class Element {
   constructor(){this.children=[];this.hidden=false;this.dataset={};this.attributes={};this.textContent='';}
@@ -11,13 +11,9 @@ function setup(){
  const ids={};for(const id of ['myAccountPanel','securityAdmin','myAccountTab','administrationTab','securityRecordsTitle','securityPagination','securityNextPage','securityRecords','securitySummary','securityUserFilters','securityUserSearch','securityUserSearchField','securityUserTier','securityUserStatus','securityUserMode','securityPreviousPage','securityPageLabel'])ids[id]=new Element();
  const nav=['users','requests','audit'].map(action=>{const e=new Element();e.dataset.security=action;return e;});
  const context={cloudUser:{uid:'admin',emailVerified:true},securityClaims:{promohubAdmin:true},securityProfile:{accountStatus:'active'},securityEpoch:1,document:{getElementById:id=>ids[id],createElement:tag=>{const e=new Element();e.tag=tag;return e;},querySelector:()=>new Element(),querySelectorAll:()=>nav},securityMessage(){},securityWork:async work=>work(),confirm:()=>true};
- vm.createContext(context);vm.runInContext(source.slice(source.indexOf('let securityCursor=null'),source.indexOf('const securityActions=')),context);
+ vm.createContext(context);vm.runInContext(source,context);
  return {context,ids,nav,run:code=>vm.runInContext(code,context)};
 }
-test('tabs switch panels and revoked admin access falls back to My Account',()=>{
- const s=setup();s.run("securitySelectTab('admin')");assert.equal(s.ids.myAccountPanel.hidden,true);assert.equal(s.ids.securityAdmin.hidden,false);assert.equal(s.ids.administrationTab.attributes['aria-selected'],'true');
- s.context.securityClaims={};s.run("securitySelectTab('admin')");assert.equal(s.ids.myAccountPanel.hidden,false);assert.equal(s.ids.securityAdmin.hidden,true);
-});
 test('identity uses text nodes, names and emails; email-only and missing profiles never show UIDs',()=>{
  const s=setup();const row=s.ids.securityRecords;s.context.row=row;
  s.run("securityIdentity(row,{displayName:'<img onerror=alert(1)>',email:'u@example.test',uid:'RAW_UID'})");
@@ -39,8 +35,8 @@ test('Premium and audit records show enriched identities and no raw identifiers'
  await s.run("securityRecords('requests')");let row=s.ids.securityRecords.children[0];assert.equal(row.children[0].children[0].textContent,'Reader');assert.equal(row.children[1].children[0].textContent,'Approve');
  await s.run("securityRecords('audit')");row=s.ids.securityRecords.children[0];assert.equal(row.children[1].children[0].textContent,'Account: Reader');assert.equal(row.children[2].children[0].textContent,'By: Owner');
 });
-test('account markup has accessible tabs and Next page label',()=>{
- const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');assert.match(html,/role="tablist"/);assert.match(html,/id="myAccountPanel" role="tabpanel"/);assert.match(html,/id="securityAdmin" role="tabpanel"/);assert.match(html,/>Next page<\/button>/);assert.doesNotMatch(html,/Next users/);
+test('administration moves to a dedicated page and pagination keeps clear labels',()=>{
+ const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8'),admin=fs.readFileSync(require.resolve('../public/admin.html'),'utf8');assert.match(html,/href=".\/admin.html" target="_blank"/);assert.doesNotMatch(html,/id="securityAdmin"/);assert.match(admin,/>Next page<\/button>/);assert.doesNotMatch(admin,/Next users/);
 });
 
 test('administrator saves selected mode for correct named user and stale views do not mutate',async()=>{const s=setup();let request;s.context.securityCall=async(name,data)=>{if(name==='setPromoHubReadingMode'){request={name,data};return {ok:true};}if(name==='getPromoHubAdminSummary')return {users:1,premium:1,pending:0};return {users:[{uid:'u',displayName:'Reader',readingAccessMode:'offline'}],cursor:null};};await s.run('securityUsers()');const row=s.ids.securityRecords.children[0],field=row.children[2].children[1],select=field.children[0].children[0],save=field.children[1];assert.equal(select.value,'offline');select.value='strict';await save.onclick();assert.equal(request.name,'setPromoHubReadingMode');assert.equal(request.data.uid,'u');assert.equal(request.data.mode,'strict');request=null;s.context.securityEpoch++;await save.onclick();assert.equal(request,null);});
