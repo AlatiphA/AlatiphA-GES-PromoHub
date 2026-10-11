@@ -1,0 +1,53 @@
+/* Shared navigation controls; book reading themes remain independent. */
+:root{--header-height:56px}
+.navControl,#readerApp>header .inboxBell,#readerApp>header .profileBtn,.libraryActions>button,#clearDataBtn{
+ box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid var(--ui-border,#cfd4d0);border-radius:50%;background:var(--ui-surface,#fff);color:var(--ui-text,#222);text-decoration:none;cursor:pointer;box-shadow:0 1px 3px rgba(0,0,0,.06);transition:background .15s,border-color .15s;
+}
+.navControl svg,.headerActions svg{width:22px;height:22px;flex-shrink:0}
+.navControl:hover,.headerActions>button:hover{background:var(--ui-raised,#f1f2ef);border-color:var(--ui-accent,#956433)}
+.navControl:focus-visible,.headerActions>button:focus-visible,#clearDataBtn:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:3px}
+.headerActions{display:flex;align-items:center;justify-content:flex-end;gap:8px;flex:0 0 auto;min-width:0}
+#readerApp>header{gap:8px;padding:0 12px;border-bottom:1px solid var(--ui-border,#cfd4d0)}
+#readerApp>header .title{flex:1 1 auto;min-width:0;margin:0;font-size:15px;text-align:center}
+#readerApp>header .profileBtn,.libraryActions>.profileBtn{overflow:hidden;border-color:var(--ui-accent,#956433);background:var(--ui-raised,#f1f2ef)}
+.profileBtn>span{display:flex;align-items:center;justify-content:center;width:100%;height:100%;font-size:15px;font-weight:700;line-height:1}
+.profileBtn img{width:100%;height:100%;border-radius:50%;object-fit:cover}
+.libraryHeader .libraryActions{position:absolute;top:calc(env(safe-area-inset-top,0px) + 12px);right:12px;z-index:6}
+.libraryHeader .libraryActions>button{position:relative!important;inset:auto!important;margin:0}
+.libraryHeader #clearDataBtn{top:calc(env(safe-area-inset-top,0px) + 12px);left:12px}
+.faqOverlayBar{min-height:64px;height:64px;flex-basis:64px;gap:12px}
+.faqOverlayBar button.navControl{padding:0;border:1px solid var(--ui-border,#cfd4d0);background:var(--ui-surface,#fff);color:var(--ui-text,#222)}
+.pageHeading{display:flex;align-items:center;gap:12px;min-width:0;font-size:16px;font-weight:600;color:var(--ui-text,#222)}
+.adminPage .adminHeader{min-height:72px;padding:12px 24px;gap:16px}
+.adminHeader a.navControl{padding:0;color:var(--ui-text,#222);font-weight:inherit}
+.adminPage .adminHeader>.uiAppearance{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.supportPageHeader{position:sticky;top:0;z-index:12;display:flex;align-items:center;padding:12px 24px;background:var(--ui-surface,#fff);border-bottom:1px solid var(--ui-border,#cfd4d0)}
+html.faqEmbedded .supportPageHeader{display:none}
+body.faqPage>.uiAppearance{max-width:1440px;width:calc(100% - 48px);margin:16px auto}
+body.faqPage .faqContent{max-width:1440px;width:100%;padding:24px;margin:0 auto}
+body.faqPage .faqSection{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px;align-items:start;margin-bottom:32px}
+body.faqPage .faqSectionTitle{grid-column:1/-1;margin:0 0 4px;padding-bottom:10px}
+body.faqPage .faqItem{min-width:0;margin:0;overflow-wrap:anywhere}
+body.faqPage .faqQuestion{min-height:68px;padding:16px;gap:12px;font-size:15px;line-height:1.4;text-align:left}
+body.faqPage .faqQuestion .icon{flex-shrink:0}
+body.faqPage .faqAnswer{font-size:14px;line-height:1.6}
+body.faqPage .userGuide{width:100%;margin-top:32px;padding:24px;box-sizing:border-box}
+body.faqPage .userGuide>section{max-width:1000px;margin:24px auto}
+body.faqPage .userGuide>nav ol{columns:2;column-gap:32px}
+body.faqPage .userGuide>nav li{break-inside:avoid}
+@media(max-width:1000px){body.faqPage .faqSection{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){
+ .libraryHeader{padding-top:76px}
+ #readerApp>header{padding:0 8px;gap:6px}
+ #readerApp>header .title{font-size:14px}
+ .headerActions{gap:6px}
+ .adminPage .adminHeader,.supportPageHeader{padding:12px 16px}
+ .pageHeading{font-size:15px;gap:10px}
+ body.faqPage .faqContent{padding:20px 16px}
+ body.faqPage .faqSection{grid-template-columns:minmax(0,1fr)}
+ body.faqPage .faqQuestion{min-height:56px}
+ body.faqPage>.uiAppearance{width:calc(100% - 32px)}
+ body.faqPage .userGuide{padding:16px}
+ body.faqPage .userGuide>nav ol{columns:1}
+}
+@media print{.supportPageHeader{display:none}body.faqPage .faqSection{display:block}body.faqPage .faqItem{break-inside:avoid}}
