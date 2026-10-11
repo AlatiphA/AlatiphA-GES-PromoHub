@@ -37,7 +37,7 @@ function securityRender(){
  document.getElementById('administrationTab').hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
  document.getElementById('securityVerification').hidden=!!cloudUser?.emailVerified;
- subscriptionRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
+ subscriptionRender();if(typeof readerModeRender==='function')readerModeRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
 async function securityActivate(user){
@@ -48,7 +48,7 @@ async function securityActivate(user){
  if(epoch!==securityEpoch)return false;
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud sync is unavailable during trial or after expiry. Local reader data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
  return cloudReady;
 }
 async function securityAuthChanged(user){
@@ -101,14 +101,14 @@ function securityReadingModeControl(row,u,state){
  const field=document.createElement('div');field.className='securityActions readingModeControl';
  const label=document.createElement('label');label.textContent='Reading access mode';
  const select=document.createElement('select');select.setAttribute('aria-label','Reading access mode for '+securityAccountLabel(u));
- for(const [value,text] of [['strict','Strict online'],['offline','Offline allowed (24 hours)']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
- select.value=u.readingAccessMode==='strict'?'strict':'offline';
+ for(const [value,text] of [['strict','Online mode'],['offline','Offline mode']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
+ select.value=u.readingAccessMode==='offline'?'offline':'strict';
  const save=document.createElement('button');save.textContent='Save mode';select.disabled=save.disabled=u.uid===cloudUser.uid;
  if(save.disabled)save.title='Administrator access is exempt.';
  save.onclick=()=>securityWork(async()=>{
   if(!securityAdminCurrent(state))return;
   const mode=select.value;
-  if(!confirm('Change reading access for '+securityAccountLabel(u)+' to '+(mode==='strict'?'Strict online':'Offline allowed (24 hours)')+'? A disconnected device retains any existing offline permission until it reconnects or that permission expires.'))return;
+  if(!confirm('Change reading access for '+securityAccountLabel(u)+' to '+(mode==='strict'?'Online mode':'Offline mode')+'? A disconnected device retains any existing offline permission until it reconnects or their subscription expires. Users can also change their own mode online.'))return;
   save.disabled=true;
   try{await securityCall('setPromoHubReadingMode',{uid:u.uid,mode});if(securityAdminCurrent(state)){u.readingAccessMode=mode;securityMessage('Reading access mode saved.');}}
   finally{if(securityAdminCurrent(state))save.disabled=false;}
