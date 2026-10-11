@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.7.5";
+const APP_VERSION = "1.7.6";
 
 const versionEl =
   document.getElementById(
@@ -2702,7 +2702,8 @@ function initials(name, email) {
 }
 
 function setAvatar(el, user) {
-  if (!el || !user) return;
+  if (!el) return;
+  if (!user) { el.innerHTML = '<svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false" style="display:block;margin:auto"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg>'; return; }
   if (user.photoURL) el.innerHTML = '<img src="' + user.photoURL.replace(/"/g, "&quot;") + '" alt="">';
   else el.textContent = initials(user.displayName, user.email);
 }
