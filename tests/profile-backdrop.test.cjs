@@ -1,0 +1,6 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
+const source=fs.readFileSync(require.resolve('../public/reader-sessions.js'),'utf8');
+function setup(){const handlers={};let closed=0;const panel={addEventListener:(n,f)=>handlers[n]=f};vm.runInNewContext(source.slice(source.indexOf('let profileBackdropPressed'),source.indexOf('async function readerDevicesRefresh')), {accountPanel:panel,document:{getElementById:()=>({click:()=>closed++})}});return {handlers,panel,closed:()=>closed};}
+test('mouse and touch backdrop activation uses the same close button, without closing for inner controls',()=>{const s=setup();for(const pointerType of ['mouse','touch']){s.handlers.pointerdown({target:s.panel,pointerType});s.handlers.click({target:s.panel,detail:1});}assert.equal(s.closed(),2);s.handlers.pointerdown({target:{}});s.handlers.click({target:{},detail:1});assert.equal(s.closed(),2);});
+test('dragging from the card to backdrop and cancelled pointer do not dismiss the profile',()=>{const s=setup();s.handlers.pointerdown({target:{}});s.handlers.click({target:s.panel,detail:1});assert.equal(s.closed(),0);s.handlers.pointerdown({target:s.panel});s.handlers.pointercancel();s.handlers.click({target:s.panel,detail:1});assert.equal(s.closed(),0);});

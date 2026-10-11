@@ -7,7 +7,7 @@ const subscriptionPlans={m1:{months:1,price:20,label:'1 month'},m3:{months:3,pri
 const subscriptionTrialMs=7*24*60*60*1000;
 function subscriptionLegacy(p){return p?.subscriptionSchema!==1 && p?.securitySchemaVersion===2 && p?.accountTier==='premium';}
 function subscriptionPaid(p){return p?.subscriptionSchema===1 && p.accountTier==='premium' && Number(p.subscriptionEndsAtMs)>Date.now();}
-function subscriptionCloudAllowed(){return !!(cloudUser?.emailVerified && securityProfile?.accountStatus==='active' && (securityIsAdmin() || subscriptionPaid(securityProfile) || subscriptionLegacy(securityProfile)));}
+function subscriptionCloudAllowed(){return (typeof readerSessionCloudAllowed!=='function'||readerSessionCloudAllowed()) && !!(cloudUser?.emailVerified && securityProfile?.accountStatus==='active' && (securityIsAdmin() || subscriptionPaid(securityProfile) || subscriptionLegacy(securityProfile)));}
 function subscriptionCachedProfile(){
  if(!securityLocalOwner)return null;
  try{return JSON.parse(subscriptionLocalRead('ges-promohub-subscription-'+securityLocalOwner));}catch{return null;}

@@ -52,6 +52,7 @@ async function securityActivate(user){
  return cloudReady;
 }
 async function securityAuthChanged(user){
+ if(typeof readerSessionReset==='function')readerSessionReset();
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();

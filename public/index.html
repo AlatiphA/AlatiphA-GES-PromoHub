@@ -502,6 +502,13 @@
       <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
       </div>
     </div>
+    <section class="securityBlock" id="readerDevicesSection">
+      <h3>Devices and sessions</h3>
+      <p>Subscribed accounts: 2 browser/PWA registrations and 1 online reading session. Offline reading requires an online device check within the last 24 hours. Each hosting URL counts separately.</p>
+      <button id="readerDevicesRefresh">Manage devices</button>
+      <p id="readerDevicesStatus" role="status" aria-live="polite"></p>
+      <div id="readerDevicesList"></div>
+    </section>
     <details class="securityBlock accountSecurity" id="accountSecuritySection">
       <summary>Account Security</summary>
       <p>Login email: <strong id="accountSecurityEmail"></strong></p>
@@ -570,6 +577,7 @@
 <script src="./security-ui.js"></script>
 <script src="./subscription-ui.js"></script>
 <script src="./account-security.js"></script>
+<script src="./reader-sessions.js"></script>
 <script src="./install.js"></script>
 
 </body>
