@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.8.9";
+const APP_VERSION = "1.9.0";
 
 const versionEl =
   document.getElementById(
@@ -2892,6 +2892,8 @@ function persistCurrentReaderPosition() {
     chapter: currentLocation.start.href || saved.chapter || "",
     lastRead: new Date().toISOString() });
 }
+// Save synchronously before leaving for another app page, including FAQ frame links.
+document.getElementById("administrationLink")?.addEventListener("click", persistCurrentReaderPosition);
 window.addEventListener("pagehide", persistCurrentReaderPosition);
 document.addEventListener("visibilitychange", () => {
   if (document.visibilityState === "hidden") persistCurrentReaderPosition();

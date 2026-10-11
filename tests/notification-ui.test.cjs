@@ -28,7 +28,7 @@ test('personal and announcement read states merge into the recent unread badge',
 test('account switches clear visible data and discard delayed old-account snapshots',()=>{
  const s=setup();s.api.start(user('u'));s.emit('users/u/notifications',[note('private','Private to U')]);const delayed=s.callbacks.get('users/u/notifications');s.api.open();s.api.start(user('b'));
  delayed({docs:[{id:'old',data:()=>note('old','Private to U')}],metadata:{fromCache:false}});assert.equal(s.ids.notificationList.children.length,1);assert.equal(s.ids.notificationList.children[0].textContent,'No messages loaded yet.');assert.equal(s.ids.notificationDialog.open,false);
- s.api.reset();assert.equal(s.buttons[0].hidden,true);
+ s.api.reset();assert.equal(s.buttons[0].hidden,false);
 });
 test('offline cache belongs to the matching account and read actions require a connection',()=>{
  const s=setup();s.storage.set('ges-promohub-inbox-u',JSON.stringify({personal:[{...note('p'),createdAtMs:100}],announcements:[],receipts:{}}));s.context.navigator.onLine=false;
@@ -53,4 +53,28 @@ test('notification route opens only for the intended account, without reader nav
 test('browser notification taps arriving before account restoration wait for the matching account',()=>{
  const s=setup();s.context.window.workerMessage({data:{type:'PROMOHUB_OPEN_INBOX',uid:'u'}});s.api.start(user('u'));assert.equal(s.ids.notificationDialog.open,true);
  const wrong=setup();wrong.context.window.workerMessage({data:{type:'PROMOHUB_OPEN_INBOX',uid:'u'}});wrong.api.start(user('b'));assert.equal(wrong.ids.notificationDialog.open,false);
+});
+
+test('bell is present before authentication and opens a safe loading shell',()=>{
+ const s=setup();assert.equal(s.buttons[0].hidden,false);assert.equal(s.buttons[0].badge.hidden,true);
+ s.api.open();assert.equal(s.ids.notificationDialog.open,true);assert.match(s.ids.notificationStatus.textContent,/Restoring/);assert.equal(s.ids.notificationAlerts.disabled,true);
+});
+test('prepare immediately restores only matching cached messages without starting server listeners',()=>{
+ const s=setup();s.storage.set('ges-promohub-inbox-u',JSON.stringify({personal:[{...note('p'),createdAtMs:100}],announcements:[],receipts:{}}));
+ s.api.prepare(user('u'));assert.equal(s.buttons[0].badge.textContent,'1');assert.equal(s.callbacks.size,0);s.api.open();
+ s.api.start(user('u'));assert.equal(s.ids.notificationDialog.open,true);assert.equal(s.callbacks.size,3);
+ s.api.prepare(user('b'));assert.equal(s.ids.notificationDialog.open,false);assert.equal(s.buttons[0].badge.hidden,true);assert.equal(s.ids.notificationList.children[0].textContent,'No messages loaded yet.');
+});
+test('markup renders bells immediately and account cache preparation precedes server activation',()=>{
+ const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');assert.equal((html.match(/data-open-inbox aria-label="Notifications"/g)||[]).length,2);assert.doesNotMatch(html,/data-open-inbox[^>]* hidden/);
+ const js=fs.readFileSync(require.resolve('../public/security-ui.js'),'utf8');const auth=js.slice(js.indexOf('async function securityAuthChanged'));
+ assert.ok(auth.indexOf('PromoHubInbox.prepare(user)')<auth.indexOf('await securityActivate(user)'));
+ assert.match(auth,/await securityActivate\(user\);if\(authEpoch!==securityEpoch\)return/);
+});
+
+test('internal Administration and standalone guide links reuse the top-level app window',()=>{
+ const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');assert.match(html,/id="administrationLink"[^>]*href=".\/admin.html"/);assert.doesNotMatch(html,/id="administrationLink"[^>]*target="_blank"/);
+ const faq=fs.readFileSync(require.resolve('../public/faq.html'),'utf8');assert.match(faq,/href=".\/user-guide.html" target="_top"/);
+ const admin=fs.readFileSync(require.resolve('../public/admin.html'),'utf8');assert.match(admin,/href=".\/index.html">Back to PromoHub/);
+ const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8');assert.match(app,/getElementById\("administrationLink"\)\?\.addEventListener\("click", persistCurrentReaderPosition\)/);assert.match(app,/addEventListener\("pagehide", persistCurrentReaderPosition\)/);
 });
