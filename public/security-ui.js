@@ -63,6 +63,7 @@ async function securityAuthChanged(user){
  catch(e){cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 let securityCursor=null,securityAdminView='',securityAdminEpoch=0;
+let securityUserPage=0,securityUserStarts=[null],securityUserQuery=null;
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(tab){
  const admin=tab==='admin' && securityIsAdmin();
@@ -83,6 +84,7 @@ function securityAdminStart(view,title){
  securityAdminView=view;
  for(const b of document.querySelectorAll('.securityAdminNavigation button'))b.setAttribute('aria-pressed',String(b.dataset.security===view));
  document.getElementById('securityRecordsTitle').textContent=title;
+ document.getElementById('securityUserFilters').hidden=view!=='users';
  document.getElementById('securityPagination').hidden=view!=='users';
  document.getElementById('securityNextPage').disabled=true;
  const host=document.getElementById('securityRecords');host.textContent='Loading…';
@@ -90,7 +92,7 @@ function securityAdminStart(view,title){
 }
 function securityAdminCurrent(state){return state.adminEpoch===securityAdminEpoch && state.authEpoch===securityEpoch && securityIsAdmin();}
 function securityResetAdmin(){
- securityCursor=null;securityAdminView='';securityAdminEpoch++;
+ securityCursor=null;securityUserPage=0;securityUserStarts=[null];securityUserQuery=null;document.getElementById('securityUserFilters').hidden=true;securityAdminView='';securityAdminEpoch++;
  document.getElementById('securityRecords').replaceChildren();document.getElementById('securitySummary').textContent='';
  document.getElementById('securityRecordsTitle').textContent='Choose a view above';
  document.getElementById('securityPagination').hidden=true;document.getElementById('securityNextPage').disabled=true;
@@ -115,33 +117,59 @@ function securityReadingModeControl(row,u,state){
  });
  label.append(select);field.append(label,save);row.append(field);
 }
-async function securityUsers(more=false){
+function securityUserFilters(){return {search:document.getElementById('securityUserSearch').value||'',searchField:document.getElementById('securityUserSearchField').value||'name',tier:document.getElementById('securityUserTier').value||'all',status:document.getElementById('securityUserStatus').value||'all',mode:document.getElementById('securityUserMode').value||'all'};}
+async function securityUsers(direction=false){
  if(!securityIsAdmin())return;
- if(more && (securityAdminView!=='users'||!securityCursor))return;
- const cursor=more?securityCursor:null,state=securityAdminStart('users','Users');
+ const next=direction===true||direction==='next',previous=direction==='previous',refresh=direction==='refresh';
+ if(next&&(securityAdminView!=='users'||!securityCursor))return;
+ if(previous&&(securityAdminView!=='users'||securityUserPage===0))return;
+ const query=(next||previous||refresh)?securityUserQuery:securityUserFilters();
+ if(!query)return;
+ const page=next?securityUserPage+1:previous?securityUserPage-1:refresh?securityUserPage:0;
+ const cursor=next?securityCursor:(previous||refresh)?securityUserStarts[page]:null;
+ const state=securityAdminStart('users','Users');
+ document.getElementById('securityPreviousPage').disabled=true;
  try{
-  const result=await securityCall('getPromoHubUsers',cursor?{cursor}:{});
+  const request={...query,...(cursor?{cursor}:{})};
+  let result=await securityCall('getPromoHubUsers',request);
   if(!securityAdminCurrent(state))return;
+  if(result.needsDirectory){
+   let buildCursor=null,processed=0;
+   do{
+    state.host.textContent='Preparing searchable users… '+processed+' processed';
+    const batch=await securityCall('preparePromoHubUserDirectory',buildCursor?{cursor:buildCursor}:{});
+    if(!securityAdminCurrent(state))return;
+    processed+=batch.processed;buildCursor=batch.cursor;
+   }while(buildCursor);
+   result=await securityCall('getPromoHubUsers',request);
+   if(!securityAdminCurrent(state))return;
+   if(result.needsDirectory)throw new Error('User directory is still preparing. Select Users to retry.');
+  }
+  if(!(next||previous||refresh))securityUserStarts=[null];
+  securityUserQuery=query;securityUserPage=page;securityUserStarts[page]=cursor;
   securityCursor=result.cursor || null;state.host.replaceChildren();
   for(const u of result.users){
-   const row=document.createElement('article');row.className='securityRecord';securityIdentity(row,u);
-   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'}`;row.append(status);
-   securityReadingModeControl(row,u,state);
+   const row=document.createElement('article');row.className='securityRecord securityUserRow';securityIdentity(row,u);
+   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · ${u.readingAccessMode==='offline'?'Offline mode':'Online mode'}`;row.append(status);
+   const details=document.createElement('details');details.className='securityUserManage';const summary=document.createElement('summary');summary.textContent='Manage';details.append(summary);
+   securityReadingModeControl(details,u,state);
    const actions=document.createElement('div');actions.className='securityActions';
    for(const [action,label] of [['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Set to Free']]){
     const b=document.createElement('button');b.textContent=label;b.disabled=u.uid===cloudUser.uid;
     if(b.disabled)b.title='Your administrator account must be managed by the project owner.';
     b.onclick=()=>securityWork(async()=>{
      if(!securityAdminCurrent(state)||!confirm(`${label}: ${securityAccountLabel(u)}${u.email && u.email!==securityAccountLabel(u)?' ('+u.email+')':''}?`))return;
-     b.disabled=true;try{await securityCall('managePromoHubUser',{uid:u.uid,action});if(securityAdminCurrent(state))await securityUsers();}finally{if(securityAdminCurrent(state))b.disabled=false;}
+     b.disabled=true;try{await securityCall('managePromoHubUser',{uid:u.uid,action});if(securityAdminCurrent(state))await securityUsers('refresh');}finally{if(securityAdminCurrent(state))b.disabled=false;}
     });actions.append(b);
-   }row.append(actions);state.host.append(row);
+   }details.append(actions);row.append(details);state.host.append(row);
   }
-  if(!result.users.length)state.host.textContent='No users on this page.';
+  if(!result.users.length)state.host.textContent='No users match this search and filters.';
   document.getElementById('securityNextPage').disabled=!securityCursor;
+  document.getElementById('securityPreviousPage').disabled=securityUserPage===0;
+  document.getElementById('securityPageLabel').textContent=`Page ${securityUserPage+1} · ${result.users.length} users shown`;
   const summary=await securityCall('getPromoHubAdminSummary');
   if(securityAdminCurrent(state))document.getElementById('securitySummary').textContent=`Users: ${summary.users} · Premium profiles: ${summary.premium} · Pending requests: ${summary.pending}`;
- }catch(e){if(securityAdminCurrent(state)){securityMessage(e.message || 'Unable to load users.');if(state.host.textContent==='Loading…')state.host.textContent='Select Users to try again.';}}
+ }catch(e){if(securityAdminCurrent(state)){securityMessage(e.message || 'Unable to load users.');state.host.textContent='Unable to load users. Select Users to retry.';document.getElementById('securityPageLabel').textContent='';}}
 }
 async function securityRecords(kind){
  if(!securityIsAdmin())return;
@@ -189,7 +217,10 @@ const securityActions={
  if(cloudUser.providerData.some(p=>p.providerId==='password'))await cloudUser.reauthenticateWithCredential(firebase.auth.EmailAuthProvider.credential(cloudUser.email,document.getElementById('securityPassword').value));
  else await cloudUser.reauthenticateWithPopup(new firebase.auth.GoogleAuthProvider());
  await cloudUser.getIdToken(true);await securityCall('deletePromoHubAccount',{confirmation:'DELETE'});await cloudAuth.signOut();document.getElementById('securityPassword').value='';
- },users:()=>securityUsers(),more:()=>securityUsers(true),requests:()=>securityRecords('requests'),audit:()=>securityRecords('audit')
+ },users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),requests:()=>securityRecords('requests'),audit:()=>securityRecords('audit')
 };
 document.getElementById('securityControls').addEventListener('click',e=>{const a=e.target.closest('[data-security]')?.dataset.security;if(a)securityWork(securityActions[a]);});
 document.getElementById('authResetBtn').onclick=async()=>{try{await cloudAuth.sendPasswordResetEmail(authEmail.value.trim());authError.textContent='If the account exists, a password reset email will be sent.';}catch(e){authError.textContent=e.message;}};
+
+document.getElementById('securityUserFilters').addEventListener('submit',e=>{e.preventDefault();securityWork(()=>securityUsers());});
+document.getElementById('securityUserClear').addEventListener('click',()=>{document.getElementById('securityUserSearch').value='';document.getElementById('securityUserSearchField').value='name';for(const id of ['securityUserTier','securityUserStatus','securityUserMode'])document.getElementById(id).value='all';securityWork(()=>securityUsers());});
