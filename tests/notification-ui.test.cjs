@@ -75,6 +75,6 @@ test('markup renders bells immediately and account cache preparation precedes se
 test('internal Administration and standalone guide links reuse the top-level app window',()=>{
  const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8');assert.match(html,/id="administrationLink"[^>]*href=".\/admin.html"/);assert.doesNotMatch(html,/id="administrationLink"[^>]*target="_blank"/);
  const faq=fs.readFileSync(require.resolve('../public/faq.html'),'utf8');assert.match(faq,/href=".\/user-guide.html" target="_top"/);
- const admin=fs.readFileSync(require.resolve('../public/admin.html'),'utf8');assert.match(admin,/href=".\/index.html">Back to PromoHub/);
+ const admin=fs.readFileSync(require.resolve('../public/admin.html'),'utf8');assert.match(admin,/href=".\/index.html" aria-label="Back to PromoHub"/);
  const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8');assert.match(app,/getElementById\("administrationLink"\)\?\.addEventListener\("click", persistCurrentReaderPosition\)/);assert.match(app,/addEventListener\("pagehide", persistCurrentReaderPosition\)/);
 });
