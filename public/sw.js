@@ -1,8 +1,8 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.7.8';
+const APP_VERSION='v1.7.9';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
-const CORE=['./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
+const CORE=['./notifications.js','./notifications.css','./notifications-admin.js','./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
 const OPTIONAL=['gespasco','mat1','mat2','etmala','nfatfges','eigala'].map(name=>'./library/'+name+'.epub').concat(['./fonts/OpenSans-VariableFont_wdth_wght.ttf','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js','https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',...['app','auth','firestore','functions'].map(name=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${name}-compat.js`)]);
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE_NAME);
@@ -38,3 +38,18 @@ self.addEventListener('fetch',event=>{
  })());
 });
 self.addEventListener('message',event=>{if(event.data==='GET_VERSION'&&event.ports[0])event.ports[0].postMessage(APP_VERSION);});
+
+// Focus the existing reader without changing its book; cold starts use an account-bound route.
+self.addEventListener('notificationclick',event=>{
+ event.notification.close();const uid=event.notification.data?.uid;if(typeof uid!=='string')return;
+ event.waitUntil((async()=>{
+  const root=new URL('./',self.registration.scope),index=new URL('index.html',root);
+  for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true})){
+   const url=new URL(client.url);
+   if(url.origin===root.origin && (url.pathname===root.pathname || url.pathname===index.pathname)){
+    await client.focus();client.postMessage({type:'PROMOHUB_OPEN_INBOX',uid});return;
+   }
+  }
+  index.searchParams.set('inbox','1');index.searchParams.set('noticeUid',uid);await self.clients.openWindow(index.href);
+ })());
+});

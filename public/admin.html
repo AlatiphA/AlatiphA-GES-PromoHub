@@ -1,9 +1,9 @@
 <!doctype html>
-<html lang="en" class="adminRoot"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration | AlatiphA GES PromoHub</title><script src="./ui-theme.js"></script><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./admin.css"></head>
+<html lang="en" class="adminRoot"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Administration | AlatiphA GES PromoHub</title><script src="./ui-theme.js"></script><link rel="stylesheet" href="./style.css"><link rel="stylesheet" href="./admin.css"><link rel="stylesheet" href="./notifications.css"></head>
 <body class="adminPage"><header class="adminHeader"><a href="./index.html">Back to PromoHub</a><label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></header>
 <main class="adminShell"><h1>Administration</h1><p id="adminIdentity"></p><p id="adminAccess" role="status">Checking administrator access…</p><p id="securityMessage" role="status" aria-live="polite"></p><div id="securityControls">  <section id="securityAdmin" aria-label="Administration" hidden>
     <h3>Administration</h3><p id="securitySummary"></p>
-    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="payments" aria-pressed="false">Subscription payments</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
+    <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="payments" aria-pressed="false">Subscription payments</button><button data-security="messages" aria-pressed="false">Messages</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
     <form id="securityUserFilters" class="securityUserFilters" hidden>
       <label class="securityUserSearchLabel">Search users<input id="securityUserSearch" type="search" maxlength="100" placeholder="Name or email prefix" autocomplete="off"></label>
       <label>Search in<select id="securityUserSearchField"><option value="name">Name</option><option value="email">Email</option></select></label>
@@ -21,4 +21,4 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-functions-compat.js"></script>
 <script src="./firebase-config.js"></script>
-<script src="./admin-ui.js"></script><script src="./admin-page.js"></script></body></html>
+<script src="./admin-ui.js"></script><script src="./notifications-admin.js"></script><script src="./admin-page.js"></script></body></html>

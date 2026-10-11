@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.8.8";
+const APP_VERSION = "1.8.9";
 
 const versionEl =
   document.getElementById(
@@ -2738,13 +2738,14 @@ if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
       showAuth();
     } else {
       await cloudAuth.signInWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
+      window.PromoHubInbox?.login("password");
     }
   } catch (e) { authError.textContent = (e.message || "Unable to sign in.").replace(/^Firebase:\s*/i, ""); }
   finally { securityRegistering = false; }
 });
 if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
   if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
-  try { await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); }
+  try { await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); window.PromoHubInbox?.login("google"); }
   catch (e) { authError.textContent = e.message || "Google sign-in failed."; }
 });
 
@@ -2773,7 +2774,7 @@ refreshIndicator.textContent = "Pull to refresh";
 document.body.appendChild(refreshIndicator);
 let prStartY = null, prStartX = null, prArmed = false;
 function profileRefreshBlocked() {
-  return accountPanel.classList.contains("open") || authScreen.classList.contains("active");
+  return accountPanel.classList.contains("open") || authScreen.classList.contains("active") || document.getElementById("notificationDialog")?.open===true;
 }
 function pullRefreshBlocked() {
   return profileRefreshBlocked() || sidebarIsOpen() || faqOverlay.classList.contains("open");
@@ -2806,7 +2807,7 @@ let profileTouch=null;
 document.addEventListener("touchstart", e => {
   profileTouch=null;
   if(!profileRefreshBlocked() || e.touches.length!==1)return;
-  const card=e.target.closest?.(".accountCard") || null;
+  const card=e.target.closest?.(".accountCard") || e.target.closest?.(".inboxDialog") || null;
   const scroller=card || (authScreen.classList.contains("active")?authScreen:null);
   profileTouch={x:e.touches[0].clientX,y:e.touches[0].clientY,scroller};
 }, { passive:true, capture:true });

@@ -4,6 +4,8 @@ service cloud.firestore {
   function verified() { return request.auth != null && request.auth.token.email_verified == true; }
   function active(uid) { return exists(/databases/$(database)/documents/users/$(uid)) && get(/databases/$(database)/documents/users/$(uid)).data.accountStatus == 'active'; }
   function owner(uid) { return verified() && request.auth.uid == uid && active(uid); }
+  function noticeOwner(uid) { return verified() && request.auth.uid == uid && exists(/databases/$(database)/documents/users/$(uid)) && !exists(/databases/$(database)/documents/accountDeletions/$(uid)); }
+  function readMark() { return request.resource.data.read == true && request.resource.data.readAt == request.time; }
   function cloudOwner(uid) {
    let p=get(/databases/$(database)/documents/users/$(uid)).data;
    return owner(uid) && (request.auth.token.get('promohubAdmin',false)==true
@@ -26,6 +28,16 @@ service cloud.firestore {
     && request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 2048
     && request.resource.data.updatedAt == request.time;
    allow create, delete: if false;
+   match /notifications/{noticeId} {
+    allow read: if noticeOwner(uid);
+    allow update: if noticeOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read','readAt']) && readMark();
+    allow create, delete: if false;
+   }
+   match /announcementReads/{noticeId} {
+    allow read: if noticeOwner(uid);
+    allow create, update: if owner(uid) && exists(/databases/$(database)/documents/announcements/$(noticeId)) && request.resource.data.keys().hasOnly(['read','readAt']) && readMark();
+    allow delete: if false;
+   }
    match /reading/{bookId} {
     allow read, delete: if cloudOwner(uid);
     allow create, update: if cloudOwner(uid)
@@ -68,6 +80,7 @@ service cloud.firestore {
      && request.resource.data.updatedAt == request.time;
    }
   }
+  match /announcements/{noticeId} { allow read: if verified() && active(request.auth.uid); allow write: if false; }
   match /premiumRequests/{uid} { allow read: if owner(uid); allow write: if false; }
   match /{document=**} { allow read, write: if false; }
  }

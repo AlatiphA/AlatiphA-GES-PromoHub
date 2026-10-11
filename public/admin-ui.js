@@ -89,7 +89,8 @@ async function securityUsers(direction=false){
      if(!securityAdminCurrent(state)||!confirm(`${label}: ${securityAccountLabel(u)}${u.email && u.email!==securityAccountLabel(u)?' ('+u.email+')':''}?`))return;
      b.disabled=true;try{await securityCall('managePromoHubUser',{uid:u.uid,action});if(securityAdminCurrent(state))await securityUsers('refresh');}finally{if(securityAdminCurrent(state))b.disabled=false;}
     });actions.append(b);
-   }details.append(actions);row.append(details);state.host.append(row);
+   }if(typeof notificationCompose==='function' && u.accountStatus==='active'){const message=document.createElement('button');message.type='button';message.textContent='Send message';message.onclick=()=>{if(securityAdminCurrent(state))notificationCompose(u);};actions.append(message);}
+   details.append(actions);row.append(details);state.host.append(row);
   }
   if(!result.users.length)state.host.textContent='No users match this search and filters.';
   document.getElementById('securityNextPage').disabled=!securityCursor;
