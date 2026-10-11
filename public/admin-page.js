@@ -3,7 +3,7 @@ let cloudUser=null,securityProfile=null,securityClaims={},securityEpoch=0,adminS
 function securityMessage(text){document.getElementById('securityMessage').textContent=text;}
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
-function adminLock(message){securityResetAdmin();document.getElementById('securityAdmin').hidden=true;document.getElementById('adminAccess').textContent=message;document.getElementById('adminIdentity').textContent='';}
+function adminLock(message){adminCancelSearch();adminSearchComposing=false;securityResetAdmin();document.getElementById('securityAdmin').hidden=true;document.getElementById('adminAccess').textContent=message;document.getElementById('adminIdentity').textContent='';}
 async function adminAuthChanged(user){
  const epoch=++securityEpoch;if(adminStop){adminStop();adminStop=null;}cloudUser=user;securityClaims={};securityProfile=null;securityMessage('');adminLock('Checking administrator access…');
  if(!user){adminLock('Sign in to PromoHub with your administrator account, then return here.');return;}
@@ -17,8 +17,24 @@ async function adminAuthChanged(user){
   await securityUsers();
  }catch(e){if(epoch===securityEpoch)adminLock('Unable to load Administration. Check your internet connection and reload. '+e.message);}
 }
+/* Debounced prefix search. Editing invalidates earlier results before the timer fires. */
+let adminSearchTimer=null,adminSearchComposing=false;
+function adminCancelSearch(){if(adminSearchTimer!==null){clearTimeout(adminSearchTimer);adminSearchTimer=null;}}
+function adminSearchInvalidate(){securityAdminEpoch++;document.getElementById('securityNextPage').disabled=true;document.getElementById('securityPreviousPage').disabled=true;}
+function adminSearchNow(){adminCancelSearch();if(!securityIsAdmin())return;securityMessage('');return securityWork(()=>securityUsers());}
+function adminScheduleSearch(){
+ adminCancelSearch();if(!securityIsAdmin() || securityAdminView!=='users')return;
+ adminSearchInvalidate();if(adminSearchComposing)return;
+ const epoch=securityEpoch;
+ adminSearchTimer=setTimeout(()=>{adminSearchTimer=null;if(epoch===securityEpoch && securityAdminView==='users' && securityIsAdmin())adminSearchNow();},350);
+}
 const securityActions={users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),payments:()=>subscriptionAdminPayments(),audit:()=>securityRecords('audit')};
-document.getElementById('securityControls').addEventListener('click',e=>{const action=e.target.closest('[data-security]')?.dataset.security;if(action && securityActions[action])securityWork(securityActions[action]);});
-document.getElementById('securityUserFilters').addEventListener('submit',e=>{e.preventDefault();securityWork(()=>securityUsers());});
-document.getElementById('securityUserClear').addEventListener('click',()=>{document.getElementById('securityUserSearch').value='';document.getElementById('securityUserSearchField').value='name';for(const id of ['securityUserTier','securityUserStatus','securityUserMode'])document.getElementById(id).value='all';securityWork(()=>securityUsers());});
+document.getElementById('securityControls').addEventListener('click',e=>{const action=e.target.closest('[data-security]')?.dataset.security;if(action && securityActions[action]){adminCancelSearch();securityWork(securityActions[action]);}});
+document.getElementById('securityUserFilters').addEventListener('submit',e=>{e.preventDefault();if(!adminSearchComposing)adminSearchNow();});
+const adminSearchInput=document.getElementById('securityUserSearch');
+adminSearchInput.addEventListener('input',e=>{if(e.isComposing)adminSearchComposing=true;adminScheduleSearch();});
+adminSearchInput.addEventListener('compositionstart',()=>{adminSearchComposing=true;adminCancelSearch();if(securityAdminView==='users')adminSearchInvalidate();});
+adminSearchInput.addEventListener('compositionend',()=>{adminSearchComposing=false;adminScheduleSearch();});
+for(const id of ['securityUserSearchField','securityUserTier','securityUserStatus','securityUserMode'])document.getElementById(id).addEventListener('change',()=>{adminSearchComposing=false;adminSearchNow();});
+document.getElementById('securityUserClear').addEventListener('click',()=>{adminSearchComposing=false;adminSearchInput.value='';document.getElementById('securityUserSearchField').value='name';for(const id of ['securityUserTier','securityUserStatus','securityUserMode'])document.getElementById(id).value='all';adminSearchNow();});
 try{if(!firebase.apps.length)firebase.initializeApp(window.GES_PROMOHUB_FIREBASE_CONFIG);firebase.auth().onAuthStateChanged(user=>{securityWork(()=>adminAuthChanged(user));});}catch(e){adminLock('Unable to start Administration. Check your internet connection and reload. '+e.message);}

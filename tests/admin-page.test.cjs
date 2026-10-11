@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),fs=require(
 const code=fs.readFileSync(require.resolve('../public/admin-page.js'),'utf8'),shared=fs.readFileSync(require.resolve('../public/admin-ui.js'),'utf8');
 function setup(){
  const ids={},el=()=>({hidden:false,textContent:'',value:'',children:[],addEventListener(){},setAttribute(){},replaceChildren(){this.children=[];},append(...items){this.children.push(...items);}});
- const context={document:{getElementById:id=>ids[id]||(ids[id]=el()),querySelectorAll:()=>[],createElement:el},firebase:{apps:[{}],auth:()=>({onAuthStateChanged(){}}),firestore:()=>({doc:()=>({get:async()=>({data:()=>({accountStatus:'active',displayName:'Owner'})}),onSnapshot:()=>()=>{}})})}};
+ const context={clearTimeout(){},document:{getElementById:id=>ids[id]||(ids[id]=el()),querySelectorAll:()=>[],createElement:el},firebase:{apps:[{}],auth:()=>({onAuthStateChanged(){}}),firestore:()=>({doc:()=>({get:async()=>({data:()=>({accountStatus:'active',displayName:'Owner'})}),onSnapshot:()=>()=>{}})})}};
  vm.createContext(context);vm.runInContext(shared+code,context);vm.runInContext('securityUsers=async()=>{globalThis.userLoads=(globalThis.userLoads||0)+1;}',context);
  return {context,ids,run:c=>vm.runInContext(c,context)};
 }

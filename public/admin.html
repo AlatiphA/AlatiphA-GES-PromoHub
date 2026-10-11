@@ -5,13 +5,13 @@
     <h3>Administration</h3><p id="securitySummary"></p>
     <nav class="securityAdminNavigation" aria-label="Administration views"><button data-security="users" aria-pressed="false">Users</button><button data-security="payments" aria-pressed="false">Subscription payments</button><button data-security="audit" aria-pressed="false">Recent audit</button></nav>
     <form id="securityUserFilters" class="securityUserFilters" hidden>
-      <label class="securityUserSearchLabel">Search starts with<input id="securityUserSearch" type="search" maxlength="100" placeholder="Name or email prefix" autocomplete="off"></label>
+      <label class="securityUserSearchLabel">Search users<input id="securityUserSearch" type="search" maxlength="100" placeholder="Name or email prefix" autocomplete="off"></label>
       <label>Search in<select id="securityUserSearchField"><option value="name">Name</option><option value="email">Email</option></select></label>
       <label>Profile tier<select id="securityUserTier"><option value="all">All tiers</option><option value="premium">Premium profiles</option><option value="free">Free profiles</option></select></label>
       <label>Account status<select id="securityUserStatus"><option value="all">All statuses</option><option value="active">Active</option><option value="suspended">Suspended</option><option value="disabled">Disabled</option></select></label>
       <label>Reading mode<select id="securityUserMode"><option value="all">All modes</option><option value="strict">Online</option><option value="offline">Offline</option></select></label>
       <div class="securityActions"><button type="submit">Search / Apply</button><button id="securityUserClear" type="button">Clear filters</button></div>
-      <p class="securityUserFilterHint">Search is case-insensitive and matches the start of the selected name or email. Premium profile tier includes expired subscriptions.</p>
+      <p class="securityUserFilterHint">Results update as you type, after a short pause. Search is case-insensitive and matches the start of the selected name or email. Premium profile tier includes expired subscriptions.</p>
     </form>
     <h4 id="securityRecordsTitle">Choose a view above</h4><div id="securityRecords" aria-live="polite"></div>
     <div id="securityPagination" hidden><button id="securityPreviousPage" data-security="previous" disabled>Previous page</button><span id="securityPageLabel" role="status"></span><button id="securityNextPage" data-security="more" disabled>Next page</button></div>
