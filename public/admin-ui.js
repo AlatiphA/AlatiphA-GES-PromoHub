@@ -15,7 +15,7 @@ function securityAdminStart(view,title){
  document.getElementById('securityUserFilters').hidden=view!=='users';
  document.getElementById('securityPagination').hidden=view!=='users';
  document.getElementById('securityNextPage').disabled=true;
- const host=document.getElementById('securityRecords');host.textContent='Loading…';
+ const host=document.getElementById('securityRecords');host.dataset.view=view;host.textContent='Loading…';
  return {host,adminEpoch:++securityAdminEpoch,authEpoch:securityEpoch};
 }
 function securityAdminCurrent(state){return state.adminEpoch===securityAdminEpoch && state.authEpoch===securityEpoch && securityIsAdmin();}

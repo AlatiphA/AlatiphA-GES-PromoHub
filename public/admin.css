@@ -1,3 +1,40 @@
-body.adminPage{display:block;position:static;overflow:auto;height:auto;min-height:100dvh;margin:0;background:var(--ui-bg,#f4f2ed);color:var(--ui-text,#252d28);font-family:Arial,sans-serif}html:has(.adminPage){overflow:auto;height:auto}.adminHeader{display:flex;justify-content:space-between;align-items:center;gap:16px;padding:16px 24px;border-bottom:1px solid #8884}.adminHeader a,.administrationLink{color:inherit}.adminShell{max-width:1080px;margin:auto;padding:24px;box-sizing:border-box}.adminShell h1{font-size:28px}.adminShell #securityControls{width:100%;text-align:left}.adminShell #securityAdmin{padding:0}.adminShell #securityUserFilters{grid-template-columns:repeat(3,minmax(0,1fr))}.adminShell .securityUserRow{padding:12px 16px}.adminShell #securityRecords{max-height:none;overflow:visible}.adminShell .securityAdminNavigation{display:flex;flex-wrap:wrap;gap:8px}.adminShell #securityMessage{white-space:pre-wrap}.adminPage [hidden]{display:none!important}.adminPage button,.adminPage select,.adminPage input{font:inherit;max-width:100%;box-sizing:border-box}.adminPage button,.adminPage select{min-height:44px}.adminPage button{cursor:pointer}.adminPage .uiAppearance{margin:0}.administrationLink{display:block;padding:12px;border:1px solid #8885;border-radius:10px;text-align:center;text-decoration:none;margin:12px 0}.administrationLink span{font-size:12px}.administrationLink[hidden]{display:none!important}@media(max-width:640px){.adminHeader{padding:12px;flex-wrap:wrap}.adminShell{padding:16px}.adminShell #securityUserFilters{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:360px){.adminShell #securityUserFilters{grid-template-columns:1fr}}
-
-.adminPage .adminHeader{position:static;height:auto;min-height:60px}.adminShell h1{margin:8px 0 16px}.adminShell p{margin:8px 0}.adminShell .securityRecord{background:var(--ui-surface);border-radius:12px}.adminShell #securityAdmin>h3{display:none}.adminShell .uiAppearance select{width:132px}
+/* Administration has document scrolling, independent of the fixed EPUB reader. */
+html.adminRoot{height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:none}
+body.adminPage{display:block;position:static;width:100%;height:auto;min-height:100dvh;margin:0;overflow:visible;background:var(--ui-bg);color:var(--ui-text);font-family:Arial,sans-serif;touch-action:pan-y pinch-zoom}
+.adminPage .adminHeader{position:static;inset:auto;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:12px;height:auto;min-height:64px;padding:12px 24px;border-bottom:1px solid var(--ui-border)}
+.adminHeader a{color:var(--ui-accent);text-decoration:none;font-weight:600;padding:8px 0}
+.adminPage .uiAppearance{margin:0;gap:8px;font-size:13px}
+.adminPage .uiAppearance select{width:124px;margin:0;font-size:14px}
+/* Override the shared main { position:absolute; inset:0; overflow:hidden } rule. */
+.adminPage main.adminShell{position:static;inset:auto;display:block;width:100%;height:auto;min-height:0;max-height:none;max-width:1200px;margin:0 auto;padding:28px 24px 48px;overflow:visible}
+.adminShell h1{font-size:28px;line-height:1.25;margin:0 0 12px}
+.adminShell p{margin:8px 0;line-height:1.5;overflow-wrap:anywhere}
+.adminShell #securityControls,.adminShell #securityAdmin{width:100%;min-width:0;height:auto;max-height:none;overflow:visible;text-align:left}
+.adminShell #securityAdmin>h3{display:none}
+.adminShell #securitySummary{color:var(--ui-muted);margin:16px 0}
+.adminShell .securityAdminNavigation{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:20px 0}
+.adminShell .securityAdminNavigation button{min-height:48px}
+.adminShell #securityUserFilters{grid-template-columns:repeat(4,minmax(0,1fr));padding:16px;background:var(--ui-surface);border:1px solid var(--ui-border);border-radius:14px;margin:16px 0 24px;gap:12px}
+.adminShell .securityUserSearchLabel{grid-column:1/-1}
+.adminShell #securityRecordsTitle{font-size:20px;margin:16px 0}
+.adminShell #securityRecords{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:16px;height:auto;max-height:none;overflow:visible;align-items:start}
+.adminShell #securityRecords[data-view="users"]{grid-template-columns:repeat(3,minmax(0,1fr))}
+.adminShell #securityRecords>.securityRecord{min-width:0;margin:0;padding:18px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface);overflow-wrap:anywhere}
+.adminShell .securityUserRow{display:flex;flex-direction:column;gap:10px}
+.adminShell .securityUserRow .securityIdentity{margin:0;line-height:1.4}
+.adminShell .securityIdentity strong{display:block;font-size:16px}
+.adminShell .securityIdentity span{display:block;font-size:13px;margin-top:4px;color:var(--ui-muted)}
+.adminShell .securityUserRow .securityStatus{font-size:13px;margin:0;padding:6px 8px;border-radius:8px;background:var(--ui-raised);color:var(--ui-text)}
+.adminShell .securityUserManage{width:100%;margin-top:2px}
+.adminShell .securityUserManage summary{min-height:44px;width:100%;padding:10px 12px;font-size:14px;color:var(--ui-accent)}
+.adminShell .securityUserManage[open] .securityActions{margin-top:12px}
+.adminShell #securityPagination{padding:16px 0 0;border-top:1px solid var(--ui-border);margin-top:24px;gap:12px}
+.adminShell #securityPageLabel{font-size:14px}
+.adminShell #securityMessage{white-space:pre-wrap}
+.adminPage [hidden]{display:none!important}
+.adminPage button,.adminPage select,.adminPage input{max-width:100%;min-width:0;box-sizing:border-box;font:inherit}
+.adminPage button,.adminPage select{min-height:44px}
+.adminPage button{cursor:pointer}
+@media(max-width:1000px){.adminShell #securityRecords[data-view="users"]{grid-template-columns:repeat(2,minmax(0,1fr))}.adminShell #securityUserFilters{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:640px){.adminPage .adminHeader{padding:12px 16px}.adminPage main.adminShell{padding:20px 16px 40px}.adminShell h1{font-size:24px}.adminShell #securityRecords,.adminShell #securityRecords[data-view="users"]{grid-template-columns:minmax(0,1fr);gap:12px}.adminShell .securityAdminNavigation{grid-template-columns:repeat(2,minmax(0,1fr))}.adminShell .securityAdminNavigation button:first-child{grid-column:1/-1}.adminShell #securityUserFilters{padding:12px;gap:10px}.adminShell #securityPagination #securityPageLabel{flex:1 0 100%;text-align:center;order:-1}.adminShell #securityPagination button{flex:1 1 0}.adminShell #securityRecords>.securityRecord{padding:16px}}
+@media(max-width:360px){.adminShell #securityUserFilters{grid-template-columns:minmax(0,1fr)}}
