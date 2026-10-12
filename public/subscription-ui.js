@@ -45,7 +45,7 @@ function subscriptionRender(){
  subscriptionLocalWrite('ges-promohub-subscription-'+cloudUser.uid,JSON.stringify(p));
  const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionPaid(p)?`Paid subscription · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
  document.getElementById('subscriptionStatus').textContent=text;
- const admin=securityIsAdmin();document.getElementById('subscriptionPurchaseControls').hidden=admin;
+ const admin=securityIsAdmin(),purchaseControls=document.getElementById('subscriptionPurchaseControls');if(purchaseControls)purchaseControls.hidden=admin;
  document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
  document.getElementById('accountType').textContent=text;
  const premium=document.getElementById('securityPremiumButton');premium.textContent='Submit payment for review';
