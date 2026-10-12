@@ -22,3 +22,7 @@ test('late credentials from previous account cannot grant access after sign-out'
 test('administration uses relative assets without loading reader or claiming sessions',()=>{
  const html=fs.readFileSync(require.resolve('../public/admin.html'),'utf8'),sw=fs.readFileSync(require.resolve('../public/sw.js'),'utf8');assert.match(html,/href="\.\/index.html"/);assert.match(html,/src="\.\/admin-ui.js"/);assert.doesNotMatch(html,/src="\.\/(?:app|reader-sessions|subscription-ui)\.js"/);for(const asset of ['admin.html','admin.css','admin-ui.js','admin-page.js'])assert.ok(sw.includes(asset));
 });
+
+test('administrator startup chooses the new Overview when its module is loaded',async()=>{
+ const s=setup();let loads=0;s.context.adminOverview=async()=>loads++;s.context.user=user();await s.run('adminAuthChanged(user)');assert.equal(loads,1);assert.equal(s.context.userLoads,undefined);
+});
