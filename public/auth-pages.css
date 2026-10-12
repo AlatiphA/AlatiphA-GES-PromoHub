@@ -17,3 +17,10 @@ html.legalPage,html.legalPage body{height:auto;min-height:100%;overflow:auto}.le
 html[data-ui-theme] .authFooter,html[data-ui-theme] .legalFooter,html[data-ui-theme] .legalHeader{position:static;inset:auto;height:auto;z-index:auto;backdrop-filter:none;border:0;background:transparent;transition:none}
 html[data-ui-theme] .authFooter,html[data-ui-theme] .legalFooter{display:block}
 html[data-ui-theme] .legalHeader{display:flex}
+
+/* Standalone policy pages never load the reader's scroll-lock stylesheet. */
+html.legalPage{--ui-bg:#f4f2ed;--ui-surface:#fff;--ui-text:#242b29;--ui-muted:#606b66;--ui-border:#d4d9d4;--ui-accent:#805025;height:auto;min-height:100%;overflow-x:hidden;overflow-y:auto;scroll-behavior:auto}
+html.legalPage[data-ui-theme="dark"]{--ui-bg:#151a1c;--ui-surface:#20282a;--ui-text:#f0f3f0;--ui-muted:#b5c1bc;--ui-border:#47534f;--ui-accent:#e1b583}
+html.legalPage body{height:auto;min-height:100vh;overflow:visible;position:static;touch-action:pan-y pinch-zoom;margin:0}
+.legalPage *{box-sizing:border-box}.legalContact a{display:inline-flex;align-items:center;min-height:40px}.legalFooter a{display:inline-flex;align-items:center;min-height:40px}
+.authSupport{display:flex;flex-direction:column;align-items:center;gap:2px;margin:18px 0}.authSupport h3{font-size:14px;color:var(--ui-text);margin:0 0 6px;font-weight:600}.authSupport a{min-height:36px;margin:0;font-size:13px}

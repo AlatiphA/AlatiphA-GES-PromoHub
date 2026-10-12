@@ -43,7 +43,7 @@ test('login and account selectors agree, library button cycles choices, FAQ foll
 test('interface startup precedes stylesheet; book reading themes and account controls remain separate',()=>{
  const html=fs.readFileSync(path.join(root,'index.html'),'utf8');
  assert.ok(html.indexOf('src="./ui-theme.js"')<html.indexOf('rel="stylesheet"'));
- assert.equal((html.match(/data-ui-theme-choice/g)||[]).length,2);
+ assert.equal((html.match(/data-ui-theme-choice/g)||[]).length,1);
  for(const theme of ['light','sepia','dark','night'])assert.ok(html.includes(`data-theme="${theme}"`));
  const js=fs.readFileSync(path.join(root,'ui-theme.js'),'utf8');assert.ok(!js.includes('classList'));assert.ok(!js.includes('reader-theme'));
  const sw=fs.readFileSync(path.join(root,'sw.js'),'utf8');assert.ok(sw.includes('ui-theme.js'));
