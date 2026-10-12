@@ -1,0 +1,17 @@
+.downloadsDialog{position:fixed;inset:0;margin:auto;box-sizing:border-box;width:min(720px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);padding:20px;border:1px solid var(--ui-border);border-radius:18px;background:var(--ui-surface);color:var(--ui-text);overflow:auto;overscroll-behavior:contain;touch-action:pan-y pinch-zoom}
+.downloadsDialog::backdrop{background:rgba(0,0,0,.55)}
+.downloadsDialog [hidden]{display:none!important}
+.downloadsHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.downloadsHeading h2{font-size:21px;margin:0}
+.downloadsDialog p{font-size:14px;line-height:1.5;overflow-wrap:anywhere;margin:12px 0}
+#downloadsStorage,.downloadsNote{color:var(--ui-muted)}
+#downloadsList{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.downloadRow{min-width:0;padding:16px;border:1px solid var(--ui-border);border-radius:12px;background:var(--ui-raised)}
+.downloadRow h3{font-size:16px;line-height:1.4;margin:0;overflow-wrap:anywhere}
+.downloadsActions{display:flex;gap:8px;flex-wrap:wrap;margin:12px 0}
+.downloadsActions button{min-height:44px;max-width:100%;padding:8px 12px;border:1px solid var(--ui-border);border-radius:9px;background:var(--ui-surface);color:var(--ui-text);font:inherit;font-size:14px;cursor:pointer}
+.downloadsActions button:disabled{opacity:.55;cursor:default}
+.downloadsActions button:focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+.downloadRow progress{width:100%;height:10px;accent-color:var(--ui-accent)}
+.offlineBookStatus{font-size:12px;color:var(--ui-muted);margin-top:6px;line-height:1.4}
+@media(max-width:520px){#downloadsList{grid-template-columns:minmax(0,1fr)}.downloadsDialog{padding:16px}.downloadsHeading h2{font-size:19px}}

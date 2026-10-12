@@ -2,10 +2,10 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8');
 function setup(){
- const state={profile:false,auth:false,sidebar:false,faq:false,inbox:false,reloads:0,saves:0},events={},timers=[];
+ const state={profile:false,auth:false,sidebar:false,faq:false,inbox:false,downloads:false,reloads:0,saves:0},events={},timers=[];
  const classes={add(){},remove(){},toggle(){}};
  const panel=key=>({classList:{contains:()=>state[key]},scrollTop:0,scrollHeight:800,clientHeight:400});const authScreen=panel('auth');
- const context={accountPanel:panel('profile'),authScreen,faqOverlay:panel('faq'),sidebarIsOpen:()=>state.sidebar,window:{scrollY:0},document:{getElementById:()=>({open:state.inbox}),body:{appendChild(){}},createElement:()=>({classList:classes}),addEventListener:(type,fn,options)=>{(events[type] ||= []).push({fn,options});}},setTimeout:fn=>timers.push(fn),persistCurrentReaderPosition:()=>state.saves++,location:{reload:()=>state.reloads++}};
+ const context={accountPanel:panel('profile'),authScreen,faqOverlay:panel('faq'),sidebarIsOpen:()=>state.sidebar,window:{scrollY:0},document:{getElementById:id=>({open:id==='downloadsDialog'?state.downloads:state.inbox}),body:{appendChild(){}},createElement:()=>({classList:classes}),addEventListener:(type,fn,options)=>{(events[type] ||= []).push({fn,options});}},setTimeout:fn=>timers.push(fn),persistCurrentReaderPosition:()=>state.saves++,location:{reload:()=>state.reloads++}};
  const start=app.indexOf('/* ---------- Pull to refresh ---------- */');vm.runInNewContext(app.slice(start,app.indexOf('/* ---------- Pinch changes EPUB',start)),context);
  const card={scrollTop:0,scrollHeight:900,clientHeight:400};
  function emit(type,y=10,x=20,targetCard=card,count=1){let prevented=false;const e={touches:Array.from({length:count},()=>({clientX:x,clientY:y})),target:{closest:()=>targetCard},cancelable:true,preventDefault(){prevented=true;}};for(const h of events[type]||[])h.fn(e);return prevented;}
@@ -39,4 +39,9 @@ test('login scrolling uses its actual scroll container and never arms refresh',(
 
 test('inbox scrolling does not arm pull refresh or navigate away from the reader',()=>{
  const s=setup();s.state.inbox=true;s.emit('touchstart');s.emit('touchmove',120);s.emit('touchend');assert.equal(s.timers.length,0);assert.equal(s.state.reloads,0);
+});
+
+test('download dialog contains boundary pull but permits its inner scrolling',()=>{
+ const s=setup();s.state.downloads=true;s.emit('touchstart');assert.equal(s.emit('touchmove',110),true);s.emit('touchend');assert.equal(s.timers.length,0);
+ s.card.scrollTop=200;s.emit('touchstart');assert.equal(s.emit('touchmove',110),false);
 });

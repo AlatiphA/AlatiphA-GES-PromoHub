@@ -69,6 +69,7 @@
 
 <link rel="stylesheet" href="./notifications.css">
   <link rel="stylesheet" href="./navigation.css">
+<link rel="stylesheet" href="./downloads.css">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="shortcut icon" href="./icon-192.png">
 </head>
@@ -87,6 +88,7 @@
       <i class="fa-solid fa-trash-can"></i>
     </button>
     <div class="headerActions libraryActions" role="group" aria-label="App controls">
+<button id="downloadsOpen" type="button" class="downloadManagerBtn" aria-label="Offline downloads" title="Offline downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
     <button
       id="libraryDayNightBtn"
       class="libraryDayNightBtn"
@@ -581,7 +583,7 @@
 <script src="./firebase-config.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
 
-<script src="https://cdn.jsdelivr.net/npm/epubjs/dist/epub.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 
 <dialog id="notificationDialog" class="inboxDialog" aria-labelledby="notificationTitle">
  <div class="inboxHeading"><h2 id="notificationTitle">Notifications</h2><button id="notificationClose" type="button" aria-label="Close notifications">Close</button></div>
@@ -594,6 +596,15 @@
 <script src="./account-security.js"></script>
 <script src="./reader-sessions.js"></script>
 <script src="./notifications.js"></script>
+<dialog id="downloadsDialog" class="downloadsDialog" aria-labelledby="downloadsTitle">
+ <div class="downloadsHeading"><h2 id="downloadsTitle">Offline downloads</h2><button id="downloadsClose" type="button" class="navControl" aria-label="Close downloads" title="Close downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+ <p>Downloaded books are stored in this browser on this device. Reading access still follows your trial, subscription and Online/Offline mode.</p>
+ <p id="downloadsStatus" role="status" aria-live="polite"></p><p id="downloadsStorage"></p>
+ <div class="downloadsActions"><button id="downloadsAll" type="button">Download all books</button><button id="downloadsCancel" type="button" hidden>Cancel download</button><button id="downloadsRefresh" type="button">Check downloads</button></div>
+ <div id="downloadsList"></div>
+ <p class="downloadsNote">Before disconnecting, choose Offline mode in My Account while connected. Trial and guest reading remain local. Clearing browser data or browser storage eviction can remove downloads. Removing a book here keeps your reading progress and bookmarks.</p>
+</dialog>
+<script src="./downloads.js"></script>
 <script src="./install.js"></script>
 
 </body>
