@@ -158,3 +158,5 @@ Object.assign(exports,require('./notifications.cjs')({onCall,onDocumentWritten:r
 Object.assign(exports,require('./subscription-reminders.cjs')({onSchedule:require('firebase-functions/v2/scheduler').onSchedule,db,admin,stamp}));
 
 Object.assign(exports,require('./admin-overview.cjs')({onCall,options,HttpsError,db,admin,member}));
+
+Object.assign(exports,require('./quizzes.cjs')({onCall,options,HttpsError,db,admin,member,stamp,audit}));

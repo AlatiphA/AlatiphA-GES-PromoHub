@@ -31,6 +31,7 @@ function dashboardRender(){
  const host=document.getElementById('readingDashboard');if(!host)return;
  host.replaceChildren();const rows=dashboardRows(),recent=rows.filter(b=>b.at>0||b.data.location),last=recent[0];
  const section=dashboardNode('section',undefined,'readingDashboardSection');section.append(dashboardNode('h2','Your reading'));
+ const practice=dashboardNode('button','Practice tests');practice.type='button';practice.onclick=()=>quizOpen();section.append(practice);
  section.append(dashboardNode('p','Saved on this device. Cloud progress refreshes when syncing is available.','dashboardHint'));
  if(last){const card=dashboardNode('div',undefined,'dashboardContinue');card.append(dashboardNode('h3',last.title));
   card.append(dashboardNode('p',last.percent===null?'Saved position':last.percent+'% completed'));
