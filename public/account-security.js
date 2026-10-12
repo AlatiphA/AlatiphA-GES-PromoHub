@@ -24,8 +24,8 @@ function accountSecurityRender(){
  const user=cloudUser;if(!user)return;
  const password=accountSecurityPasswordProvider(user);
  document.getElementById('accountSecurityEmail').textContent=user.email||'';
- document.getElementById('accountSecurityPasswordControls').hidden=!password;
- document.getElementById('accountSecurityGoogleControls').hidden=password;
+ const passwordControls=document.getElementById('accountSecurityPasswordControls');if(passwordControls)passwordControls.hidden=!password;
+ const googleControls=document.getElementById('accountSecurityGoogleControls');if(googleControls)googleControls.hidden=password;
  document.getElementById('accountSecurityPending').textContent=securityProfile?.pendingLoginEmail?'Verification requested for '+securityProfile.pendingLoginEmail+'. Your login email changes only after verification.':'';
  if(accountSecurityLaunchRequested && user.emailVerified && securityProfile?.accountStatus==='active'){accountSecurityLaunchRequested=false;accountPanel.classList.add('open');securitySelectTab('account');document.getElementById('accountSecuritySection').open=true;}
 }

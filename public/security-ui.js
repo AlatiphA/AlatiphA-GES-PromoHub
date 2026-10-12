@@ -34,9 +34,9 @@ async function securityWork(work){try{await work();}catch(e){securityMessage(e.m
 function securityRender(){
  document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || 'GES PromoHub User';
  document.getElementById('accountType').textContent=cloudUser?.emailVerified ? `${securityProfile?.accountTier || 'free'} · ${securityProfile?.accountStatus || 'connecting'}` : 'Email verification required';
- document.getElementById('administrationLink').hidden=!securityIsAdmin();
+ const administrationLink=document.getElementById('administrationLink');if(administrationLink)administrationLink.hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
- document.getElementById('securityVerification').hidden=!!cloudUser?.emailVerified;
+ const verification=document.getElementById('securityVerification');if(verification)verification.hidden=!!cloudUser?.emailVerified;
  subscriptionRender();if(typeof readerModeRender==='function')readerModeRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
@@ -52,6 +52,7 @@ async function securityActivate(user){
  return cloudReady;
 }
 async function securityAuthChanged(user){
+ securityMessage('');
  if(window.PromoHubInbox)window.PromoHubInbox.reset();
  if(typeof readerSessionReset==='function')readerSessionReset();
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
@@ -66,7 +67,7 @@ async function securityAuthChanged(user){
  catch(e){if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
-function securitySelectTab(){document.getElementById('myAccountPanel').hidden=false;}
+function securitySelectTab(){const panel=document.getElementById('myAccountPanel');if(panel)panel.hidden=false;}
 function securityResetAdmin(){securitySelectTab();}
 const securityActions={
  resend:async()=>{await cloudUser.sendEmailVerification();securityMessage('Verification email sent.');},
