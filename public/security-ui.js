@@ -32,6 +32,7 @@ function securityMessage(text){document.getElementById('securityMessage').textCo
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
 function securityRender(){
+ if(typeof dashboardUpdate==='function')dashboardUpdate();
  document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || 'GES PromoHub User';
  document.getElementById('accountType').textContent=cloudUser?.emailVerified ? `${securityProfile?.accountTier || 'free'} · ${securityProfile?.accountStatus || 'connecting'}` : 'Email verification required';
  const administrationLink=document.getElementById('administrationLink');if(administrationLink)administrationLink.hidden=!securityIsAdmin();
@@ -58,6 +59,7 @@ async function securityAuthChanged(user){
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
+ if(typeof dashboardReset==='function')dashboardReset();
  if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  hideAuth();if(securityRegistering)return;
  const authEpoch=securityEpoch;

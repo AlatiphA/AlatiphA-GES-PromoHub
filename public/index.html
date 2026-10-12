@@ -72,6 +72,7 @@
 <link rel="stylesheet" href="./downloads.css">
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="shortcut icon" href="./icon-192.png">
+<link rel="stylesheet" href="./reading-dashboard.css">
 </head>
 
 <body>
@@ -107,6 +108,7 @@
   </div>
 
   <div class="libraryGrid">
+    <div id="readingDashboard" aria-label="Reading dashboard"></div>
 
     <div class="bookCard" data-file="./library/gespasco.epub">
       <div class="bookCover">
@@ -606,6 +608,7 @@
  <div id="downloadsList"></div>
  <p class="downloadsNote">Before disconnecting, choose Offline mode in My Account while connected. Trial and guest reading remain local. Clearing browser data or browser storage eviction can remove downloads. Removing a book here keeps your reading progress and bookmarks.</p>
 </dialog>
+<script src="./reading-dashboard.js"></script>
 <script src="./downloads.js"></script>
 <script src="./install.js"></script>
 

@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.9.5";
+const APP_VERSION = "1.9.6";
 
 const versionEl =
   document.getElementById(
@@ -1043,7 +1043,8 @@ function startReader() {
 
   updateReadingLocationDisplay(null, false);
   const readerData = loadReaderData();
-  const savedLocation = readerData.location;
+  const dashboardLocation = typeof dashboardStart === "function" ? dashboardStart() : null;
+  const savedLocation = dashboardLocation || readerData.location;
   const readingRendition = rendition;
   const isCurrentReader = () => book === readingBook && rendition === readingRendition;
 
