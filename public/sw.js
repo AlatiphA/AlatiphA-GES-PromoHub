@@ -1,10 +1,10 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.8.5';
+const APP_VERSION='v1.8.6';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const BOOK_CACHE='alatipha-ges-promohub-books-v1';
 const BOOK_FILES=['gespasco','mat1','mat2','etmala','nfatfges','eigala'].map(name=>'./library/'+name+'.epub');
-const CORE=['./downloads.js','./downloads.css','./navigation.css','./notifications.js','./notifications.css','./notifications-admin.js','./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
+const CORE=['./admin-overview.js','./downloads.js','./downloads.css','./navigation.css','./notifications.js','./notifications.css','./notifications-admin.js','./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
 const OPTIONAL=['./fonts/OpenSans-VariableFont_wdth_wght.ttf','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js','https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',...['app','auth','firestore','functions'].map(name=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${name}-compat.js`)];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE_NAME);

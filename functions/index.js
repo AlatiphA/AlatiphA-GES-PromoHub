@@ -156,3 +156,5 @@ Object.assign(exports,require('./admin-directory.cjs')({onCall,onDocumentWritten
 Object.assign(exports,require('./notifications.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member,stamp,audit}));
 
 Object.assign(exports,require('./subscription-reminders.cjs')({onSchedule:require('firebase-functions/v2/scheduler').onSchedule,db,admin,stamp}));
+
+Object.assign(exports,require('./admin-overview.cjs')({onCall,options,HttpsError,db,admin,member}));

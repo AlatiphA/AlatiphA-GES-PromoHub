@@ -38,3 +38,22 @@ body.adminPage{display:block;position:static;width:100%;height:auto;min-height:1
 @media(max-width:1000px){.adminShell #securityRecords[data-view="users"]{grid-template-columns:repeat(2,minmax(0,1fr))}.adminShell #securityUserFilters{grid-template-columns:repeat(2,minmax(0,1fr))}}
 @media(max-width:640px){.adminPage .adminHeader{padding:12px 16px}.adminPage main.adminShell{padding:20px 16px 40px}.adminShell h1{font-size:24px}.adminShell #securityRecords,.adminShell #securityRecords[data-view="users"]{grid-template-columns:minmax(0,1fr);gap:12px}.adminShell .securityAdminNavigation{grid-template-columns:repeat(2,minmax(0,1fr))}.adminShell .securityAdminNavigation button:first-child{grid-column:1/-1}.adminShell #securityUserFilters{padding:12px;gap:10px}.adminShell #securityPagination #securityPageLabel{flex:1 0 100%;text-align:center;order:-1}.adminShell #securityPagination button{flex:1 1 0}.adminShell #securityRecords>.securityRecord{padding:16px}}
 @media(max-width:360px){.adminShell #securityUserFilters{grid-template-columns:minmax(0,1fr)}}
+
+/* Overview occupies the available grid width; wide tables scroll inside it. */
+.adminShell #securityRecords[data-view="overview"]{grid-template-columns:minmax(0,1fr)}
+.overviewRoot{width:100%;min-width:0}
+.overviewTools,.overviewExportActions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:12px 0}
+.overviewCards{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(200px,100%),1fr));gap:12px;margin:20px 0}
+.overviewCard{min-width:0;padding:18px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface);overflow-wrap:anywhere}
+.overviewCard h3{font-size:14px;margin:0 0 12px;font-weight:600}
+.overviewCard strong{font-size:26px;line-height:1.2}
+.overviewCard p,.overviewNote{font-size:13px;color:var(--ui-muted)}
+.overviewSection{margin:24px 0;padding:18px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface);min-width:0}
+.overviewSection h3{font-size:18px;margin:0 0 12px}
+.overviewTools button,.overviewExportActions button,.overviewExportActions select{min-height:44px;padding:8px 12px;border:1px solid var(--ui-border);border-radius:9px;background:var(--ui-raised);color:var(--ui-text);max-width:100%}
+.overviewTableScroll{overflow-x:auto;max-width:100%;overscroll-behavior-x:contain}
+.overviewTableScroll table{width:100%;border-collapse:collapse;font-size:13px;text-align:left}
+.overviewTableScroll caption{text-align:left;color:var(--ui-muted);padding:0 0 10px}
+.overviewTableScroll th,.overviewTableScroll td{padding:10px;border-bottom:1px solid var(--ui-border);vertical-align:top;overflow-wrap:anywhere;min-width:110px}
+.overviewWarning{padding:12px;border:1px solid var(--ui-accent);border-radius:10px}
+@media(max-width:640px){.overviewSection{padding:14px}.overviewCard{padding:16px}.overviewExportActions>*{flex:1 1 140px}.overviewCard strong{font-size:24px}}
