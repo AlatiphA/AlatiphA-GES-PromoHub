@@ -94,8 +94,8 @@ const header =
   );
 
 const footer =
-  document.querySelector(
-    "footer"
+  document.getElementById(
+    "readerFooter"
   );
 
 const leftZone =
@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.4";
+const APP_VERSION = "1.10.5";
 
 const versionEl =
   document.getElementById(

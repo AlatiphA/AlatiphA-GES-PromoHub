@@ -1600,3 +1600,10 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
 .administrationLink{display:block;padding:12px;border:1px solid #8885;border-radius:10px;text-align:center;text-decoration:none;color:inherit;margin:12px 0}.administrationLink span{font-size:12px}.administrationLink[hidden]{display:none!important}
 
 .subscriptionExpiryReminder{padding:12px;border:1px solid var(--ui-accent);border-radius:10px;background:var(--ui-raised);color:var(--ui-text);line-height:1.5}
+
+/* Reserve the library footer independently of growing dashboard/book content. */
+.libraryScreen{min-height:0;max-height:100dvh;height:100dvh}
+.libraryScreen>.libraryHeader{flex:0 0 auto}
+.libraryScreen>.libraryGrid{flex:1 1 0%;min-height:0;min-width:0;overflow-x:hidden;overflow-y:auto;overscroll-behavior-y:contain;padding-bottom:16px}
+.libraryScreen>.libraryFooter{position:relative;inset:auto;flex:0 0 auto;min-height:58px;height:auto;width:100%;z-index:2;display:flex;flex-direction:column;gap:4px;padding:8px 12px calc(8px + env(safe-area-inset-bottom,0px));transform:none;visibility:visible;box-sizing:border-box}
+.libraryFooter .libraryFooterLink{min-height:28px;font-size:12px}.libraryFooter .libraryFooterCopy{font-size:11px;line-height:1.4;text-align:center;opacity:1;color:var(--ui-muted);overflow-wrap:anywhere}
