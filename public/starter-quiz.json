@@ -1,0 +1,176 @@
+{
+  "schema": 1,
+  "id": "assessment-learning",
+  "title": "Assessment and Learning Foundations",
+  "version": 1,
+  "questions": [
+    {
+      "id": "starter-1",
+      "topic": "Assessment",
+      "prompt": "Assessment used during teaching to guide the next learning steps is primarily assessment ____ learning.",
+      "options": [
+        "for",
+        "of",
+        "instead of",
+        "without"
+      ],
+      "answer": 0,
+      "explanation": "Formative assessment helps teachers and learners decide what to improve next. Its main purpose is to support learning while it is happening.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-2",
+      "topic": "Assessment",
+      "prompt": "A teacher checks learners’ understanding halfway through a lesson and adjusts the teaching. What kind of assessment is this?",
+      "options": [
+        "Summative",
+        "Formative",
+        "Certification",
+        "Final grading"
+      ],
+      "answer": 1,
+      "explanation": "The check is being used to improve ongoing teaching and learning, which makes its purpose formative.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-3",
+      "topic": "Assessment",
+      "prompt": "Which assessment primarily evaluates achievement at the end of an instructional unit?",
+      "options": [
+        "Formative assessment",
+        "Summative assessment",
+        "An informal practice activity",
+        "A lesson introduction"
+      ],
+      "answer": 1,
+      "explanation": "Summative assessment evaluates what learners have achieved at the end of a unit against the intended standard.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-4",
+      "topic": "Assessment",
+      "prompt": "Which is the clearest example of formative assessment?",
+      "options": [
+        "A final examination used only for a final grade",
+        "A certificate awarded after completing school",
+        "An exit question used to plan tomorrow’s teaching",
+        "A ranking published after graduation"
+      ],
+      "answer": 2,
+      "explanation": "The exit question supplies feedback that changes the next lesson. The use of that feedback, rather than the question format, is what makes the assessment formative.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-5",
+      "topic": "Assessment",
+      "prompt": "What is the main purpose of feedback in formative assessment?",
+      "options": [
+        "To replace all teaching",
+        "To identify learning gaps and guide improvement",
+        "To guarantee every learner the same grade",
+        "To prevent learners from trying again"
+      ],
+      "answer": 1,
+      "explanation": "Useful formative feedback identifies what is understood, what needs work and the next steps for improvement.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-6",
+      "topic": "Assessment",
+      "prompt": "Can results from a summative test also be used formatively?",
+      "options": [
+        "Yes, if they guide later teaching and learning",
+        "No, test results can only assign grades",
+        "Only if every learner gets full marks",
+        "Only if the test has no questions"
+      ],
+      "answer": 0,
+      "explanation": "A final test can serve a summative purpose for grading and also inform later revision. Assessment purpose depends on how the evidence is used.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 2, 31 and 32; clarification: https://www.cmu.edu/teaching/assessment/basics/formative-summative.html"
+    },
+    {
+      "id": "starter-7",
+      "topic": "Learning domains",
+      "prompt": "Which learning domain primarily concerns attitudes, values and feelings?",
+      "options": [
+        "Cognitive",
+        "Affective",
+        "Psychomotor",
+        "Administrative"
+      ],
+      "answer": 1,
+      "explanation": "The affective domain covers attitudes, feelings and values. This clarifies the book’s short answer “manner”.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    },
+    {
+      "id": "starter-8",
+      "topic": "Learning domains",
+      "prompt": "Which learning domain primarily concerns physical skills and coordinated movement?",
+      "options": [
+        "Affective",
+        "Cognitive",
+        "Psychomotor",
+        "Financial"
+      ],
+      "answer": 2,
+      "explanation": "Psychomotor learning concerns physical performance and motor skills. Knowledge about a skill is different from actually performing it.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    },
+    {
+      "id": "starter-9",
+      "topic": "Learning domains",
+      "prompt": "Which learning domain primarily concerns knowledge and thinking?",
+      "options": [
+        "Cognitive",
+        "Psychomotor",
+        "Affective",
+        "Organisational"
+      ],
+      "answer": 0,
+      "explanation": "Cognitive learning includes remembering, understanding and other intellectual processes.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    },
+    {
+      "id": "starter-10",
+      "topic": "Learning domains",
+      "prompt": "How many broad learning domains are commonly distinguished in the cognitive, affective and psychomotor framework?",
+      "options": [
+        "One",
+        "Two",
+        "Three",
+        "Six"
+      ],
+      "answer": 2,
+      "explanation": "There are three broad domains in this framework. The six levels often discussed within the cognitive taxonomy are a different classification.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    },
+    {
+      "id": "starter-11",
+      "topic": "Learning domains",
+      "prompt": "In the original cognitive taxonomy, combining ideas into a new plan is most closely associated with which level?",
+      "options": [
+        "Recall only",
+        "Synthesis",
+        "Physical coordination",
+        "Receiving a value"
+      ],
+      "answer": 1,
+      "explanation": "Synthesis combines elements into a new whole, such as a proposed plan. The revised taxonomy uses “create” for the related category.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    },
+    {
+      "id": "starter-12",
+      "topic": "Learning domains",
+      "prompt": "A learner demonstrates a practical skill accurately. Which domain is most directly being assessed?",
+      "options": [
+        "Psychomotor",
+        "Affective only",
+        "Cognitive recall only",
+        "School administration"
+      ],
+      "answer": 0,
+      "explanation": "A practical demonstration directly assesses performance of a physical skill, placing the focus on the psychomotor domain.",
+      "source": "Model Aptitude Test for GES 1, Child Development and Pedagogy, questions 1, 23, 25 and 34; clarification: https://www.vumc.org/nursing-contact-hours/writing-objectives and https://teaching.cornell.edu/resource/blooms-taxonomy"
+    }
+  ]
+}

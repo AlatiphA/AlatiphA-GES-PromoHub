@@ -53,6 +53,7 @@ async function securityActivate(user){
  return cloudReady;
 }
 async function securityAuthChanged(user){
+ if(typeof quizReset==='function')quizReset();
  securityMessage('');
  if(window.PromoHubInbox)window.PromoHubInbox.reset();
  if(typeof readerSessionReset==='function')readerSessionReset();

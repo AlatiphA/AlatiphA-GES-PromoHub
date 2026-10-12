@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.9.6";
+const APP_VERSION = "1.10.0";
 
 const versionEl =
   document.getElementById(
@@ -2775,7 +2775,7 @@ refreshIndicator.textContent = "Pull to refresh";
 document.body.appendChild(refreshIndicator);
 let prStartY = null, prStartX = null, prArmed = false;
 function profileRefreshBlocked() {
-  return accountPanel.classList.contains("open") || authScreen.classList.contains("active") || document.getElementById("notificationDialog")?.open===true || document.getElementById("downloadsDialog")?.open===true;
+  return accountPanel.classList.contains("open") || authScreen.classList.contains("active") || document.getElementById("notificationDialog")?.open===true || document.getElementById("downloadsDialog")?.open===true || document.getElementById("quizDialog")?.open===true;
 }
 function pullRefreshBlocked() {
   return profileRefreshBlocked() || sidebarIsOpen() || faqOverlay.classList.contains("open");
@@ -2808,7 +2808,7 @@ let profileTouch=null;
 document.addEventListener("touchstart", e => {
   profileTouch=null;
   if(!profileRefreshBlocked() || e.touches.length!==1)return;
-  const card=e.target.closest?.(".accountCard") || e.target.closest?.(".inboxDialog") || e.target.closest?.(".downloadsDialog") || null;
+  const card=e.target.closest?.(".accountCard") || e.target.closest?.(".inboxDialog") || e.target.closest?.(".downloadsDialog") || e.target.closest?.(".quizBody") || null;
   const scroller=card || (authScreen.classList.contains("active")?authScreen:null);
   profileTouch={x:e.touches[0].clientX,y:e.touches[0].clientY,scroller};
 }, { passive:true, capture:true });

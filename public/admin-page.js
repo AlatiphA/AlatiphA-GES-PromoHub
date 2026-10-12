@@ -3,7 +3,7 @@ let cloudUser=null,securityProfile=null,securityClaims={},securityEpoch=0,adminS
 function securityMessage(text){document.getElementById('securityMessage').textContent=text;}
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
-function adminLock(message){if(typeof adminOverviewReset==='function')adminOverviewReset();if(typeof notificationAdminReset==='function')notificationAdminReset();adminCancelSearch();adminSearchComposing=false;securityResetAdmin();document.getElementById('securityAdmin').hidden=true;document.getElementById('adminAccess').textContent=message;document.getElementById('adminIdentity').textContent='';}
+function adminLock(message){if(typeof quizAdminReset==='function')quizAdminReset();if(typeof adminOverviewReset==='function')adminOverviewReset();if(typeof notificationAdminReset==='function')notificationAdminReset();adminCancelSearch();adminSearchComposing=false;securityResetAdmin();document.getElementById('securityAdmin').hidden=true;document.getElementById('adminAccess').textContent=message;document.getElementById('adminIdentity').textContent='';}
 async function adminAuthChanged(user){
  const epoch=++securityEpoch;if(adminStop){adminStop();adminStop=null;}cloudUser=user;securityClaims={};securityProfile=null;securityMessage('');adminLock('Checking administrator access…');
  if(!user){adminLock('Sign in to PromoHub with your administrator account, then return here.');return;}
@@ -28,7 +28,7 @@ function adminScheduleSearch(){
  const epoch=securityEpoch;
  adminSearchTimer=setTimeout(()=>{adminSearchTimer=null;if(epoch===securityEpoch && securityAdminView==='users' && securityIsAdmin())adminSearchNow();},350);
 }
-const securityActions={overview:()=>typeof adminOverview==='function'?adminOverview():securityUsers(),users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),payments:()=>subscriptionAdminPayments(),messages:()=>notificationCompose(),audit:()=>securityRecords('audit')};
+const securityActions={quizzes:()=>quizAdmin(),overview:()=>typeof adminOverview==='function'?adminOverview():securityUsers(),users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),payments:()=>subscriptionAdminPayments(),messages:()=>notificationCompose(),audit:()=>securityRecords('audit')};
 document.getElementById('securityControls').addEventListener('click',e=>{const action=e.target.closest('[data-security]')?.dataset.security;if(action && securityActions[action]){adminCancelSearch();securityWork(securityActions[action]);}});
 document.getElementById('securityUserFilters').addEventListener('submit',e=>{e.preventDefault();if(!adminSearchComposing)adminSearchNow();});
 const adminSearchInput=document.getElementById('securityUserSearch');
