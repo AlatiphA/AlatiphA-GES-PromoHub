@@ -78,3 +78,8 @@ test('internal Administration and standalone guide links reuse the top-level app
  const admin=fs.readFileSync(require.resolve('../public/admin.html'),'utf8');assert.match(admin,/href=".\/index.html" aria-label="Back to PromoHub"/);
  const app=fs.readFileSync(require.resolve('../public/app.js'),'utf8');assert.match(app,/getElementById\("administrationLink"\)\?\.addEventListener\("click", persistCurrentReaderPosition\)/);assert.match(app,/addEventListener\("pagehide", persistCurrentReaderPosition\)/);
 });
+
+test('expiry reminder renewal action closes the inbox and opens existing account plans',()=>{
+ const s=setup();let renewals=0;s.context.subscriptionRenew=()=>renewals++;s.api.start(user('u'));s.emit('users/u/notifications',[{...note('reminder'),type:'subscription.expiryReminder',subscriptionEndsAtMs:Date.now()+86400000}]);s.api.open();
+ const button=s.ids.notificationList.children[0].children.find(n=>n.textContent==='Renew subscription');assert.ok(button);button.events.click();assert.equal(renewals,1);assert.equal(s.ids.notificationDialog.open,false);
+});

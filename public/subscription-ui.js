@@ -1,5 +1,5 @@
 /* Paid subscription metadata is authoritative on the server; guest trial is device-local. */
-function subscriptionResetPayment(){document.getElementById('subscriptionRequestStatus').textContent='';document.getElementById('subscriptionReference').value='';document.getElementById('securityPremiumButton').disabled=false;}
+function subscriptionResetPayment(){for(const id of ['subscriptionRenewBtn','subscriptionExpiryReminder']){const element=document.getElementById(id);if(element){element.hidden=true;if(id==='subscriptionExpiryReminder')element.textContent='';}}document.getElementById('subscriptionRequestStatus').textContent='';document.getElementById('subscriptionReference').value='';document.getElementById('securityPremiumButton').disabled=false;}
 const subscriptionMemory=new Map();
 function subscriptionLocalRead(key){try{return localStorage.getItem(key);}catch{return subscriptionMemory.get(key)||null;}}
 function subscriptionLocalWrite(key,value){subscriptionMemory.set(key,value);try{localStorage.setItem(key,value);}catch{}}
@@ -21,6 +21,15 @@ function subscriptionReadable(){
  if(!start){start=Date.now();subscriptionLocalWrite(trialKey,String(start));}
  return Date.now()<start+subscriptionTrialMs;
 }
+function subscriptionRemaining(ms,now=Date.now()){
+ const left=Number(ms)-now;if(!Number.isFinite(left)||left<=0)return 'Expired';
+ if(left<86400000)return 'Less than 1 day remaining';
+ const days=Math.ceil(left/86400000);return days+' '+(days===1?'day':'days')+' remaining';
+}
+function subscriptionRenew(){
+ openAccount();if(!cloudUser)return;
+ securitySelectTab('account');const plan=document.getElementById('subscriptionPlan');plan?.scrollIntoView?.({block:'nearest'});plan?.focus?.();
+}
 function subscriptionDate(ms){return Number(ms)>0?new Date(Number(ms)).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'Not active';}
 function subscriptionSidebarRender(){
  const status=document.getElementById('sidebarSubscriptionStatus'),button=document.getElementById('sidebarSubscriptionButton'),hint=document.getElementById('sidebarSubscriptionHint');
@@ -31,7 +40,7 @@ function subscriptionSidebarRender(){
  if(cloudUser && !cloudUser.emailVerified){status.textContent='Email verification required';return;}
  if(p?.accountStatus && p.accountStatus!=='active'){status.textContent='Account inactive';button.textContent='My Account';return;}
  if(subscriptionLegacy(p)){status.textContent='Existing Premium access';button.textContent='My Account';return;}
- if(subscriptionPaid(p)){status.textContent=`Subscribed · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`;button.textContent='Renew subscription';return;}
+ if(subscriptionPaid(p)){status.textContent=`Subscribed · ${subscriptionRemaining(p.subscriptionEndsAtMs)} · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`;button.textContent='Renew subscription';return;}
  if(p){status.textContent=Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · device only`:'Trial/subscription expired';return;}
  if(cloudUser || securityLocalOwner){status.textContent='Checking account access...';return;}
  subscriptionReadable();
@@ -41,9 +50,14 @@ function subscriptionSidebarRender(){
 }
 function subscriptionRender(){
  subscriptionSidebarRender();
- const p=securityProfile;if(!p)return;
+ const p=securityProfile,renewButton=document.getElementById('subscriptionRenewBtn'),reminder=document.getElementById('subscriptionExpiryReminder');
+ const dated=!!p && p.subscriptionSchema===1 && p.accountTier==='premium' && Number(p.subscriptionEndsAtMs)>0 && Number.isFinite(Number(p.subscriptionEndsAtMs));
+ const renew=dated && p.accountStatus==='active' && !securityIsAdmin();
+ if(renewButton)renewButton.hidden=!renew;
+ if(reminder){reminder.hidden=!renew || Number(p.subscriptionEndsAtMs)>Date.now()+7*86400000;reminder.textContent=renew?(subscriptionPaid(p)?subscriptionRemaining(p.subscriptionEndsAtMs)+'. Renew early to extend your current expiry.':'Your paid subscription has expired. Renew to restore reading access.') : '';}
+ if(!p)return;
  subscriptionLocalWrite('ges-promohub-subscription-'+cloudUser.uid,JSON.stringify(p));
- const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionPaid(p)?`Paid subscription · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
+ const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionPaid(p)?`Paid subscription · ${subscriptionRemaining(p.subscriptionEndsAtMs)} · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
  document.getElementById('subscriptionStatus').textContent=text;
  const admin=securityIsAdmin(),purchaseControls=document.getElementById('subscriptionPurchaseControls');if(purchaseControls)purchaseControls.hidden=admin;
  document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
@@ -79,6 +93,7 @@ function subscriptionCheckExpiry(){
 setInterval(subscriptionCheckExpiry,30000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')subscriptionCheckExpiry();});
 
+document.getElementById('subscriptionRenewBtn')?.addEventListener('click',subscriptionRenew);
 document.getElementById('sidebarSubscriptionButton')?.addEventListener('click',e=>{
  e.stopPropagation();openAccount();
  if(cloudUser){securitySelectTab('account');document.getElementById('subscriptionStatus')?.scrollIntoView?.({block:'nearest'});}

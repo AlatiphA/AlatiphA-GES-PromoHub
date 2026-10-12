@@ -25,6 +25,9 @@
    const body=document.createElement('p');body.textContent=n.body;
    const meta=document.createElement('p');meta.className='inboxMeta';meta.textContent=(n.source==='announcement'?'Announcement':'Personal notice')+' · '+(n.createdAtMs?new Date(n.createdAtMs).toLocaleString():'Sending…')+(n.read?' · Read':' · Unread');
    row.append(title,body,meta);
+   if(n.source==='personal' && n.type==='subscription.expiryReminder' && typeof subscriptionRenew==='function'){
+    const renew=document.createElement('button');renew.type='button';renew.textContent='Renew subscription';renew.addEventListener('click',()=>{close();subscriptionRenew();});row.append(renew);
+   }
    if(!n.read){const button=document.createElement('button');button.type='button';button.textContent='Mark read';button.disabled=!connected();button.addEventListener('click',()=>mark([n]));row.append(button);}
    list.append(row);
   }
@@ -80,7 +83,7 @@
    if(epoch!==generation)return;
    if(source==='receipts'){receipts=Object.fromEntries(snapshot.docs.map(d=>[d.id,d.data().read===true]));}
    else{
-    const next=snapshot.docs.map(d=>{const n=d.data();return {id:d.id,title:String(n.title||''),body:String(n.body||''),read:n.read===true,createdAtMs:millis(n.createdAt)};});
+    const next=snapshot.docs.map(d=>{const n=d.data();return {id:d.id,title:String(n.title||''),body:String(n.body||''),read:n.read===true,createdAtMs:millis(n.createdAt),type:String(n.type||''),subscriptionEndsAtMs:Number(n.subscriptionEndsAtMs)||0};});
     if(source==='personal')personal=next;else announcements=next;
     const server=snapshot.metadata?.fromCache!==true;
     for(const n of next){const key=source+':'+n.id;if(server && loaded[source] && !seen.has(key) && !n.read && !(source==='announcements' && receipts[n.id]))alert(n,epoch,captured);seen.add(key);}

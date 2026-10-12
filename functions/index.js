@@ -154,3 +154,5 @@ Object.assign(exports,require('./reader-sessions.cjs')({onCall,options,HttpsErro
 Object.assign(exports,require('./admin-directory.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member}));
 
 Object.assign(exports,require('./notifications.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member,stamp,audit}));
+
+Object.assign(exports,require('./subscription-reminders.cjs')({onSchedule:require('firebase-functions/v2/scheduler').onSchedule,db,admin,stamp}));
