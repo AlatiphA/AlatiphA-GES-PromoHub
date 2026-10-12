@@ -1598,3 +1598,5 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
 @media (max-width:360px) { .securityUserFilters { grid-template-columns:minmax(0,1fr); } }
 
 .administrationLink{display:block;padding:12px;border:1px solid #8885;border-radius:10px;text-align:center;text-decoration:none;color:inherit;margin:12px 0}.administrationLink span{font-size:12px}.administrationLink[hidden]{display:none!important}
+
+.subscriptionExpiryReminder{padding:12px;border:1px solid var(--ui-accent);border-radius:10px;background:var(--ui-raised);color:var(--ui-text);line-height:1.5}

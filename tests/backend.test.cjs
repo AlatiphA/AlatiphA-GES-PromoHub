@@ -8,7 +8,7 @@ function setup(){
  const auth={getUser:async uid=>{if(!authUsers.has(uid))throw new Error('No Auth user');return authUsers.get(uid);},revokeRefreshTokens:async()=>{},deleteUser:async uid=>authUsers.delete(uid)};
  const firestore=()=>db;firestore.FieldValue={serverTimestamp:()=>123};
  class HttpsError extends Error{constructor(code,message){super(message);this.code=code;}}
- const output={};vm.runInNewContext(fs.readFileSync(require.resolve('../functions/index'),'utf8'),{exports:output,require:name=>name==='firebase-admin'?{initializeApp(){},firestore,auth:()=>auth}:name==='firebase-functions/v2/firestore'?{onDocumentWritten:(o,f)=>f}:name==='firebase-functions/v2/https'?{onCall:(o,f)=>f,HttpsError}:require('../functions/'+name.replace('./','')),Date,Promise});
+ const output={};vm.runInNewContext(fs.readFileSync(require.resolve('../functions/index'),'utf8'),{exports:output,require:name=>name==='firebase-admin'?{initializeApp(){},firestore,auth:()=>auth}:name==='firebase-functions/v2/scheduler'?{onSchedule:(o,f)=>f}:name==='firebase-functions/v2/firestore'?{onDocumentWritten:(o,f)=>f}:name==='firebase-functions/v2/https'?{onCall:(o,f)=>f,HttpsError}:require('../functions/'+name.replace('./','')),Date,Promise});
  const request=(uid,token={},input={})=>({auth:{uid,token:{email_verified:true,auth_time:Date.now()/1000,...token}},data:input});
  return {data,authUsers,output,request,reads};
 }

@@ -504,7 +504,9 @@
       <button data-security="name">Save name</button>
     </div>
     <div class="securityBlock"><h3>Subscription</h3>
-      <p id="subscriptionStatus"></p><p id="subscriptionHint">The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
+      <p id="subscriptionStatus"></p>
+<p id="subscriptionExpiryReminder" class="subscriptionExpiryReminder" role="status" hidden></p>
+<button id="subscriptionRenewBtn" type="button" hidden>Renew subscription</button><p id="subscriptionHint">The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
       <div id="subscriptionPurchaseControls">
       <label for="subscriptionPlan">Choose a plan</label><select id="subscriptionPlan"><option value="m1">1 month - GH₵20</option><option value="m3">3 months - GH₵50</option><option value="m6">6 months - GH₵80</option><option value="m12">12 months - GH₵100</option></select>
       <p id="subscriptionPaymentDetails">Pay to MTN MoMo 0243443688, Abdul-Latif Ahmed.</p>
