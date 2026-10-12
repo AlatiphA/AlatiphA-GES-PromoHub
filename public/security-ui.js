@@ -1,3 +1,25 @@
+/* Background Auth cannot discard a valid offline reading scope. */
+let securityGuestChosen=false,securityOfflineDeferred=false,securityExplicitSignOut=false;
+try{securityGuestChosen=sessionStorage.getItem('ges-promohub-guest-choice')==='true';}catch{}
+function securityChooseGuest(){
+ securityGuestChosen=true;
+ try{sessionStorage.setItem('ges-promohub-guest-choice','true');}catch{}
+ securityAuthChanged(null,true);
+ if(cloudAuth)cloudAuth.signOut().catch(e=>console.warn('Guest sign-out:',e));
+}
+function securityPrepareSignOut(){securityEndGuestChoice();securityExplicitSignOut=true;}
+function securityOfflineReadingAllowed(){
+ if(!securityLocalOwner)return securityGuestChosen && subscriptionReadable();
+ const p=securityProfile || subscriptionCachedProfile();
+ if(!p || p.accountStatus!=='active')return false;
+ if(!subscriptionPaid(p) && !subscriptionLegacy(p))return Number(p.trialEndsAtMs)>Date.now();
+ if(p.readingAccessMode!=='offline')return false;
+ try{
+  const g=JSON.parse(localStorage.getItem('ges-promohub-reader-grant-'+securityLocalOwner));
+  return g?.uid===securityLocalOwner && g.readingAccessMode==='offline' && g.deviceId===localStorage.getItem('ges-promohub-device-id') && /^[a-f0-9]{32}$/.test(g.deviceId||'') && Number.isFinite(g.offlineUntilMs) && g.offlineUntilMs>Date.now();
+ }catch{return false;}
+}
+function securityEndGuestChoice(){securityGuestChosen=false;try{sessionStorage.removeItem('ges-promohub-guest-choice');}catch{}}
 let securityLocalOwner=localStorage.getItem('ges-promohub-security-owner') || '';
 function securityLocalSuffix(){return securityLocalOwner ? '-user-'+securityLocalOwner : '';}
 function securitySwitchLocal(user){
@@ -44,15 +66,34 @@ function securityRender(){
 async function securityActivate(user){
  const epoch=securityEpoch;
  cloudReady=false;if(!user?.emailVerified){securityProfile=null;securityRender();securityMessage('Verify your email, then select Check verification.');return false;}
- securityClaims=(await user.getIdTokenResult()).claims;
- securityProfile=await securityCall('initializePromoHubAccount');
+ const claims=(await user.getIdTokenResult()).claims;
  if(epoch!==securityEpoch)return false;
+ const profile=await securityCall('initializePromoHubAccount');
+ if(epoch!==securityEpoch)return false;
+ securityClaims=claims;securityProfile=profile;
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
  securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
  return cloudReady;
 }
-async function securityAuthChanged(user){
+async function securityAuthChanged(user,explicit=false){
+ explicit=explicit || securityExplicitSignOut;securityExplicitSignOut=false;
+ if(user && !explicit && securityGuestChosen && !cloudUser && !securityLocalOwner)return;
+ if(!explicit && !user && !cloudUser && !securityLocalOwner && securityGuestChosen && subscriptionReadable()){
+  /* A repeated null callback must not reset an active guest reader or quiz.
+     An explicitly opened sign-in form stays open. */
+  resumeReaderAfterStartup();return;
+ }
+ if(!explicit && typeof navigator!=='undefined' && !navigator.onLine && (!user || user.emailVerified && user.uid===securityLocalOwner) && securityOfflineReadingAllowed()){
+  securityOfflineDeferred=true;securityEpoch++;cloudReady=false;cloudUser=user || null;
+  if(!user)securityClaims={};
+  clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);
+  if(securityStop){securityStop();securityStop=null;}
+  if(typeof readerSessionGrant!=='undefined' && readerSessionGrant)readerSessionGrant.online=false;
+  hideAuth();resumeReaderAfterStartup();return;
+ }
+ securityOfflineDeferred=false;
+
  if(typeof quizReset==='function')quizReset();
  securityMessage('');
  if(window.PromoHubInbox)window.PromoHubInbox.reset();
@@ -61,13 +102,14 @@ async function securityAuthChanged(user){
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
  if(typeof dashboardReset==='function')dashboardReset();
- if(!user){accountPanel.classList.remove('open');showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
+ if(!user){accountPanel.classList.remove('open');if(securityGuestChosen && subscriptionReadable())hideAuth();else showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
+ securityEndGuestChoice();
  hideAuth();if(securityRegistering)return;
  const authEpoch=securityEpoch;
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
- catch(e){if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
+ try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
+ catch(e){if(authEpoch!==securityEpoch)return;if(typeof navigator!=='undefined' && !navigator.onLine && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;hideAuth();return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(){const panel=document.getElementById('myAccountPanel');if(panel)panel.hidden=false;}
@@ -87,3 +129,5 @@ const securityActions={
 };
 document.getElementById('securityControls').addEventListener('click',e=>{const a=e.target.closest('[data-security]')?.dataset.security;if(a)securityWork(securityActions[a]);});
 document.getElementById('authResetBtn').onclick=async()=>{try{await cloudAuth.sendPasswordResetEmail(authEmail.value.trim());authError.textContent='If the account exists, a password reset email will be sent.';}catch(e){authError.textContent=e.message;}};
+
+if(typeof window!=='undefined' && window.addEventListener)window.addEventListener('online',()=>{if(securityOfflineDeferred && cloudAuth)securityWork(()=>securityAuthChanged(cloudAuth.currentUser));});
