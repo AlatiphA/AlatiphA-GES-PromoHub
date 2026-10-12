@@ -60,7 +60,8 @@ test('reader renderer sends saved local CFI to EPUB display', () => {
 });
 test('startup restoration waits for account scope but does not wait on server operations', () => {
   const security = fs.readFileSync(require.resolve('../public/security-ui.js'), 'utf8');
-  const fn = security.slice(security.indexOf('async function securityAuthChanged'), security.indexOf('let securityCursor'));
+  const start = security.indexOf('async function securityAuthChanged');
+  const fn = security.slice(security.indexOf('securityOfflineDeferred=false;', start), security.indexOf('let securityCursor')); // Full account transitions; offline/guest guards preserve an already-known scope.
   assert.ok(fn.indexOf('securitySwitchLocal(user)') < fn.indexOf('resumeReaderAfterStartup()'));
   assert.ok(fn.lastIndexOf('resumeReaderAfterStartup()') < fn.indexOf('await securityActivate(user)'));
   assert.match(source, /if \(!firebaseConfigured\(\)\).*resumeReaderAfterStartup\(\)/);

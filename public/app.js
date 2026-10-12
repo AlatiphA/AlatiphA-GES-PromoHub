@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.1";
+const APP_VERSION = "1.10.2";
 
 const versionEl =
   document.getElementById(
@@ -2720,7 +2720,7 @@ authPasswordToggle.addEventListener("click", () => {
 });
 document.getElementById("authForm").addEventListener("submit", e => { e.preventDefault(); authPrimaryBtn.click(); });
 if (authModeBtn) authModeBtn.addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));
-if (authOfflineBtn) authOfflineBtn.addEventListener("click", () => { hideAuth(); resumeReaderAfterStartup(); });
+if (authOfflineBtn) authOfflineBtn.addEventListener("click", () => { securityChooseGuest(); });
 if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
   e.preventDefault();
   if (!document.getElementById("authForm").reportValidity()) return;
@@ -2738,6 +2738,7 @@ if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
       authError.textContent = "Account created. Verify your email, then log in.";
       showAuth();
     } else {
+      securityEndGuestChoice();
       await cloudAuth.signInWithEmailAndPassword(authEmail.value.trim(), authPassword.value);
       window.PromoHubInbox?.login("password");
     }
@@ -2746,7 +2747,8 @@ if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
 });
 if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
   if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
-  try { await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); window.PromoHubInbox?.login("google"); }
+  try { securityEndGuestChoice();
+    await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); window.PromoHubInbox?.login("google"); }
   catch (e) { authError.textContent = e.message || "Google sign-in failed."; }
 });
 
@@ -2755,7 +2757,7 @@ const accountPanel = document.getElementById("accountPanel");
 function openAccount() { if (cloudUser) accountPanel.classList.add("open"); else showAuth(); }
 [document.getElementById("profileBtn"), document.getElementById("libraryProfileBtn")].forEach(b => b && b.addEventListener("click", e => { e.stopPropagation(); openAccount(); }));
 document.getElementById("accountClose")?.addEventListener("click", () => accountPanel.classList.remove("open"));
-document.getElementById("logoutBtn")?.addEventListener("click", async () => { accountPanel.classList.remove("open"); if (cloudAuth) await cloudAuth.signOut(); });
+document.getElementById("logoutBtn")?.addEventListener("click", async () => { accountPanel.classList.remove("open"); if (cloudAuth) { securityPrepareSignOut(); await cloudAuth.signOut(); } });
 
 /* ---------- In-app FAQ ---------- */
 const faqOverlay = document.getElementById("faqOverlay");
