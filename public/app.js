@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.2";
+const APP_VERSION = "1.10.3";
 
 const versionEl =
   document.getElementById(
@@ -2656,7 +2656,7 @@ function setAuthMode(mode) {
   authName.style.display = signup ? "block" : "none";
   document.getElementById("authNameField").hidden = !signup;
   document.getElementById("authHeading").textContent = signup ? "Create your account" : "Welcome back";
-  document.getElementById("authSubtitle").textContent = signup ? "Save your reading progress across devices." : "Sign in to sync your reading across devices.";
+  document.getElementById("authSubtitle").textContent = signup ? "Create your PromoHub account." : "Sign in to your PromoHub account.";
   document.getElementById("authModePrompt").textContent = signup ? "Already have an account?" : "Don't have an account?";
   authPrimaryBtn.textContent = signup ? "Create account" : "Sign in";
   authModeBtn.textContent = signup ? "Sign in" : "Sign up";
