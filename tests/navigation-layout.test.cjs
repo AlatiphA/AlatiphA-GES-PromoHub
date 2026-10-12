@@ -18,5 +18,11 @@ test('FAQ sections precede the complete guide and shared navigation styling is a
  const faq=read('faq.html');assert.ok(faq.indexOf('Notifications &amp; messages')<faq.indexOf('class="userGuide"'));
  assert.ok(faq.indexOf('Support the Developer')<faq.indexOf('class="userGuide"'));
  for(const file of ['index.html','admin.html','faq.html','user-guide.html'])assert.match(read(file),/href="\.\/navigation.css"/);
- assert.match(read('sw.js'),/const CORE=\['\.\/navigation.css'/);
+ assert.ok(read('sw.js').includes("'./navigation.css'"));
+});
+
+test('each app page declares the shared browser favicon and its URL is precached',()=>{
+ for(const f of ['index.html','admin.html','faq.html','user-guide.html'])assert.match(read(f),/rel="icon" type="image\/png" sizes="192x192" href=".\/icon-192.png"/);
+ assert.ok(read('sw.js').includes("'./icon-192.png'"));
+ const image=fs.readFileSync(path.join(__dirname,'../public/icon-192.png'));assert.equal(image.readUInt32BE(16),192);assert.equal(image.readUInt32BE(20),192);
 });
