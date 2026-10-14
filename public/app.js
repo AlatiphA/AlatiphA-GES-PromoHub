@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.14";
+const APP_VERSION = "1.10.15";
 
 const versionEl =
   document.getElementById(
@@ -156,25 +156,28 @@ if (versionEl)
    CLEAR DATA BUTTON
 ========================= */
 
-const clearDataBtn =
-  document.getElementById("clearDataBtn");
-
-if (clearDataBtn) {
-  clearDataBtn.addEventListener("click", () => {
-
-    if (!confirm("Clear all app data?\n\nThis will reset bookmarks, themes, and cached settings.")) return;
-
-    localStorage.clear();
-
-    caches.keys().then(names => {
-      names.forEach(name => caches.delete(name));
-    });
-
-    alert("App data cleared. The app will now reload.");
-    location.reload();
-
-  });
+function promoHubDeviceDataKey(key){
+ const exact=['lastBook','reader-theme','library-theme','fontSize','fontFamily','ges-promohub-pref-updated','ges-promohub-ui-theme','ges-promohub-data'];
+ const prefixes=['ges-promohub-data-','ges-promohub-bookmarks-','ges-promohub-bookmark-deletes-','ges-promohub-recent','ges-promohub-quiz-','ges-promohub-sync-','ges-promohub-account-prefs-'];
+ return exact.includes(key)||prefixes.some(prefix=>key.startsWith(prefix));
 }
+async function deletePromoHubDeviceData(){
+ if(!confirm('Delete PromoHub data saved in this browser?\n\nReading progress, bookmarks, practice results, settings and downloaded books will be removed. Unsynced changes will be lost. Your account and cloud data are not deleted.'))return;
+ try{
+  if(typeof quizReset==='function')quizReset();
+  if(typeof rendition!=='undefined'&&rendition)backBtn.click();
+  if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
+  cloudReady=false;clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);
+  if(typeof securityStop!=='undefined'&&securityStop){securityStop();securityStop=null;}
+  const keys=[];for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i);if(key&&promoHubDeviceDataKey(key))keys.push(key);}for(const key of keys)localStorage.removeItem(key);
+  try{sessionStorage.removeItem('ges-promohub-reader-view');}catch{}
+  // Keep the app shell and other apps' caches, including offline sign-in assets.
+  if(typeof caches!=='undefined')await caches.delete('alatipha-ges-promohub-books-v1');
+  alert('PromoHub device data deleted. Your account and cloud data remain.');location.reload();
+ }catch(error){console.error('Device data cleanup:',error);alert('Device cleanup did not finish. Some local data may already have been removed. Reload the app and try again.');location.reload();}
+}
+const clearDataBtn=document.getElementById('clearDataBtn');
+if(clearDataBtn)clearDataBtn.addEventListener('click',deletePromoHubDeviceData);
 
 /* =========================
    BOOK LIBRARY
