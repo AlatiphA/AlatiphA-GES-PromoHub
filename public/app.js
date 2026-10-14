@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.13";
+const APP_VERSION = "1.10.14";
 
 const versionEl =
   document.getElementById(
@@ -2479,6 +2479,8 @@ loadReaderData = function() {
 
 saveReaderData = function(data) {
   try {
+    const previous=loadReaderData();
+    if((previous.location||'')===(data.location||'') && Number(previous.progress??0)===Number(data.progress??0) && (previous.chapter||'')===(data.chapter||''))return;
     data.updatedAtMs = Date.now();
     localStorage.setItem(getBookReaderDataKey(), JSON.stringify(data));
     window.PromoHubSync?.dirty('reading|'+selectedBookFile);
@@ -2574,7 +2576,7 @@ async function mergeProgressFromCloud() {
       const merged = { location: remote.cfi, progress: remote.progress || 0, chapter: remote.chapter || "", lastRead: new Date().toISOString(), updatedAtMs: remote.updatedAtMs };
       localStorage.setItem(getBookReaderDataKey(), JSON.stringify(merged));
       if (rendition) rendition.display(remote.cfi).catch(() => {});
-    } else if (local.location) {
+    } else if (local.location && Number(local.updatedAtMs||0)>Number(remote.updatedAtMs||0)) {
       scheduleProgressSync(local);
     }
   } catch (e) { console.warn("Progress merge:", e); }
