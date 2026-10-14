@@ -9,7 +9,7 @@ function readerSessionKey(uid){return 'ges-promohub-reader-grant-'+uid;}
 function readerSessionPaid(){const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
 function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(securityProfile?.readingAccessMode!=='offline'&&readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
 function readerSessionMessage(message){securitySelectTab('account');securityMessage(message);accountPanel.classList.add('open');const status=document.getElementById('readerDevicesStatus');if(status)status.textContent=message;}
-function readerSessionStop(message){persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
+function readerSessionStop(message){if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
 async function readerSessionLock(uid){
  if(!navigator.locks)return;
  await new Promise((resolve,reject)=>navigator.locks.request('promohub-reader-'+uid,{ifAvailable:true},async lock=>{

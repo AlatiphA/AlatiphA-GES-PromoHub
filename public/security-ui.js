@@ -54,6 +54,7 @@ function securityMessage(text){document.getElementById('securityMessage').textCo
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
 function securityRender(){
+ if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  if(typeof dashboardUpdate==='function')dashboardUpdate();
  document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || 'GES PromoHub User';
  document.getElementById('accountType').textContent=cloudUser?.emailVerified ? `${securityProfile?.accountTier || 'free'} · ${securityProfile?.accountStatus || 'connecting'}` : 'Email verification required';
@@ -65,7 +66,7 @@ function securityRender(){
 }
 async function securityActivate(user){
  const epoch=securityEpoch;
- cloudReady=false;if(!user?.emailVerified){securityProfile=null;securityRender();securityMessage('Verify your email, then select Check verification.');return false;}
+ cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();if(!user?.emailVerified){securityProfile=null;securityRender();securityMessage('Verify your email, then select Check verification.');return false;}
  const claims=(await user.getIdTokenResult()).claims;
  if(epoch!==securityEpoch)return false;
  const profile=await securityCall('initializePromoHubAccount');
@@ -73,7 +74,7 @@ async function securityActivate(user){
  securityClaims=claims;securityProfile=profile;
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
  return cloudReady;
 }
 async function securityAuthChanged(user,explicit=false){
@@ -85,6 +86,7 @@ async function securityAuthChanged(user,explicit=false){
   resumeReaderAfterStartup();return;
  }
  if(!explicit && typeof navigator!=='undefined' && !navigator.onLine && (!user || user.emailVerified && user.uid===securityLocalOwner) && securityOfflineReadingAllowed()){
+  if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
   securityOfflineDeferred=true;securityEpoch++;cloudReady=false;cloudUser=user || null;
   if(!user)securityClaims={};
   clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);
@@ -93,6 +95,7 @@ async function securityAuthChanged(user,explicit=false){
   hideAuth();resumeReaderAfterStartup();return;
  }
  securityOfflineDeferred=false;
+ if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
 
  if(typeof quizReset==='function')quizReset();
  securityMessage('');

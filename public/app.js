@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.10";
+const APP_VERSION = "1.10.11";
 
 const versionEl =
   document.getElementById(
@@ -2599,7 +2599,7 @@ function bookmarkReconcile(scope,records){
  const pending=bookmarkRead(scope.pending),deleted=new Set([...pending,...records.filter(b=>b.deleted===true)].map(bookmarkIdentity));
  const map=new Map(bookmarkRead(scope.key).filter(b=>!deleted.has(bookmarkIdentity(b))).map(b=>[bookmarkIdentity(b),b]));
  for(const b of records)if(b.deleted!==true&&!deleted.has(bookmarkIdentity(b)))map.set(bookmarkIdentity(b),b);
- const result=[...map.values()];localStorage.setItem(scope.key,JSON.stringify(result));return result;
+ const result=[...map.values()],json=JSON.stringify(result);if(localStorage.getItem(scope.key)!==json)localStorage.setItem(scope.key,json);return result;
 }
 async function bookmarkSync(file=selectedBookFile){
  const scope=bookmarkSyncScope(file);if(!scope.uid||!cloudDb||!scope.valid())return;
@@ -2626,6 +2626,34 @@ async function bookmarkSync(file=selectedBookFile){
 async function syncLocalBookmarksToCloud(){await bookmarkSync();}
 async function deleteCloudBookmark(bookmark){bookmarkQueueDelete(bookmark);await bookmarkSync();}
 async function mergeBookmarksFromCloud(){await bookmarkSync();}
+
+let bookmarkLiveUnsubscribe=null,bookmarkLiveOwner='',bookmarkLiveGeneration=0;
+function bookmarkLiveStop(){
+ bookmarkLiveGeneration++;if(bookmarkLiveUnsubscribe)bookmarkLiveUnsubscribe();
+ bookmarkLiveUnsubscribe=null;bookmarkLiveOwner='';
+}
+function bookmarkLiveUpdate(){
+ const scope=bookmarkSyncScope();
+ if(!scope.uid||!cloudDb||!scope.valid()){bookmarkLiveStop();return;}
+ if(bookmarkLiveUnsubscribe&&bookmarkLiveOwner===scope.uid)return;
+ bookmarkLiveStop();const generation=bookmarkLiveGeneration;bookmarkLiveOwner=scope.uid;
+ const valid=()=>generation===bookmarkLiveGeneration&&scope.valid();
+ bookmarkLiveUnsubscribe=cloudDb.collection('users').doc(scope.uid).collection('bookmarks').onSnapshot(snap=>{
+  if(!valid())return;
+  const records=[];snap.forEach(d=>records.push(d.data()));let currentChanged=false;
+  for(const b of BOOKS){
+   const bookScope=bookmarkSyncScope(b.file),before=localStorage.getItem(bookScope.key)||'[]';
+   bookmarkReconcile(bookScope,records.filter(m=>m.bookFile===b.file));
+   if(b.file===selectedBookFile&&before!==(localStorage.getItem(bookScope.key)||'[]'))currentChanged=true;
+  }
+  if(!valid())return;
+  if(currentChanged){const panel=document.getElementById('bookmarksPanel'),top=panel?.scrollTop||0;loadBookmarks();if(panel)panel.scrollTop=top;}
+  if(typeof dashboardRemoteMarks!=='undefined')dashboardRemoteMarks=records.filter(m=>m.deleted!==true&&BOOKS.some(b=>b.file===m.bookFile));
+  if(typeof dashboardRender==='function')dashboardRender();
+ },error=>{if(!valid())return;console.warn('Live bookmark sync:',error);bookmarkLiveStop();});
+}
+window.addEventListener('offline',bookmarkLiveStop);
+window.addEventListener('online',bookmarkLiveUpdate);
 
 async function syncCurrentBookCloud() {
   await Promise.allSettled([mergeProgressFromCloud(), mergeBookmarksFromCloud()]);

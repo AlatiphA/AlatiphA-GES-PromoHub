@@ -49,6 +49,7 @@ function subscriptionSidebarRender(){
  button.textContent='Sign in / View plans';
 }
 function subscriptionRender(){
+ if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  subscriptionSidebarRender();
  const p=securityProfile,renewButton=document.getElementById('subscriptionRenewBtn'),reminder=document.getElementById('subscriptionExpiryReminder');
  const dated=!!p && p.subscriptionSchema===1 && p.accountTier==='premium' && Number(p.subscriptionEndsAtMs)>0 && Number.isFinite(Number(p.subscriptionEndsAtMs));
