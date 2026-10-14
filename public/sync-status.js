@@ -1,7 +1,7 @@
 'use strict';
 /* Status covers reading positions and bookmarks, not quiz results or downloads. */
 window.PromoHubSync=(()=>{
- let owner=null,epoch=0,pending={},last=0,error=false,storageError=false,retrying=false;const active=new Set();let revision=0;
+ let owner=null,epoch=0,pending={},last=0,error=false,storageError=false,retrying=false;const active=new Set();let revision=0,busySince=0,busyTimer=null;
  function currentOwner(){return typeof securityLocalOwner==='string'?securityLocalOwner:'';}
  function key(suffix){return 'ges-promohub-sync-'+suffix+'-'+(owner||'guest');}
  function read(k,fallback){try{return JSON.parse(localStorage.getItem(k))??fallback;}catch{return fallback;}}
@@ -19,10 +19,14 @@ window.PromoHubSync=(()=>{
   else text=last?'Synced':'Ready to sync';
   return {text,pending:count,last,retrying,canRetry:allowed()&&navigator.onLine&&!retrying&&!active.size};
  }
- function render(){const s=state();document.querySelectorAll('[data-sync-status]').forEach(host=>{const label=host.querySelector('[data-sync-label]'),button=host.querySelector('[data-sync-retry]');if(label&&label.textContent!==s.text)label.textContent=s.text;if(button){button.disabled=!s.canRetry;button.onclick=retry;}host.title='Reading positions and bookmarks. Practice results and downloaded books stay on this device.';});}
+ function render(){const s=state();let text=s.text;
+  // Small, successful writes should not flash a loading message on every page turn.
+  if(text==='Syncing…'&&!s.retrying){if(!busySince)busySince=Date.now();const remaining=350-(Date.now()-busySince);if(remaining>0){text='Saved on this device';clearTimeout(busyTimer);busyTimer=setTimeout(render,remaining);}}
+  else{busySince=0;clearTimeout(busyTimer);busyTimer=null;}
+  document.querySelectorAll('[data-sync-status]').forEach(host=>{const label=host.querySelector('[data-sync-label]'),button=host.querySelector('[data-sync-retry]');if(label&&label.textContent!==text)label.textContent=text;if(button){button.disabled=!s.canRetry;button.onclick=retry;}host.title='Reading positions and bookmarks. Practice results and downloaded books stay on this device.';});}
  function dirty(item){refreshScope();pending[item]=String(Date.now())+'-'+(++revision);persist();render();}
- function begin(item){refreshScope();const token={epoch,owner,item,revision:pending[item]};active.add(token);render();return token;}
- function complete(token,success){refreshScope();if(!token||token.epoch!==epoch||token.owner!==owner)return;active.delete(token);if(success){if(pending[token.item]===token.revision)delete pending[token.item];last=Date.now();}else error=true;persist();render();}
+ function begin(item){refreshScope();const token={epoch,owner,item,revision:pending[item]};if(token.revision!==undefined)active.add(token);render();return token;}
+ function complete(token,success){refreshScope();if(!token||token.epoch!==epoch||token.owner!==owner)return;active.delete(token);if(!allowed()||!navigator.onLine){render();return;}if(success){if(pending[token.item]===token.revision)delete pending[token.item];last=Date.now();}else error=true;persist();render();}
  function received(){refreshScope();last=Date.now();persist();render();}
  function localFailure(){refreshScope();storageError=true;render();}
  async function retry(){refreshScope();if(!state().canRetry)return;const runEpoch=epoch;retrying=true;error=false;render();try{
