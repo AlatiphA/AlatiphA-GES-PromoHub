@@ -15,3 +15,6 @@
 @media(hover:none),(pointer:coarse){.libraryGrid .bookCard:active{transform:none}}
 .dashboardBookProgress progress{min-height:6px}.dashboardContinue[hidden]{display:none}
 .dashboardBookProgress progress[hidden]{display:none}
+
+/* Keep updates from anchoring the library to a lower book card. */
+.libraryScreen>.libraryGrid{overflow-anchor:none;scroll-behavior:auto}
