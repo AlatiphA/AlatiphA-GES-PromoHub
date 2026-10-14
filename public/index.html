@@ -87,13 +87,6 @@
 <div id="libraryScreen" class="libraryScreen">
 
   <div class="libraryHeader">
-    <button
-      id="clearDataBtn"
-      class="libraryDayNightBtn"
-      aria-label="Clear App Data"
-    >
-      <i class="fa-solid fa-trash-can"></i>
-    </button>
     <div class="headerActions libraryActions" role="group" aria-label="App controls">
 <button id="downloadsOpen" type="button" class="downloadManagerBtn" aria-label="Offline downloads" title="Offline downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
 
@@ -103,8 +96,8 @@
     </button>
     </div>
     <img src="icon-192.png" alt="GES PromoHub" class="libraryLogo">
-    <h1 class="libraryTitle">AlatiphA GES PromoHub</h1>
-    <p class="librarySubtitle">Select a book to start reading</p>
+    <h1 class="libraryTitle" title="AlatiphA GES PromoHub">PromoHub</h1>
+    <p class="librarySubtitle">Choose a book</p>
   </div>
 
   <div class="libraryGrid">
@@ -573,7 +566,12 @@
       <button id="accountSecurityRefresh" type="button">Refresh verified email</button>
       <p>These changes require internet access. Passwords are never saved as offline drafts.</p>
     </details>
-    <details class="securityBlock securityDanger"><summary>Delete account</summary>
+    <details class="securityBlock securityDanger profileDataActions"><summary>Data and account</summary>
+      <h4>On this device</h4>
+      <p>Remove PromoHub reading progress, bookmarks, practice results, settings and downloaded books from this browser. Unsynced changes will be lost.</p>
+      <p>Your account, subscription and trial dates remain. Cloud-saved data may return when syncing resumes.</p>
+      <button id="clearDataBtn" type="button">Delete device data</button>
+      <h4>Delete account</h4>
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </details>
