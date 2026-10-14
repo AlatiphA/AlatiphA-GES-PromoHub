@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.9";
+const APP_VERSION = "1.10.10";
 
 const versionEl =
   document.getElementById(
@@ -771,7 +771,13 @@ function highlightActiveTOC(currentHref) {
       parent = parent.parentElement?.closest(".tocChildren");
     }
 
-    activeRow.scrollIntoView({ block: "center", behavior: "smooth" });
+    // Scroll only the open reader TOC, never ancestors or the library.
+    if (sidebar.classList.contains("active") && readerApp.style.display !== "none") {
+      const panel=document.getElementById("tocPanel");
+      if(panel){const r=activeRow.getBoundingClientRect(),bounds=panel.getBoundingClientRect();
+        if(r.top<bounds.top||r.bottom>bounds.bottom)panel.scrollTop+=r.top-bounds.top-(bounds.height-r.height)/2;
+      }
+    }
   }
 
 }
@@ -2571,49 +2577,55 @@ async function mergeProgressFromCloud() {
   } catch (e) { console.warn("Progress merge:", e); }
 }
 
-function bookmarkId(b) {
-  const s = [selectedBookFile, b.cfi, b.date || ""].join("|");
-  let h = 2166136261;
-  for (let i = 0; i < s.length; i++) { h ^= s.charCodeAt(i); h = Math.imul(h, 16777619); }
-  return "b" + (h >>> 0).toString(36);
+function bookmarkIdFor(file,b) {
+ const s=[file,b.cfi,b.date||''].join('|');let h=2166136261;
+ for(let i=0;i<s.length;i++){h^=s.charCodeAt(i);h=Math.imul(h,16777619);}
+ return 'b'+(h>>>0).toString(36);
 }
-
-async function syncLocalBookmarksToCloud() {
-  if (!cloudReady || !cloudUser || !cloudDb) return;
-  try {
-    const arr = JSON.parse(localStorage.getItem(getBookmarksKey()) || "[]");
-    const batch = cloudDb.batch();
-    arr.forEach(b => {
-      const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks").doc(bookmarkId(b));
-      batch.set(ref, { ...b, bookFile: selectedBookFile, updatedAtMs: Date.now(), updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true });
-    });
-    if (arr.length) await batch.commit();
-  } catch (e) { console.warn("Bookmark upload:", e); }
+function bookmarkId(b){return bookmarkIdFor(selectedBookFile,b);}
+function bookmarkSyncScope(file=selectedBookFile){
+ const uid=cloudUser?.uid,owner=securityLocalOwner,suffix=securityLocalSuffix();
+ return {file,uid,owner,key:'ges-promohub-bookmarks-'+file+suffix,pending:'ges-promohub-bookmark-deletes-'+file+suffix,
+  valid:()=>cloudReady&&navigator.onLine&&cloudUser?.uid===uid&&securityLocalOwner===owner};
 }
-
-
-async function deleteCloudBookmark(bookmark) {
-  if (!cloudReady || !cloudUser || !cloudDb) return;
-  try {
-    const col = cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks");
-    const q = await col.where("bookFile", "==", selectedBookFile).where("cfi", "==", bookmark.cfi).get();
-    const batch = cloudDb.batch(); q.forEach(d => batch.delete(d.ref)); if (!q.empty) await batch.commit();
-  } catch (e) { console.warn("Bookmark delete sync:", e); }
+function bookmarkRead(key){try{const v=JSON.parse(localStorage.getItem(key)||'[]');return Array.isArray(v)?v:[];}catch{return [];}}
+function bookmarkIdentity(b){return b.cfi+'|'+(b.date||'');}
+function bookmarkCloudRecord(file,b,deleted=false){return {bookFile:file,cfi:b.cfi,chapter:b.chapter||'',progress:Number.isFinite(b.progress)?b.progress:0,date:b.date||'',deleted,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};}
+function bookmarkQueueDelete(bookmark){
+ const scope=bookmarkSyncScope(),pending=bookmarkRead(scope.pending);if(!pending.some(b=>bookmarkIdentity(b)===bookmarkIdentity(bookmark)))pending.push(bookmark);
+ localStorage.setItem(scope.pending,JSON.stringify(pending));return scope;
 }
-
-async function mergeBookmarksFromCloud() {
-  if (!cloudReady || !cloudUser || !cloudDb) return;
-  try {
-    await syncLocalBookmarksToCloud();
-    const snap = await cloudDb.collection("users").doc(cloudUser.uid).collection("bookmarks")
-      .where("bookFile", "==", selectedBookFile).get();
-    const local = JSON.parse(localStorage.getItem(getBookmarksKey()) || "[]");
-    const map = new Map(local.map(b => [b.cfi + "|" + (b.date || ""), b]));
-    snap.forEach(d => { const b=d.data(); map.set(b.cfi + "|" + (b.date || ""), b); });
-    localStorage.setItem(getBookmarksKey(), JSON.stringify([...map.values()]));
-    loadBookmarks();
-  } catch (e) { console.warn("Bookmark merge:", e); }
+function bookmarkReconcile(scope,records){
+ const pending=bookmarkRead(scope.pending),deleted=new Set([...pending,...records.filter(b=>b.deleted===true)].map(bookmarkIdentity));
+ const map=new Map(bookmarkRead(scope.key).filter(b=>!deleted.has(bookmarkIdentity(b))).map(b=>[bookmarkIdentity(b),b]));
+ for(const b of records)if(b.deleted!==true&&!deleted.has(bookmarkIdentity(b)))map.set(bookmarkIdentity(b),b);
+ const result=[...map.values()];localStorage.setItem(scope.key,JSON.stringify(result));return result;
 }
+async function bookmarkSync(file=selectedBookFile){
+ const scope=bookmarkSyncScope(file);if(!scope.uid||!cloudDb||!scope.valid())return;
+ const col=cloudDb.collection('users').doc(scope.uid).collection('bookmarks');
+ try{
+  const snap=await col.where('bookFile','==',file).get();if(!scope.valid())return;
+  const records=[];snap.forEach(d=>records.push({...d.data(),_id:d.id}));
+  const pending=bookmarkRead(scope.pending),queueIds=new Set(pending.map(bookmarkIdentity));
+  // Mark each existing duplicate of a removed passage, plus the original ID.
+  const writes=new Map();for(const b of pending)writes.set(bookmarkIdFor(file,b),bookmarkCloudRecord(file,b,true));
+  for(const b of records)if(queueIds.has(bookmarkIdentity(b)))writes.set(b._id,bookmarkCloudRecord(file,b,true));
+  const result=bookmarkReconcile(scope,records);
+  // Existing remote entries never get blindly overwritten by stale local copies.
+  const remoteIds=new Set(records.map(bookmarkIdentity));
+  for(const b of result)if(!remoteIds.has(bookmarkIdentity(b)))writes.set(bookmarkIdFor(file,b),bookmarkCloudRecord(file,b));
+  const entries=[...writes];for(let i=0;i<entries.length;i+=400){if(!scope.valid())return;const batch=cloudDb.batch();for(const [id,value] of entries.slice(i,i+400))batch.set(col.doc(id),value);await batch.commit();}
+  if(!scope.valid())return;
+  // Remove only deletions included in this successful upload, preserving newer clicks.
+  localStorage.setItem(scope.pending,JSON.stringify(bookmarkRead(scope.pending).filter(b=>!queueIds.has(bookmarkIdentity(b)))));
+  if(selectedBookFile===file)loadBookmarks();
+  if(typeof dashboardRender==='function')dashboardRender();
+ }catch(e){console.warn('Bookmark sync:',e);}
+}
+async function syncLocalBookmarksToCloud(){await bookmarkSync();}
+async function deleteCloudBookmark(bookmark){bookmarkQueueDelete(bookmark);await bookmarkSync();}
+async function mergeBookmarksFromCloud(){await bookmarkSync();}
 
 async function syncCurrentBookCloud() {
   await Promise.allSettled([mergeProgressFromCloud(), mergeBookmarksFromCloud()]);

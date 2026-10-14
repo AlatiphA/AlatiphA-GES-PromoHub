@@ -55,12 +55,13 @@ service cloud.firestore {
    }
    match /bookmarks/{id} {
     allow read: if cloudOwner(uid);
-    allow create, update: if cloudOwner(uid) && (
-     (request.resource.data.keys().hasOnly(['bookFile','cfi','chapter','progress','date','updatedAtMs','updatedAt'])
+    allow create, update: if cloudOwner(uid) && (!exists(/databases/$(database)/documents/users/$(uid)/bookmarks/$(id)) || resource.data.get('deleted',false)!=true || request.resource.data.get('deleted',false)==true) && (
+     (request.resource.data.keys().hasOnly(['bookFile','cfi','chapter','progress','date','updatedAtMs','updatedAt','deleted'])
       && request.resource.data.bookFile in ['./library/gespasco.epub','./library/mat1.epub','./library/mat2.epub','./library/etmala.epub','./library/nfatfges.epub','./library/eigala.epub']
       && request.resource.data.cfi is string && request.resource.data.cfi.size() <= 4096
       && request.resource.data.chapter is string && request.resource.data.chapter.size() <= 2048
       && request.resource.data.progress is number && request.resource.data.progress >= 0 && request.resource.data.progress <= 100
+      && request.resource.data.get('deleted',false) is bool
       && request.resource.data.updatedAtMs is number && request.resource.data.updatedAt == request.time)
      || (request.resource.data.keys().hasOnly(['bookId','cfi','chapter','progress','deleted','updatedAt'])
      && request.resource.data.bookId is string && request.resource.data.bookId.size() <= 100
@@ -68,7 +69,7 @@ service cloud.firestore {
      && request.resource.data.chapter is string && request.resource.data.chapter.size() <= 2048
      && request.resource.data.progress is number && request.resource.data.progress >= 0 && request.resource.data.progress <= 100
      && request.resource.data.deleted is bool && request.resource.data.updatedAt == request.time));
-    allow delete: if cloudOwner(uid) && resource.data.keys().hasAny(['bookFile']);
+    allow delete: if cloudOwner(uid) && resource.data.keys().hasAny(['bookFile']) && resource.data.get('deleted',false)!=true;
    }
    match /preferences/{id} {
     allow read: if cloudOwner(uid);

@@ -1,5 +1,5 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.9.9';
+const APP_VERSION='v1.9.10';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const BOOK_CACHE='alatipha-ges-promohub-books-v1';

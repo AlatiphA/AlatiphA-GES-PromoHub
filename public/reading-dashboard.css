@@ -18,3 +18,9 @@
 
 /* Keep updates from anchoring the library to a lower book card. */
 .libraryScreen>.libraryGrid{overflow-anchor:none;scroll-behavior:auto}
+
+/* Separate compact cards keep the library entry points easy to reach. */
+.readingDashboardSection{border:0;background:transparent;padding:0;display:grid;gap:12px}
+.dashboardContinue,.dashboardPanel{padding:16px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface)}
+.dashboardPanel>h3{margin:0 0 12px}
+@media(min-width:900px){.readingDashboardSection{grid-template-columns:1fr 1fr}.readingDashboardSection>h2,.readingDashboardSection>button,.readingDashboardSection>.dashboardHint,.dashboardContinue{grid-column:1/-1}}

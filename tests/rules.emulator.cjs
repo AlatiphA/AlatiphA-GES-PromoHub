@@ -76,3 +76,14 @@ test('announcements work for trial and expired active accounts; receipts cannot 
  await assertFails(setDoc(doc(client('trial'),'users/trial/announcementReads/notice'),{read:true,readAt:serverTimestamp(),body:'Forged'}));
  await assertFails(setDoc(doc(client('trial'),'notificationCommands/fake'),{audience:'all'}));
 });
+
+const tombstone={bookFile:'./library/mat1.epub',cfi:'epubcfi(/6/2)',chapter:'one',progress:10,date:'2026-10-14',deleted:true,updatedAtMs:Date.now(),updatedAt:serverTimestamp()};
+test('bookmark deletion record is readable across sessions and stale clients cannot overwrite or erase it',async()=>{
+ const ref=doc(client('alice'),'users/alice/bookmarks/deleted-bookmark');
+ await assertSucceeds(setDoc(ref,tombstone));
+ await assertSucceeds(getDoc(doc(client('alice'),'users/alice/bookmarks/deleted-bookmark')));
+ await assertFails(setDoc(ref,{...tombstone,deleted:false}));
+ await assertFails(updateDoc(ref,{deleted:false,updatedAt:serverTimestamp()}));
+ await assertFails(require('../functions/node_modules/firebase/firestore').deleteDoc(ref));
+ await assertFails(setDoc(doc(client('bob'),'users/alice/bookmarks/deleted-bookmark'),tombstone));
+});
