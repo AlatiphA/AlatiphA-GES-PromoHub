@@ -76,6 +76,7 @@
 <link rel="icon" type="image/png" sizes="192x192" href="./icon-192.png">
 <link rel="shortcut icon" href="./icon-192.png">
 <link rel="stylesheet" href="./reading-dashboard.css">
+<link rel="stylesheet" href="./sync-status.css">
 <link rel="stylesheet" href="./practice-tests.css">
 <link rel="stylesheet" href="./auth-pages.css">
 </head>
@@ -173,6 +174,7 @@
 
   <!-- LIBRARY FOOTER -->
   <div class="libraryFooter">
+    <div class="syncStatus" data-sync-status><span data-sync-label role="status" aria-live="polite">Saved on this device</span><button type="button" data-sync-retry disabled>Retry sync</button></div>
     <a href="./faq.html" class="libraryFooterLink">
       <i class="fa-solid fa-circle-question"></i> Help & FAQ
     </a>
@@ -508,6 +510,7 @@
   <a id="administrationLink" class="administrationLink" href="./admin.html" hidden>Open Administration</a>
   <h3 id="myAccountTab">My Account</h3>
   <section id="myAccountPanel" role="tabpanel" aria-labelledby="myAccountTab">
+    <div class="syncStatus" data-sync-status><span data-sync-label role="status" aria-live="polite">Saved on this device</span><button type="button" data-sync-retry disabled>Retry sync</button></div>
     <div id="securityVerification" class="securityBlock">
       <h3>Email verification</h3><p>Verify your email to use cloud account features.</p>
       <div class="securityActions"><button data-security="resend">Resend verification</button><button data-security="check">Check verification</button></div>
@@ -606,6 +609,7 @@
  <p id="notificationStatus" role="status" aria-live="polite"></p><div id="notificationList"></div>
 </dialog>
 <script src="./app.js"></script>
+<script src="./sync-status.js"></script>
 <script src="./security-ui.js"></script>
 <script src="./subscription-ui.js"></script>
 <script src="./account-security.js"></script>
