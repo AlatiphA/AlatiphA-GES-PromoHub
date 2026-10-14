@@ -53,7 +53,7 @@ function dashboardRender(force=false){
   const section=dashboardNode('section',undefined,'readingDashboardSection');section.append(dashboardNode('h2','Your reading'));
   const practice=dashboardNode('button','Practice tests');practice.type='button';practice.onclick=()=>quizOpen();section.append(practice,dashboardNode('p','Saved on this device. Cloud progress refreshes when syncing is available.','dashboardHint'));
   const card=dashboardNode('div',undefined,'dashboardContinue'),title=dashboardNode('h3',''),percent=dashboardNode('p',''),resume=dashboardNode('button','Continue reading');resume.type='button';card.append(title,percent,resume);
-  const empty=dashboardNode('p','Open a book to start your reading dashboard.','dashboardHint'),list=dashboardNode('div',undefined,'dashboardRecent'),markList=dashboardNode('div',undefined,'dashboardBookmarks'),note=dashboardNode('p','', 'dashboardHint');section.append(card,empty,dashboardNode('h3','Recent books'),list,dashboardNode('h3','Bookmark shortcuts'),markList,note);
+  const empty=dashboardNode('p','Open a book to start your reading dashboard.','dashboardHint'),list=dashboardNode('div',undefined,'dashboardRecent'),markList=dashboardNode('div',undefined,'dashboardBookmarks'),note=dashboardNode('p','', 'dashboardHint');const recentCard=dashboardNode('section',undefined,'dashboardPanel'),marksCard=dashboardNode('section',undefined,'dashboardPanel');recentCard.append(dashboardNode('h3','Recent books'),list);marksCard.append(dashboardNode('h3','Bookmark shortcuts'),markList,note);section.append(card,empty,recentCard,marksCard);
   dashboardView={host,card,title,percent,resume,empty,list,markList,note,recent:new Map(),marks:new Map(),lastFile:''};resume.onclick=()=>dashboardOpen(dashboardView.lastFile);host.replaceChildren(section);
  }
  const view=dashboardView;view.lastFile=last?.file||'';view.card.hidden=!last;view.empty.hidden=!!last;if(last){dashboardText(view.title,last.title);dashboardText(view.percent,last.percent===null?'Saved position':last.percent+'% completed');}
@@ -74,12 +74,13 @@ async function dashboardRefreshCloud(){
  const current=()=>generation===dashboardGeneration&&owner===securityLocalOwner&&cloudUser?.uid===uid&&cloudReady&&navigator.onLine;
  try{
   const col=cloudDb.collection('users').doc(uid);
+  await Promise.all(BOOKS.map(b=>bookmarkSync(b.file)));if(!current())return;
   const [reading,marks]=await Promise.all([Promise.all(BOOKS.map(b=>col.collection('reading').doc(dashboardId(b.file)).get())),col.collection('bookmarks').limit(200).get()]);
   if(!current())return;
   reading.forEach((s,i)=>{const remote=s.exists?s.data():null,b=BOOKS[i],local=dashboardRead(dashboardDataKey(b.file),{});if(!remote||typeof remote.cfi!=='string'||!remote.cfi.startsWith('epubcfi(')||!(Number(remote.updatedAtMs)>Number(local.updatedAtMs||0))||(rendition&&selectedBookFile===b.file))return;
    try{localStorage.setItem(dashboardDataKey(b.file),JSON.stringify({...local,location:remote.cfi,progress:remote.progress,chapter:remote.chapter||'',updatedAtMs:remote.updatedAtMs}));}catch{}
   });
-  dashboardRemoteMarks=[];marks.forEach(s=>{const m=s.data();if(BOOKS.some(b=>b.file===m.bookFile))dashboardRemoteMarks.push(m);});dashboardRender();
+  dashboardRemoteMarks=[];marks.forEach(s=>{const m=s.data();if(m.deleted===true)return;if(BOOKS.some(b=>b.file===m.bookFile))dashboardRemoteMarks.push(m);});dashboardRender();
  }catch{if(current())dashboardCloudStarted=false; /* Keep local dashboard usable. */}
 }
 function dashboardUpdate(){if(dashboardScope!==securityLocalOwner)dashboardReset();dashboardRender();dashboardRefreshCloud();}
@@ -91,3 +92,7 @@ dashboardUpdate();
 
 const dashboardGrid=document.querySelector?.('.libraryGrid');
 if(dashboardGrid)dashboardGrid.addEventListener('scroll',()=>{dashboardScrollUntil=Date.now()+180;clearTimeout(dashboardRenderTimer);dashboardRenderTimer=setTimeout(()=>dashboardRender(),180);},{passive:true});
+
+// Refresh deletion records after returning from another device or browser tab.
+window.addEventListener('focus',()=>{dashboardCloudStarted=false;dashboardUpdate();});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){dashboardCloudStarted=false;dashboardUpdate();}});
