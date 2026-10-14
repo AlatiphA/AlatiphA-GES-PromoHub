@@ -29,6 +29,12 @@ function dashboardStart(){
  return target?.owner===owner&&target.file===file?target.cfi:null;
 }
 function dashboardText(node,text){if(node.textContent!==text)node.textContent=text;}
+function dashboardProgress(bar,percent){
+ bar.hidden=percent===null;
+ // The native value property defaults to zero even when the value attribute is absent.
+ // An absent value makes <progress> indeterminate, so zero must be explicitly assigned.
+ if(percent!==null && (!bar.hasAttribute('value') || bar.value!==percent))bar.value=percent;
+}
 function dashboardVisibleMarks(rows){
  const marks=[];for(const b of rows){const seen=new Set();for(const m of [...b.marks,...dashboardRemoteMarks.filter(m=>m.bookFile===b.file)]){if(typeof m.cfi!=='string'||!m.cfi.startsWith('epubcfi(')||seen.has(m.cfi))continue;seen.add(m.cfi);marks.push({...m,book:b});}}
  return marks.sort((a,b)=>(Date.parse(b.date)||0)-(Date.parse(a.date)||0));
@@ -60,7 +66,7 @@ function dashboardRender(force=false){
  dashboardList(view.list,view.recent,recent,b=>b.file,(node,b)=>{node.className='dashboardRecentBook';dashboardText(node.children[0],b.title);dashboardText(node.children[1],b.percent===null?'Saved position':b.percent+'% completed');node.onclick=()=>dashboardOpen(b.file);});
  dashboardList(view.markList,view.marks,shortMarks,m=>m.book.file+'|'+m.cfi,(node,m)=>{dashboardText(node.children[0],m.book.title);dashboardText(node.children[1],(m.chapter||'Saved passage')+(dashboardPercent(m.progress)===null?'':' · '+dashboardPercent(m.progress)+'%'));node.onclick=()=>dashboardOpen(m.book.file,m.cfi);});
  dashboardText(view.note,marks.length?'Showing '+Math.min(12,marks.length)+' bookmark shortcuts. Open a book for its full bookmark list.':'No bookmarks yet. Save a bookmark while reading.');
- document.querySelectorAll('.bookCard').forEach(card=>{const b=rows.find(b=>b.file===card.dataset.file);if(!b)return;let n=card.querySelector('.dashboardBookProgress');if(!n){n=dashboardNode('div',undefined,'dashboardBookProgress');const text=dashboardNode('span',''),bar=document.createElement('progress');bar.max=100;bar.setAttribute('aria-label',b.title+' reading progress');n.append(text,bar);card.append(n);}dashboardText(n.children[0],b.percent===null?'Not started':b.percent+'% completed');const bar=n.children[1];bar.hidden=b.percent===null;if(b.percent!==null&&bar.value!==b.percent)bar.value=b.percent;});
+ document.querySelectorAll('.bookCard').forEach(card=>{const b=rows.find(b=>b.file===card.dataset.file);if(!b)return;let n=card.querySelector('.dashboardBookProgress');if(!n){n=dashboardNode('div',undefined,'dashboardBookProgress');const text=dashboardNode('span',''),bar=document.createElement('progress');bar.max=100;bar.setAttribute('aria-label',b.title+' reading progress');n.append(text,bar);card.append(n);}dashboardText(n.children[0],b.percent===null?'Not started':b.percent+'% completed');const bar=n.children[1];dashboardProgress(bar,b.percent);});
  dashboardSignature=signature;
  if(anchor&&anchor.node.isConnected!==false){const delta=anchor.node.getBoundingClientRect().top-anchor.top;if(Math.abs(delta)>.5)anchor.grid.scrollTop+=delta;}
 }
