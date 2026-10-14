@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.12";
+const APP_VERSION = "1.10.13";
 
 const versionEl =
   document.getElementById(
@@ -2844,17 +2844,21 @@ function profileRefreshBlocked() {
 function pullRefreshBlocked() {
   return profileRefreshBlocked() || sidebarIsOpen() || faqOverlay.classList.contains("open");
 }
+function libraryRefreshAtTop(){
+  if(typeof libraryScreen==='undefined'||libraryScreen.style.display==='none')return true;
+  const scroller=document.querySelector?.('.libraryGrid');return !scroller||scroller.scrollTop<=0;
+}
 function resetPullRefresh() {
   prStartY = null; prStartX = null; prArmed = false;
   refreshIndicator.classList.remove("show");
 }
 document.addEventListener("touchstart", e => {
   resetPullRefresh();
-  if (e.touches.length !== 1 || pullRefreshBlocked() || window.scrollY > 0) return;
+  if (e.touches.length !== 1 || pullRefreshBlocked() || window.scrollY > 0 || !libraryRefreshAtTop()) return;
   prStartY = e.touches[0].clientY; prStartX = e.touches[0].clientX;
 }, { passive:true, capture:true });
 document.addEventListener("touchmove", e => {
-  if (pullRefreshBlocked() || e.touches.length !== 1) { resetPullRefresh(); return; }
+  if (pullRefreshBlocked() || e.touches.length !== 1 || !libraryRefreshAtTop()) { resetPullRefresh(); return; }
   if (prStartY === null) return;
   const dy=e.touches[0].clientY-prStartY, dx=Math.abs(e.touches[0].clientX-prStartX);
   prArmed=dy > 70 && dx < 35;
@@ -2862,8 +2866,8 @@ document.addEventListener("touchmove", e => {
   if(prArmed)refreshIndicator.textContent="Release to refresh";
 }, { passive:true, capture:true });
 document.addEventListener("touchend", () => {
-  const doRefresh=prArmed && !pullRefreshBlocked(); resetPullRefresh();
-  if (doRefresh) setTimeout(() => { if (!pullRefreshBlocked()) { persistCurrentReaderPosition(); location.reload(); } }, 80);
+  const doRefresh=prArmed && !pullRefreshBlocked() && libraryRefreshAtTop(); resetPullRefresh();
+  if (doRefresh) setTimeout(() => { if (!pullRefreshBlocked() && libraryRefreshAtTop()) { persistCurrentReaderPosition(); location.reload(); } }, 80);
 }, { passive:true, capture:true });
 document.addEventListener("touchcancel", resetPullRefresh, { passive:true, capture:true });
 
@@ -2966,3 +2970,22 @@ document.addEventListener("visibilitychange", () => {
 
 setAuthMode("login");
 window.addEventListener("DOMContentLoaded", initFirebaseFeatures, {once:true});
+
+/* Slide the library footer without resizing the scrolling viewport. */
+function initLibraryFooterScroll(){
+ const screen=document.getElementById('libraryScreen'),grid=screen?.querySelector('.libraryGrid'),foot=screen?.querySelector('.libraryFooter');
+ if(!screen||!grid||!foot)return;
+ let last=0,distance=0,direction=0;
+ function show(visible){if(!visible&&foot.contains(document.activeElement))return;screen.classList.toggle('libraryFooterHidden',!visible);foot.inert=!visible;foot.setAttribute('aria-hidden',String(!visible));}
+ function measure(){const height=foot.getBoundingClientRect().height;if(height>0)screen.style.setProperty('--library-footer-space',Math.ceil(height+16)+'px');}
+ function scroll(){const top=Math.max(0,Math.min(grid.scrollTop,grid.scrollHeight-grid.clientHeight)),delta=top-last;last=top;
+  if(top<=4||top+grid.clientHeight>=grid.scrollHeight-2){distance=0;direction=0;show(true);return;}
+  if(!delta)return;const next=delta>0?1:-1;if(next!==direction){distance=0;direction=next;}distance+=Math.abs(delta);
+  if(distance>=12){show(direction<0);distance=0;}
+ }
+ grid.addEventListener('scroll',scroll,{passive:true});foot.addEventListener('focusin',()=>show(true));
+ backBtn.addEventListener('click',()=>{last=grid.scrollTop;distance=0;direction=0;measure();show(true);});
+ window.addEventListener('resize',measure);if(typeof ResizeObserver==='function')new ResizeObserver(measure).observe(foot);
+ measure();show(true);
+}
+initLibraryFooterScroll();
