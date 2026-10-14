@@ -43,18 +43,12 @@ function dashboardList(container,map,entries,keyOf,update){
  const keep=new Set();entries.forEach((entry,index)=>{const key=keyOf(entry);keep.add(key);let node=map.get(key);if(!node){node=dashboardNode('button');node.type='button';node.append(dashboardNode('strong',''),dashboardNode('span',''));node.setAttribute('data-dashboard-key',key);map.set(key,node);}update(node,entry);if(container.children[index]!==node)container.insertBefore(node,container.children[index]||null);});
  for(const [key,node] of map)if(!keep.has(key)){node.remove();map.delete(key);}
 }
-function dashboardAnchor(){
- const grid=document.querySelector?.('.libraryGrid');if(!grid?.getBoundingClientRect)return null;const bounds=grid.getBoundingClientRect();
- const node=[...grid.querySelectorAll('[data-dashboard-key], .dashboardContinue, .bookCard')].find(n=>{const r=n.getBoundingClientRect();return r.bottom>bounds.top+2 && r.top<bounds.bottom;});
- return node?{grid,node,top:node.getBoundingClientRect().top,scrollTop:grid.scrollTop}:null;
-}
 function dashboardRender(force=false){
  const host=document.getElementById('readingDashboard');if(!host)return;
  if(!force&&Date.now()<dashboardScrollUntil){clearTimeout(dashboardRenderTimer);dashboardRenderTimer=setTimeout(()=>dashboardRender(),Math.max(1,dashboardScrollUntil-Date.now()));return;}
  const rows=dashboardRows(),recent=rows.filter(b=>b.at>0||b.data.location).slice(0,6),last=recent[0],marks=dashboardVisibleMarks(rows),shortMarks=marks.slice(0,12);
  const signature=JSON.stringify([securityLocalOwner,rows.map(b=>[b.file,b.title,b.percent]),recent.map(b=>b.file),shortMarks.map(m=>[m.book.file,m.cfi,m.chapter,m.progress]),marks.length]);
  if(dashboardView?.host===host && signature===dashboardSignature)return;
- const anchor=dashboardAnchor();
  if(!dashboardView||dashboardView.host!==host){
   const section=dashboardNode('section',undefined,'readingDashboardSection');section.append(dashboardNode('h2','Your reading'));
   const practice=dashboardNode('button','Practice tests');practice.type='button';practice.onclick=()=>quizOpen();section.append(practice,dashboardNode('p','Saved on this device. Cloud progress refreshes when syncing is available.','dashboardHint'));
@@ -68,7 +62,6 @@ function dashboardRender(force=false){
  dashboardText(view.note,marks.length?'Showing '+Math.min(12,marks.length)+' bookmark shortcuts. Open a book for its full bookmark list.':'No bookmarks yet. Save a bookmark while reading.');
  document.querySelectorAll('.bookCard').forEach(card=>{const b=rows.find(b=>b.file===card.dataset.file);if(!b)return;let n=card.querySelector('.dashboardBookProgress');if(!n){n=dashboardNode('div',undefined,'dashboardBookProgress');const text=dashboardNode('span',''),bar=document.createElement('progress');bar.max=100;bar.setAttribute('aria-label',b.title+' reading progress');n.append(text,bar);card.append(n);}dashboardText(n.children[0],b.percent===null?'Not started':b.percent+'% completed');const bar=n.children[1];dashboardProgress(bar,b.percent);});
  dashboardSignature=signature;
- if(anchor&&anchor.node.isConnected!==false){const delta=anchor.node.getBoundingClientRect().top-anchor.top;if(Math.abs(delta)>.5)anchor.grid.scrollTop+=delta;}
 }
 function dashboardReset(){
  const changed=dashboardScope!==securityLocalOwner;dashboardGeneration++;dashboardScope=securityLocalOwner;dashboardCloudStarted=false;dashboardTarget=null;
