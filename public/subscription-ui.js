@@ -49,6 +49,7 @@ function subscriptionSidebarRender(){
  button.textContent='Sign in / View plans';
 }
 function subscriptionRender(){
+ if(typeof window!=='undefined'&&window.PromoHubSync)window.PromoHubSync.update();
  if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  subscriptionSidebarRender();
  const p=securityProfile,renewButton=document.getElementById('subscriptionRenewBtn'),reminder=document.getElementById('subscriptionExpiryReminder');

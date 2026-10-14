@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.11";
+const APP_VERSION = "1.10.12";
 
 const versionEl =
   document.getElementById(
@@ -2481,8 +2481,9 @@ saveReaderData = function(data) {
   try {
     data.updatedAtMs = Date.now();
     localStorage.setItem(getBookReaderDataKey(), JSON.stringify(data));
+    window.PromoHubSync?.dirty('reading|'+selectedBookFile);
     scheduleProgressSync(data);
-  } catch (e) { console.error(e); }
+  } catch (e) { window.PromoHubSync?.localFailure(); console.error(e); }
 };
 
 function localPreferences() {
@@ -2511,6 +2512,7 @@ function scheduleProgressSync(data) {
   const scheduledUser=cloudUser, scheduledBook=selectedBookFile, scheduledId=bookCloudId();
   progressSyncTimer = setTimeout(async () => {
     if(!cloudReady || cloudUser?.uid!==scheduledUser.uid || selectedBookFile!==scheduledBook)return;
+    const syncToken=window.PromoHubSync?.begin('reading|'+scheduledBook);
     try {
       await cloudDb.collection("users").doc(cloudUser.uid)
         .collection("reading").doc(scheduledId).set({
@@ -2521,12 +2523,13 @@ function scheduleProgressSync(data) {
           updatedAtMs: Number(data.updatedAtMs) || Date.now(),
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true });
-    } catch (e) { console.warn("Cloud progress sync:", e); }
+      window.PromoHubSync?.complete(syncToken,true);
+    } catch (e) { window.PromoHubSync?.complete(syncToken,false); console.warn("Cloud progress sync:", e); }
   }, 1200);
 }
 
 async function syncPreferencesToCloud() {
-  if (!cloudReady || !cloudUser || !cloudDb) return;
+  if (!cloudReady || !cloudUser || !cloudDb || !navigator.onLine) return;
   try {
     const prefs = localPreferences();
     await cloudDb.collection("users").doc(cloudUser.uid)
@@ -2593,7 +2596,7 @@ function bookmarkIdentity(b){return b.cfi+'|'+(b.date||'');}
 function bookmarkCloudRecord(file,b,deleted=false){return {bookFile:file,cfi:b.cfi,chapter:b.chapter||'',progress:Number.isFinite(b.progress)?b.progress:0,date:b.date||'',deleted,updatedAtMs:Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()};}
 function bookmarkQueueDelete(bookmark){
  const scope=bookmarkSyncScope(),pending=bookmarkRead(scope.pending);if(!pending.some(b=>bookmarkIdentity(b)===bookmarkIdentity(bookmark)))pending.push(bookmark);
- localStorage.setItem(scope.pending,JSON.stringify(pending));return scope;
+ localStorage.setItem(scope.pending,JSON.stringify(pending));window.PromoHubSync?.dirty('bookmarks|'+scope.file);return scope;
 }
 function bookmarkReconcile(scope,records){
  const pending=bookmarkRead(scope.pending),deleted=new Set([...pending,...records.filter(b=>b.deleted===true)].map(bookmarkIdentity));
@@ -2604,8 +2607,9 @@ function bookmarkReconcile(scope,records){
 async function bookmarkSync(file=selectedBookFile){
  const scope=bookmarkSyncScope(file);if(!scope.uid||!cloudDb||!scope.valid())return;
  const col=cloudDb.collection('users').doc(scope.uid).collection('bookmarks');
+ const syncToken=window.PromoHubSync?.begin('bookmarks|'+file);
  try{
-  const snap=await col.where('bookFile','==',file).get();if(!scope.valid())return;
+  const snap=await col.where('bookFile','==',file).get({source:'server'});if(!scope.valid())return;
   const records=[];snap.forEach(d=>records.push({...d.data(),_id:d.id}));
   const pending=bookmarkRead(scope.pending),queueIds=new Set(pending.map(bookmarkIdentity));
   // Mark each existing duplicate of a removed passage, plus the original ID.
@@ -2621,7 +2625,8 @@ async function bookmarkSync(file=selectedBookFile){
   localStorage.setItem(scope.pending,JSON.stringify(bookmarkRead(scope.pending).filter(b=>!queueIds.has(bookmarkIdentity(b)))));
   if(selectedBookFile===file)loadBookmarks();
   if(typeof dashboardRender==='function')dashboardRender();
- }catch(e){console.warn('Bookmark sync:',e);}
+  window.PromoHubSync?.complete(syncToken,true);
+ }catch(e){window.PromoHubSync?.complete(syncToken,false);console.warn('Bookmark sync:',e);}
 }
 async function syncLocalBookmarksToCloud(){await bookmarkSync();}
 async function deleteCloudBookmark(bookmark){bookmarkQueueDelete(bookmark);await bookmarkSync();}
@@ -2650,10 +2655,27 @@ function bookmarkLiveUpdate(){
   if(currentChanged){const panel=document.getElementById('bookmarksPanel'),top=panel?.scrollTop||0;loadBookmarks();if(panel)panel.scrollTop=top;}
   if(typeof dashboardRemoteMarks!=='undefined')dashboardRemoteMarks=records.filter(m=>m.deleted!==true&&BOOKS.some(b=>b.file===m.bookFile));
   if(typeof dashboardRender==='function')dashboardRender();
- },error=>{if(!valid())return;console.warn('Live bookmark sync:',error);bookmarkLiveStop();});
+  if(snap.metadata?.fromCache===false)window.PromoHubSync?.received();
+ },error=>{if(!valid())return;console.warn('Live bookmark sync:',error);const token=window.PromoHubSync?.begin('bookmark-listener');window.PromoHubSync?.complete(token,false);bookmarkLiveStop();});
 }
 window.addEventListener('offline',bookmarkLiveStop);
 window.addEventListener('online',bookmarkLiveUpdate);
+
+async function syncProgressRetry(file){
+ const scope=bookmarkSyncScope(file);if(!scope.uid||!cloudDb||!scope.valid())return;
+ const token=window.PromoHubSync?.begin('reading|'+file),id=file.replace(/^\.\/library\//,'').replace(/[^a-z0-9_-]+/gi,'-').toLowerCase();
+ const key=READER_DATA_KEY+'-'+id+securityLocalSuffix();
+ try{
+  const ref=cloudDb.collection('users').doc(scope.uid).collection('reading').doc(id),snap=await ref.get({source:'server'});if(!scope.valid())return;
+  const local=JSON.parse(localStorage.getItem(key)||'{}'),remote=snap.exists?snap.data():null;
+  if(remote?.cfi&&Number(remote.updatedAtMs)>Number(local.updatedAtMs||0)){
+   localStorage.setItem(key,JSON.stringify({...local,location:remote.cfi,progress:remote.progress,chapter:remote.chapter||'',updatedAtMs:remote.updatedAtMs}));
+  }else if(typeof local.location==='string'&&local.location.startsWith('epubcfi(')){
+   await ref.set({bookFile:file,cfi:local.location,progress:Number(local.progress)||0,chapter:local.chapter||'',updatedAtMs:Number(local.updatedAtMs)||Date.now(),updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+  }else throw new Error('No saved reading position to sync');
+  if(scope.valid()){window.PromoHubSync?.complete(token,true);if(typeof dashboardRender==='function')dashboardRender();}
+ }catch(e){window.PromoHubSync?.complete(token,false);console.warn('Reading sync retry:',e);}
+}
 
 async function syncCurrentBookCloud() {
   await Promise.allSettled([mergeProgressFromCloud(), mergeBookmarksFromCloud()]);
@@ -2662,7 +2684,7 @@ async function syncCurrentBookCloud() {
 /* Existing bookmark actions stay local-first. These observers mirror the
    final local state to Firestore after add/delete without changing UI flow. */
 const _saveBookmarkLocal = saveBookmark;
-saveBookmark = function() { _saveBookmarkLocal(); setTimeout(syncLocalBookmarksToCloud, 0); };
+saveBookmark = function() { const before=localStorage.getItem(getBookmarksKey());_saveBookmarkLocal();if(before!==localStorage.getItem(getBookmarksKey()))window.PromoHubSync?.dirty('bookmarks|'+selectedBookFile);setTimeout(syncLocalBookmarksToCloud, 0); };
 
 const _loadBookmarksLocal = loadBookmarks;
 loadBookmarks = function() { _loadBookmarksLocal(); };

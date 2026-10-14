@@ -54,6 +54,7 @@ function securityMessage(text){document.getElementById('securityMessage').textCo
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
 function securityRender(){
+ if(typeof window!=='undefined'&&window.PromoHubSync)window.PromoHubSync.update();
  if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  if(typeof dashboardUpdate==='function')dashboardUpdate();
  document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || 'GES PromoHub User';
