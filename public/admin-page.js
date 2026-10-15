@@ -28,7 +28,7 @@ function adminScheduleSearch(){
  const epoch=securityEpoch;
  adminSearchTimer=setTimeout(()=>{adminSearchTimer=null;if(epoch===securityEpoch && securityAdminView==='users' && securityIsAdmin())adminSearchNow();},350);
 }
-const securityActions={quizzes:()=>quizAdmin(),overview:()=>typeof adminOverview==='function'?adminOverview():securityUsers(),users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),payments:()=>subscriptionAdminPayments(),messages:()=>notificationCompose(),audit:()=>securityRecords('audit')};
+const securityActions={questionReports:()=>questionReportsAdmin(),pushSettings:()=>pushSettingsAdmin(),quizzes:()=>quizAdmin(),overview:()=>typeof adminOverview==='function'?adminOverview():securityUsers(),users:()=>securityUsers(),more:()=>securityUsers(true),previous:()=>securityUsers('previous'),payments:()=>subscriptionAdminPayments(),messages:()=>notificationCompose(),audit:()=>securityRecords('audit')};
 document.getElementById('securityControls').addEventListener('click',e=>{const action=e.target.closest('[data-security]')?.dataset.security;if(action && securityActions[action]){adminCancelSearch();securityWork(securityActions[action]);}});
 document.getElementById('securityUserFilters').addEventListener('submit',e=>{e.preventDefault();if(!adminSearchComposing)adminSearchNow();});
 const adminSearchInput=document.getElementById('securityUserSearch');

@@ -53,7 +53,7 @@ function quizResults(){
   const content=quizEl('div',undefined,'quizAnswerContent');
   for(const [label,text] of [['Your answer',quizAttempt.answers[i]===null?'Unanswered':q.options[quizAttempt.answers[i]]],['Correct answer',q.options[q.answer]]]){const row=quizEl('p',undefined,'quizAnswerLine');row.append(quizEl('strong',label+': '),quizEl('span',text));content.append(row);}
   content.append(quizEl('h4','Explanation'),quizEl('p',q.explanation,'quizExplanation'));
-  const sources=quizEl('details',undefined,'quizSourceDetails');sources.append(quizEl('summary','Source references'),quizEl('p',q.source));content.append(sources);d.append(content);quizBody.append(d);
+  const sources=quizEl('details',undefined,'quizSourceDetails');sources.append(quizEl('summary','Source references'),quizEl('p',q.source));content.append(sources);if(typeof questionReportControl==='function')content.append(questionReportControl(q,quizAttempt));d.append(content);quizBody.append(d);
  });
 }
 function quizNotice(text){let n=document.getElementById('quizStatus');if(!n){n=quizEl('p');n.id='quizStatus';n.setAttribute('role','status');quizBody.prepend(n);}n.textContent=text;}
