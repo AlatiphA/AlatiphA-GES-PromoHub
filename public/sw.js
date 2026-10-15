@@ -1,5 +1,5 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.9.18';
+const APP_VERSION='v1.9.19';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';
