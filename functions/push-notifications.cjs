@@ -13,7 +13,7 @@ module.exports=({onCall,onDocumentWritten,options,HttpsError,db,admin,member,sta
    const delivery=db.doc(`users/${uid}/pushDeliveries/`+hash(eventId+'|'+d.id));let claim=false;
    await db.runTransaction(async tx=>{const s=await tx.get(delivery),p=s.data();if(p?.state==='sent')return;if(p?.leaseUntilMs>now)throw Error('Push delivery still in progress; retry later.');tx.set(delivery,{state:'sending',leaseUntilMs:now+120000});claim=true;});if(!claim)continue;
    try{
-    await admin.messaging().send({token:device.token,data:{promoHub:'1',uid,eventId:hash(eventId),title:type==='payments'?'Payment approved':type==='reminders'?'Subscription reminder':'PromoHub message',body:'Open PromoHub to view your notification.'},webpush:{headers:{TTL:'86400',Urgency:'normal'}}});
+    await (typeof admin.messaging === 'function' ? admin.messaging() : require('firebase-admin/messaging').getMessaging()).send({token:device.token,data:{promoHub:'1',uid,eventId:hash(eventId),title:type==='payments'?'Payment approved':type==='reminders'?'Subscription reminder':'PromoHub message',body:'Open PromoHub to view your notification.'},webpush:{headers:{TTL:'86400',Urgency:'normal'}}});
     await delivery.set({state:'sent',sentAt:stamp()});
    }catch(e){await delivery.set({state:'failed',leaseUntilMs:0});if(['messaging/registration-token-not-registered','messaging/invalid-registration-token','messaging/invalid-argument','messaging/mismatched-credential'].includes(e.code)){await db.doc(`users/${uid}/pushDevices/${d.id}`).set({enabled:false},{merge:true});await db.runTransaction(async tx=>{const state=db.doc(`users/${uid}/pushState/registration`),s=await tx.get(state);tx.set(state,{ids:(s.data()?.ids||[]).filter(v=>v!==d.id)});});}else throw e;}
   }
