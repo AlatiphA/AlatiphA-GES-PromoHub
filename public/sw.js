@@ -1,5 +1,5 @@
 /* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.9.17';
+const APP_VERSION='v1.9.18';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';
@@ -57,17 +57,17 @@ self.addEventListener('message',event=>{if(event.data?.type==='PROMOHUB_PUSH_BIN
 
 // Focus the existing reader without changing its book; cold starts use an account-bound route.
 self.addEventListener('notificationclick',event=>{
- event.notification.close();const uid=event.notification.data?.uid;if(typeof uid!=='string')return;
+ event.notification.close();const uid=event.notification.data?.uid;if(typeof uid!=='string')return;const noticeId=event.notification.data?.noticeId,source=event.notification.data?.source;const target=typeof noticeId==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(noticeId)&&['personal','announcement'].includes(source)?{noticeId,source}:{};
  event.waitUntil((async()=>{
   if(event.notification.data?.push===true && (await readPushBinding())!==uid)return;
   const root=new URL('./',self.registration.scope),index=new URL('index.html',root);
   for(const client of await self.clients.matchAll({type:'window',includeUncontrolled:true})){
    const url=new URL(client.url);
    if(url.origin===root.origin && (url.pathname===root.pathname || url.pathname===index.pathname)){
-    await client.focus();client.postMessage({type:'PROMOHUB_OPEN_INBOX',uid});return;
+    await client.focus();client.postMessage({type:'PROMOHUB_OPEN_INBOX',uid,...target});return;
    }
   }
-  index.searchParams.set('inbox','1');index.searchParams.set('noticeUid',uid);await self.clients.openWindow(index.href);
+  if(target.noticeId){index.searchParams.set('noticeId',target.noticeId);index.searchParams.set('noticeSource',target.source);}index.searchParams.set('inbox','1');index.searchParams.set('noticeUid',uid);await self.clients.openWindow(index.href);
  })());
 });
 
@@ -77,5 +77,5 @@ async function storePushBinding(event){
 }
 self.addEventListener('push',event=>{event.waitUntil((async()=>{
  let payload;try{payload=event.data?.json();}catch{return;}const d=payload?.data;if(d?.promoHub!=='1'||typeof d.uid!=='string'||d.uid!==(await readPushBinding()))return;
- const root=new URL('./',self.registration.scope);await self.registration.showNotification(String(d.title||'PromoHub').slice(0,120),{body:'Open PromoHub to view your notification.',icon:new URL('icon-192.png',root).href,badge:new URL('icon-192.png',root).href,tag:'promohub-push-'+String(d.eventId||'notice').slice(0,64),data:{uid:d.uid,push:true}});
+ const root=new URL('./',self.registration.scope);await self.registration.showNotification(String(d.title||'PromoHub').slice(0,120),{body:'Open PromoHub to view your notification.',icon:new URL('icon-192.png',root).href,badge:new URL('icon-192.png',root).href,tag:'promohub-push-'+String(d.eventId||'notice').slice(0,64),data:{uid:d.uid,push:true,noticeId:d.noticeId,source:d.source}});
 })());});
