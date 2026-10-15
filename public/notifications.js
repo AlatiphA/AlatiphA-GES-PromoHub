@@ -53,7 +53,7 @@
   }catch(e){if(epoch===generation){message=e.message || 'Unable to mark messages read.';render();}}
  }
  async function alert(n,epoch,captured){
-  if(!enabled() || typeof Notification==='undefined' || Notification.permission!=='granted' || !navigator.serviceWorker || document.visibilityState==='visible')return;
+  if(get('ges-promohub-push-choice-'+uid,{}).enabled===true || !enabled() || typeof Notification==='undefined' || Notification.permission!=='granted' || !navigator.serviceWorker || document.visibilityState==='visible')return;
   try{const registration=await navigator.serviceWorker.getRegistration();if(epoch!==generation || uid!==captured || !registration)return;
    await registration.showNotification(n.title,{body:n.body,icon:'./icon-192.png',tag:'promohub-'+captured+'-'+n.id,data:{uid:captured}});
   }catch(_){/* The persistent inbox remains available when browser alerts fail. */}
@@ -107,7 +107,7 @@
   const captured=uid,epoch=generation;if(!uid)return;
   if(enabled()){save('ges-promohub-alerts-'+uid,false);render();return;}
   if(typeof Notification==='undefined' || !navigator.serviceWorker){message='This browser does not support these alerts. Use the inbox.';render();return;}
-  try{const result=await Notification.requestPermission();if(epoch!==generation)return;save('ges-promohub-alerts-'+captured,result==='granted');message=result==='granted'?'Browser alerts enabled while PromoHub is running. Closed-app push is not included.':'Permission was not granted. Your inbox still works.';render();}catch(e){if(epoch===generation){message=e.message;render();}}
+  try{const result=await Notification.requestPermission();if(epoch!==generation)return;save('ges-promohub-alerts-'+captured,result==='granted');message=result==='granted'?'Browser alerts enabled while PromoHub is running. For background push alerts, use Push notifications in My Account.':'Permission was not granted. Your inbox still works.';render();}catch(e){if(epoch===generation){message=e.message;render();}}
  });
  for(const name of ['online','offline','pageshow'])window.addEventListener(name,render);
  navigator.serviceWorker?.addEventListener('message',e=>{if(e.data?.type!=='PROMOHUB_OPEN_INBOX' || typeof e.data.uid!=='string')return;if(!uid)pendingTap={uid:e.data.uid,at:Date.now()};else if(e.data.uid===uid)open();});

@@ -566,6 +566,7 @@
       <button id="accountSecurityRefresh" type="button">Refresh verified email</button>
       <p>These changes require internet access. Passwords are never saved as offline drafts.</p>
     </details>
+    <details class="securityBlock" id="pushNotificationControls"><summary>Push notifications</summary><p>Optional alerts for messages, approved payments and renewal reminders. Details remain in your signed-in inbox.</p><p id="pushNotificationStatus" role="status" aria-live="polite"></p><label><input type="checkbox" id="pushCategory-messages" checked> Messages and announcements</label><label><input type="checkbox" id="pushCategory-payments" checked> Payment approval</label><label><input type="checkbox" id="pushCategory-reminders" checked> Subscription reminders</label><div class="communicationActions"><button id="pushEnable" type="button" disabled>Enable / Save preferences</button><button id="pushDisable" type="button" disabled>Disable on this browser</button><button id="pushRefresh" type="button">Refresh status</button></div></details>
     <details class="securityBlock securityDanger profileDataActions"><summary>Data and account</summary>
       <h4>On this device</h4>
       <p>Remove PromoHub reading progress, bookmarks, practice results, settings and downloaded books from this browser. Unsynced changes will be lost.</p>
@@ -613,6 +614,8 @@
 <script src="./account-security.js"></script>
 <script src="./reader-sessions.js"></script>
 <script src="./notifications.js"></script>
+<script src="./push-notifications.js"></script>
+<script src="./question-reports.js"></script>
 <dialog id="downloadsDialog" class="downloadsDialog" aria-labelledby="downloadsTitle">
  <div class="downloadsHeading"><h2 id="downloadsTitle">Offline downloads</h2><button id="downloadsClose" type="button" class="navControl" aria-label="Close downloads" title="Close downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
  <p>Downloaded books are stored in this browser on this device. Reading access still follows your trial, subscription and Online/Offline mode.</p>

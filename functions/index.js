@@ -160,3 +160,6 @@ Object.assign(exports,require('./subscription-reminders.cjs')({onSchedule:requir
 Object.assign(exports,require('./admin-overview.cjs')({onCall,options,HttpsError,db,admin,member}));
 
 Object.assign(exports,require('./quizzes.cjs')({onCall,options,HttpsError,db,admin,member,stamp,audit}));
+
+Object.assign(exports,require('./question-reports.cjs')({onCall,options,HttpsError,db,admin,member,stamp,audit}));
+Object.assign(exports,require('./push-notifications.cjs')({onCall,onDocumentWritten:require('firebase-functions/v2/firestore').onDocumentWritten,options,HttpsError,db,admin,member,stamp,audit}));

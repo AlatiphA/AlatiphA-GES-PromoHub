@@ -7,7 +7,7 @@ function securityChooseGuest(){
  securityAuthChanged(null,true);
  if(cloudAuth)cloudAuth.signOut().catch(e=>console.warn('Guest sign-out:',e));
 }
-function securityPrepareSignOut(){securityEndGuestChoice();securityExplicitSignOut=true;}
+function securityPrepareSignOut(){if(window.PromoHubPush)window.PromoHubPush.pause();securityEndGuestChoice();securityExplicitSignOut=true;}
 function securityOfflineReadingAllowed(){
  if(!securityLocalOwner)return securityGuestChosen && subscriptionReadable();
  const p=securityProfile || subscriptionCachedProfile();
@@ -54,6 +54,7 @@ function securityMessage(text){document.getElementById('securityMessage').textCo
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
 function securityRender(){
+ if(typeof window!=='undefined'&&window.PromoHubPush)window.PromoHubPush.update();
  if(typeof window!=='undefined'&&window.PromoHubSync)window.PromoHubSync.update();
  if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  if(typeof dashboardUpdate==='function')dashboardUpdate();
@@ -96,6 +97,7 @@ async function securityAuthChanged(user,explicit=false){
   hideAuth();resumeReaderAfterStartup();return;
  }
  securityOfflineDeferred=false;
+ if(window.PromoHubPush)window.PromoHubPush.pause();
  if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
 
  if(typeof quizReset==='function')quizReset();

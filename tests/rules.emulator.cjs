@@ -87,3 +87,11 @@ test('bookmark deletion record is readable across sessions and stale clients can
  await assertFails(require('../functions/node_modules/firebase/firestore').deleteDoc(ref));
  await assertFails(setDoc(doc(client('bob'),'users/alice/bookmarks/deleted-bookmark'),tombstone));
 });
+
+test('question reports, review state and push device tokens remain private to callable backend operations',async()=>{
+ const db=client('alice');
+ for(const path of ['questionReports/test','configuration/pushNotifications','users/alice/pushDevices/test','users/alice/pushDeliveries/test','users/alice/pushState/registration']){
+  await assertFails(setDoc(doc(db,path),{enabled:true,status:'reviewed',token:'injected'}));
+  await assertFails(getDoc(doc(db,path)));
+ }
+});
