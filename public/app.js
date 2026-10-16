@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.10.19";
+const APP_VERSION = "1.10.20";
 
 const versionEl =
   document.getElementById(
@@ -2881,7 +2881,7 @@ let profileTouch=null;
 document.addEventListener("touchstart", e => {
   profileTouch=null;
   if(!profileRefreshBlocked() || e.touches.length!==1)return;
-  const card=e.target.closest?.(".accountCard") || e.target.closest?.(".inboxDialog") || e.target.closest?.(".downloadsDialog") || e.target.closest?.(".quizBody") || null;
+  const card=e.target.closest?.(".accountBody") || e.target.closest?.(".accountCard") || e.target.closest?.(".inboxDialog") || e.target.closest?.(".downloadsDialog") || e.target.closest?.(".quizBody") || null;
   const scroller=card || (authScreen.classList.contains("active")?authScreen:null);
   profileTouch={x:e.touches[0].clientX,y:e.touches[0].clientY,scroller};
 }, { passive:true, capture:true });

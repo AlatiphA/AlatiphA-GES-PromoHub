@@ -492,11 +492,14 @@
 <!-- ACCOUNT PANEL -->
 <div id="accountPanel" class="accountPanel">
   <div class="accountCard">
+    <div class="accountHeader" role="group" aria-label="Account summary">
     <button id="accountClose" type="button" class="accountClose navControl" aria-label="Close account" title="Close account"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
     <div id="accountAvatar" class="accountAvatar"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false" style="display:block;margin:auto"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg></div>
     <strong id="accountName">User</strong>
     <span id="accountEmail"></span>
     <span id="accountType" class="accountType">Standard account</span>
+    </div>
+    <div class="accountBody" tabindex="0" role="region" aria-label="Account settings">
 <section id="securityControls">
   <label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <p id="securityMessage" role="status"></p>
@@ -580,6 +583,7 @@
 
 </section>
     <button id="logoutBtn" class="logoutBtn">Log out</button>
+    </div>
   </div>
 </div>
 

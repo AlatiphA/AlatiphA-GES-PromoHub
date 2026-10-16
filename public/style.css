@@ -1662,3 +1662,18 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .readerAccessDialog button{min-height:44px;padding:9px 14px;font:inherit;white-space:normal;cursor:pointer}
 .readerAccessDialog article{margin-top:16px;padding-top:12px;border-top:1px solid var(--ui-border,#ccc)}
 .readerAccessDialog form{margin-top:18px}.readerAccessDialog label{display:grid;gap:8px;margin-bottom:12px}.readerAccessDialog input{box-sizing:border-box;width:100%;min-height:44px;font:inherit}
+
+/* Account summary stays outside the independently scrolling settings body. */
+.accountCard{padding:0;gap:0;overflow:hidden;align-items:stretch}
+.accountHeader{position:relative;flex:0 0 auto;display:grid;grid-template-columns:44px minmax(0,1fr) 44px;column-gap:12px;row-gap:3px;align-items:center;padding:16px;border-bottom:1px solid var(--ui-border,#ccc);background:inherit;border-radius:inherit;border-bottom-left-radius:0;border-bottom-right-radius:0}
+.accountHeader .accountClose{position:static;grid-column:3;grid-row:1 / 4;align-self:start;justify-self:end;margin:0;min-width:44px;min-height:44px}
+.accountHeader .accountAvatar{grid-column:1;grid-row:1 / 4;align-self:center;justify-self:start;width:44px;height:44px;margin:0;font-size:18px}
+.accountHeader #accountName,.accountHeader #accountEmail,.accountHeader #accountType{grid-column:2;min-width:0;margin:0;text-align:left;overflow-wrap:anywhere}
+.accountHeader #accountName{grid-row:1;font-size:18px;line-height:1.3}
+.accountHeader #accountEmail{grid-row:2;font-size:13px;line-height:1.4}
+.accountHeader #accountType{grid-row:3;font-size:13px;line-height:1.4}
+.accountBody{flex:1 1 auto;min-height:0;min-width:0;box-sizing:border-box;width:100%;padding:16px;overflow-y:auto;overscroll-behavior-y:contain;touch-action:pan-y pinch-zoom;-webkit-overflow-scrolling:touch}
+.accountBody:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:-3px}
+.accountBody .logoutBtn{width:100%;margin-top:12px}
+@media(max-width:480px){.accountHeader{padding:12px;column-gap:10px}.accountBody{padding:12px}}
+@media(max-height:420px){.accountHeader{padding:8px 12px;row-gap:1px}.accountHeader #accountName{font-size:16px}.accountHeader #accountEmail,.accountHeader #accountType{font-size:12px}.accountBody{padding:10px 12px}}
