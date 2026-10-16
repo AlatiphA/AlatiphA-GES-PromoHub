@@ -1,0 +1,8 @@
+'use strict';
+const test=require('node:test'),assert=require('node:assert/strict'),vm=require('node:vm'),fs=require('node:fs');
+function setup(){const handlers={},outer={scrollTop:0,scrollHeight:500,clientHeight:500},body={scrollTop:150,scrollHeight:1000,clientHeight:350};const source=fs.readFileSync(require.resolve('../public/app.js'),'utf8'),start=source.indexOf('let profileTouch=null;'),end=source.indexOf('/* ---------- Pinch changes EPUB',start);
+ vm.runInNewContext(source.slice(start,end),{document:{addEventListener:(name,fn)=>handlers[name]=fn},profileRefreshBlocked:()=>true,authScreen:{classList:{contains:()=>false}}});
+ function emit(name,y,target='body'){let prevented=false;handlers[name]({touches:[{clientX:20,clientY:y}],cancelable:true,preventDefault(){prevented=true;},target:{closest:selector=>selector==='.accountBody'&&target==='body'?body:selector==='.accountCard'?outer:null}});return prevented;}
+ return {body,outer,emit};}
+test('fixed profile header does not cause inner settings swipes to be mistaken for boundary overscroll',()=>{const s=setup();s.emit('touchstart',20);assert.equal(s.emit('touchmove',100),false);assert.equal(s.outer.scrollTop,0);s.body.scrollTop=0;s.emit('touchstart',20);assert.equal(s.emit('touchmove',100),true);s.body.scrollTop=650;s.emit('touchstart',100);assert.equal(s.emit('touchmove',20),true);});
+test('header drags stay contained while taps retain close-button activation',()=>{const s=setup();s.emit('touchstart',20,'header');assert.equal(s.emit('touchmove',100,'header'),true);s.emit('touchstart',20,'header');assert.equal(s.emit('touchmove',23,'header'),false);});
