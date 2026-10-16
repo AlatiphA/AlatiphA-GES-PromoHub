@@ -607,9 +607,11 @@
 <script src="https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js"></script>
 
 <dialog id="notificationDialog" class="inboxDialog" aria-labelledby="notificationTitle">
- <div class="inboxHeading"><h2 id="notificationTitle">Notifications</h2><button id="notificationClose" type="button" aria-label="Close notifications">Close</button></div>
+ <div class="inboxHeading"><h2 id="notificationTitle">Notifications</h2><button id="notificationClose" type="button" class="navControl" aria-label="Close notifications" title="Close notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true" focusable="false"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+ <div class="inboxBody">
  <div class="inboxActions"><button id="notificationMarkAll" type="button">Mark recent messages read</button><button id="notificationAlerts" type="button">Enable browser alerts</button></div>
  <p id="notificationStatus" role="status" aria-live="polite"></p><div id="notificationList"></div>
+ </div>
 </dialog>
 <script src="./app.js"></script>
 <script src="./sync-status.js"></script>
