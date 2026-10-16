@@ -27,3 +27,13 @@ dialog.inboxDialog{position:fixed;inset:0;margin:auto;width:min(560px,calc(100vw
 .adminShell .securityAdminNavigation{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))}
 .libraryHeader .inboxBell{top:calc(env(safe-area-inset-top,0px) + 14px);z-index:6}
 .libraryHeader #libraryDayNightBtn{right:114px}
+
+/* Keep the inbox heading and Close available while the messages scroll. */
+dialog.inboxDialog{padding:0;scroll-padding-top:80px;isolation:isolate}
+.inboxDialog .inboxHeading{position:sticky;top:0;z-index:2;padding:12px 16px;border-bottom:1px solid var(--ui-border,#ccc);background:var(--ui-surface,#fff);color:var(--ui-text,#222)}
+.inboxHeading h2{min-width:0;overflow-wrap:anywhere;line-height:1.3}
+.inboxDialog #notificationClose{box-sizing:border-box;display:inline-flex;align-items:center;justify-content:center;flex:0 0 44px;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid var(--ui-border,#cfd4d0);border-radius:50%;background:var(--ui-surface,#fff);color:var(--ui-text,#222);box-shadow:0 1px 3px rgba(0,0,0,.06)}
+#notificationClose svg{width:22px;height:22px;flex-shrink:0}
+#notificationClose:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:3px}
+.inboxBody{padding:0 16px 16px;min-width:0}
+@media(max-width:480px){.inboxDialog .inboxHeading{padding:10px 12px}.inboxBody{padding:0 12px 12px}}
