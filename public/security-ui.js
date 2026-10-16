@@ -66,7 +66,13 @@ function securityRender(){
  subscriptionRender();if(typeof readerModeRender==='function')readerModeRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
-async function securityActivate(user){
+let securityActivationPending=null;
+function securityActivate(user){
+ const attempt={uid:user?.uid};attempt.promise=securityActivateCore(user);securityActivationPending=attempt;
+ attempt.promise.finally(()=>{if(securityActivationPending===attempt)securityActivationPending=null;}).catch(()=>{});
+ return attempt.promise;
+}
+async function securityActivateCore(user){
  const epoch=securityEpoch;
  cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();if(!user?.emailVerified){securityProfile=null;securityRender();securityMessage('Verify your email, then select Check verification.');return false;}
  const claims=(await user.getIdTokenResult()).claims;
@@ -115,7 +121,7 @@ async function securityAuthChanged(user,explicit=false){
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
  try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
- catch(e){if(authEpoch!==securityEpoch)return;if(typeof navigator!=='undefined' && !navigator.onLine && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;hideAuth();return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
+ catch(e){if(authEpoch!==securityEpoch)return;if(typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;hideAuth();return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(){const panel=document.getElementById('myAccountPanel');if(panel)panel.hidden=false;}
