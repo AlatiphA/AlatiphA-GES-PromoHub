@@ -1650,3 +1650,15 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
 @media(max-width:340px){.libraryScreen>.libraryHeader{column-gap:8px}.libraryScreen>.libraryHeader .libraryActions{gap:4px}.libraryScreen>.libraryHeader .libraryTitle{font-size:17px}}
 
 .communicationActions{display:flex;flex-wrap:wrap;gap:8px}.communicationCard{padding:16px;margin:12px 0;border:1px solid var(--ui-border);border-radius:12px;background:var(--ui-surface);overflow-wrap:anywhere}.communicationCard p{line-height:1.5}.communicationCard label,.questionReportForm label{display:block;margin:12px 0}.communicationCard input:not([type=checkbox]),.communicationCard textarea,.questionReportForm textarea,.questionReportForm select{box-sizing:border-box;width:100%;max-width:100%;font:inherit;padding:10px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-bg);color:var(--ui-text)}#pushNotificationControls>label{display:block;margin:10px 0}#pushNotificationControls input[type=checkbox]{width:auto}.questionReportForm{margin-top:16px;border-top:1px solid var(--ui-border);padding-top:12px}.questionReportForm summary{cursor:pointer}.questionReportForm button,.communicationCard button{min-height:44px;margin:8px 8px 0 0}
+
+/* Focused reader recovery, independent of the account panel. */
+dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,calc(100vw - 24px));max-width:calc(100vw - 24px);max-height:calc(100dvh - 24px);box-sizing:border-box;padding:20px;border:1px solid var(--ui-border,#ccc);border-radius:18px;background:var(--ui-surface,#fff);color:var(--ui-text,#222);overflow:auto;overscroll-behavior:contain;text-align:left}
+.readerAccessDialog::backdrop{background:rgba(0,0,0,.5)}
+.readerAccessDialog [hidden]{display:none!important}
+.readerAccessHeading{display:flex;align-items:center;justify-content:space-between;gap:12px}
+.readerAccessHeading h2{font-size:1.25rem;margin:0}
+.readerAccessDialog p{line-height:1.6;margin:14px 0}
+.readerAccessActions{display:flex;flex-wrap:wrap;gap:10px}
+.readerAccessDialog button{min-height:44px;padding:9px 14px;font:inherit;white-space:normal;cursor:pointer}
+.readerAccessDialog article{margin-top:16px;padding-top:12px;border-top:1px solid var(--ui-border,#ccc)}
+.readerAccessDialog form{margin-top:18px}.readerAccessDialog label{display:grid;gap:8px;margin-bottom:12px}.readerAccessDialog input{box-sizing:border-box;width:100%;min-height:44px;font:inherit}

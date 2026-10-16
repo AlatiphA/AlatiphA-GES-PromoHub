@@ -2,7 +2,7 @@
   "name": "AlatiphA PromoHub",
   "short_name": "PromoHub",
   "description": "Offline EPUB reader for GES Promotion \u2014 2026 Edition",
-  "version": "1.10.18",
+  "version": "1.10.19",
   "start_url": "./index.html",
   "scope": "./",
   "display": "standalone",
