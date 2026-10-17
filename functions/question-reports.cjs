@@ -32,6 +32,22 @@ module.exports=({onCall,options,HttpsError,db,admin,member,stamp,audit})=>{
  }),
  reviewPromoHubQuestionReport:onCall(opts,async req=>{
   const actor=await access(req,true),d=req.data||{};if(!/^[a-f0-9]{64}$/.test(d.id||'')||!['reviewed','dismissed'].includes(d.status)||!Number.isInteger(d.expectedVersion)||d.expectedVersion<1)fail('Invalid report review.');const note=text(d.note,1500);
-  await db.runTransaction(async tx=>{const ref=db.doc('questionReports/'+d.id),[s,p]=await Promise.all([tx.get(ref),tx.get(db.doc('users/'+actor))]);if(p.data()?.accountStatus!=='active')throw new HttpsError('permission-denied','Administrator inactive.');if(!s.exists)throw new HttpsError('not-found','Report not found.');const r=s.data();if(r.version!==d.expectedVersion)throw new HttpsError('aborted','Report changed. Reload it.');tx.update(ref,{status:d.status,version:r.version+1,reviewNote:note,reviewedBy:actor,reviewedAt:stamp()});audit(tx,actor,'questionReport.'+d.status,r.uid,{reportId:d.id,bankId:r.bankId});});return {ok:true};
+  await db.runTransaction(async tx=>{
+   const ref=db.doc('questionReports/'+d.id),[s,p]=await Promise.all([tx.get(ref),tx.get(db.doc('users/'+actor))]);
+   if(p.data()?.accountStatus!=='active')throw new HttpsError('permission-denied','Administrator inactive.');
+   if(!s.exists)throw new HttpsError('not-found','Report not found.');const r=s.data();
+   if(r.version!==d.expectedVersion)throw new HttpsError('aborted','Report changed. Reload it.');
+   const update={status:d.status,version:r.version+1,reviewNote:note,reviewedBy:actor,reviewedAt:stamp()};
+   // One private notice per report, committed with its review. All reads precede writes.
+   if(d.status==='reviewed'&&r.reviewNotificationSent!==true&&typeof r.uid==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(r.uid)){
+    const notice=db.doc('users/'+r.uid+'/notifications/question-report-reviewed-'+d.id);
+    const [recipient,deletion,existing]=await Promise.all([tx.get(db.doc('users/'+r.uid)),tx.get(db.doc('accountDeletions/'+r.uid)),tx.get(notice)]);
+    if(recipient.exists&&recipient.data()?.accountStatus==='active'&&!deletion.exists){
+     if(!existing.exists)tx.set(notice,{title:'Question report reviewed',body:'Your question report has been reviewed. Thank you for helping improve PromoHub.',type:'message',read:false,createdAt:stamp(),createdAtMs:Date.now()});
+     update.reviewNotificationSent=true;
+    }
+   }
+   tx.update(ref,update);audit(tx,actor,'questionReport.'+d.status,r.uid,{reportId:d.id,bankId:r.bankId});
+  });return {ok:true};
  })};
 };
