@@ -120,10 +120,14 @@ async function readerDevicesRefresh(){
    const name=document.createElement('p');name.textContent=d.label+(d.id===readerDeviceId()?' · This browser':'')+(d.active?' · Reading now':'');row.append(name);
    const remove=document.createElement('button');remove.textContent='Remove device';remove.onclick=()=>securityWork(async()=>{
     if(!confirm('Remove this browser/PWA registration? Its next online access check will end reading.'))return;
-    await securityCall('managePromoHubDevices',{operation:'remove',deviceId:d.id});
-    if(cloudUser?.uid!==uid)return;
-    if(d.id===readerDeviceId()){localStorage.removeItem(readerSessionKey(uid));if(rendition)readerSessionStop('This device was removed. Open a book online to register again.');}
-    await readerDevicesRefresh();
+    const finished=async()=>{
+     if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
+     if(d.id===readerDeviceId()){localStorage.removeItem(readerSessionKey(uid));if(rendition)readerSessionStop('This device was removed. Open a book online to register again.');}
+     await readerDevicesRefresh();
+    };
+    if(window.PromoHubReaderRecovery?.manageDevice){window.PromoHubReaderRecovery.manageDevice(d.id,name.textContent,finished);return;}
+    try{await securityCall('managePromoHubDevices',{operation:'remove',deviceId:d.id});await finished();}
+    catch(e){if(cloudUser?.uid===uid)status.textContent=e.message||'Unable to remove this registration.';}
    });row.append(remove);list.append(row);
   }
  }catch(e){if(cloudUser?.uid===uid){status.textContent=e.message||'Unable to load devices.';}}
