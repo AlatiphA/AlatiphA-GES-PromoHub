@@ -7,8 +7,47 @@ function securityChooseGuest(){
  securityAuthChanged(null,true);
  if(cloudAuth)cloudAuth.signOut().catch(e=>console.warn('Guest sign-out:',e));
 }
-function securityPrepareSignOut(){if(window.PromoHubPush)window.PromoHubPush.pause();securityEndGuestChoice();securityExplicitSignOut=true;}
+function securityPrepareSignOut(){securityClearAdminReading();if(window.PromoHubPush)window.PromoHubPush.pause();securityEndGuestChoice();securityExplicitSignOut=true;}
+/* This receipt permits local reading only. It never restores administrative claims. */
+function securityClearAdminReading(){
+ if(!securityLocalOwner)return;
+ try{localStorage.removeItem('ges-promohub-admin-reader-'+securityLocalOwner);}catch{}
+}
+function securityCacheAdminReading(user,claims,profile){
+ if(securityExplicitSignOut||securityGuestChosen||!user?.uid||user.uid!==securityLocalOwner)return false;
+ const key='ges-promohub-admin-reader-'+user.uid;
+ try{
+  if(!user.emailVerified||claims?.promohubAdmin!==true||profile?.accountStatus!=='active'){localStorage.removeItem(key);return false;}
+  // Save independently of the reader module; verify durable storage before reporting readiness.
+  let deviceId=localStorage.getItem('ges-promohub-device-id');
+  if(!/^[a-f0-9]{32}$/.test(deviceId||'')){
+   const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);
+   deviceId=Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');
+   localStorage.setItem('ges-promohub-device-id',deviceId);
+  }
+  const receipt=JSON.stringify({uid:user.uid,deviceId,verifiedAtMs:Date.now()});
+  localStorage.setItem(key,receipt);
+  return localStorage.getItem(key)===receipt&&localStorage.getItem('ges-promohub-device-id')===deviceId;
+ }catch(error){console.warn('Offline administrator reading record could not be saved:',error?.message||'Storage unavailable');return false;}
+}
+function securityOfflineAdminReading(){
+ if(!securityLocalOwner||securityGuestChosen||cloudUser&&(cloudUser.uid!==securityLocalOwner||!cloudUser.emailVerified))return false;
+ if(securityProfile&&securityProfile.accountStatus!=='active')return false;
+ /* A completed online account check supersedes every cached reading receipt. */
+ if(securityProfile&&!securityOfflineDeferred)return securityIsAdmin();
+ try{
+  const receipt=JSON.parse(localStorage.getItem('ges-promohub-admin-reader-'+securityLocalOwner));
+  return receipt?.uid===securityLocalOwner&&/^[a-f0-9]{32}$/.test(receipt.deviceId||'')&&receipt.deviceId===localStorage.getItem('ges-promohub-device-id')&&Number.isFinite(receipt.verifiedAtMs)&&receipt.verifiedAtMs>0&&receipt.verifiedAtMs<=Date.now();
+ }catch{return false;}
+}
+function securityOfflineStatusRender(){
+ if(!securityOfflineDeferred)return;
+ const p=subscriptionCachedProfile(),admin=securityOfflineAdminReading();
+ document.getElementById('accountType').textContent=admin?'Administrator reading access · offline':subscriptionPaid(p)?'Paid subscription · offline · expires '+subscriptionDate(p.subscriptionEndsAtMs):subscriptionLegacy(p)?'Existing Premium access · offline':'Local reading access · offline';
+ document.getElementById('accountPanel')?.classList?.remove('profileRefreshing');
+}
 function securityOfflineReadingAllowed(){
+ if(securityOfflineAdminReading())return true;
  if(!securityLocalOwner)return securityGuestChosen && subscriptionReadable();
  const p=securityProfile || subscriptionCachedProfile();
  if(!p || p.accountStatus!=='active')return false;
@@ -81,9 +120,10 @@ async function securityActivateCore(user){
  const profile=await securityCall('initializePromoHubAccount');
  if(epoch!==securityEpoch)return false;
  securityClaims=claims;securityProfile=profile;
+ securityCacheAdminReading(user,claims,profile);
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();securityCacheAdminReading(user,securityClaims,securityProfile);const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
  return cloudReady;
 }
 async function securityAuthChanged(user,explicit=false){
@@ -102,6 +142,8 @@ async function securityAuthChanged(user,explicit=false){
   clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);
   if(securityStop){securityStop();securityStop=null;}
   if(typeof readerSessionGrant!=='undefined' && readerSessionGrant)readerSessionGrant.online=false;
+  if(typeof subscriptionSidebarRender==='function')subscriptionSidebarRender();
+  securityOfflineStatusRender();
   hideAuth();resumeReaderAfterStartup();return;
  }
  securityOfflineDeferred=false;
@@ -125,7 +167,7 @@ async function securityAuthChanged(user,explicit=false){
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
  try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
- catch(e){if(authEpoch!==securityEpoch)return;if(typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;hideAuth();return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
+ catch(e){if(authEpoch!==securityEpoch)return;if(!/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||'')) && typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;securityOfflineStatusRender();hideAuth();return;}if(/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||''))){securityClearAdminReading();try{localStorage.removeItem('ges-promohub-reader-grant-'+user.uid);}catch{}}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(){const panel=document.getElementById('myAccountPanel');if(panel)panel.hidden=false;}
