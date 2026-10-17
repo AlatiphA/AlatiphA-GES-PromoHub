@@ -28,7 +28,7 @@ function subscriptionRemaining(ms,now=Date.now()){
 }
 function subscriptionRenew(){
  openAccount();if(!cloudUser)return;
- securitySelectTab('account');const plan=document.getElementById('subscriptionPlan');plan?.scrollIntoView?.({block:'nearest'});plan?.focus?.();
+ securitySelectTab('account');const section=document.getElementById('profileSubscriptionSettings');if(section)section.open=true;const plan=document.getElementById('subscriptionPlan');plan?.scrollIntoView?.({block:'nearest'});plan?.focus?.();
 }
 function subscriptionDate(ms){return Number(ms)>0?new Date(Number(ms)).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'Not active';}
 function subscriptionSidebarRender(){

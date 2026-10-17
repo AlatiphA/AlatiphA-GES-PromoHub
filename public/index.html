@@ -501,11 +501,11 @@
     </div>
     <div class="accountBody" tabindex="0" role="region" aria-label="Account settings">
 <section id="securityControls">
-  <label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label>
   <p id="securityMessage" role="status"></p>
   <a id="administrationLink" class="administrationLink" href="./admin.html" hidden>Open Administration</a>
-  <h3 id="myAccountTab">My Account</h3>
+  <h3 id="myAccountTab" class="profileSettingsHeading">Profile settings</h3>
   <section id="myAccountPanel" role="tabpanel" aria-labelledby="myAccountTab">
+    <details id="profileAccountSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="8" r="4"/><path d="M4 21v-2a8 8 0 0 1 16 0v2"/></svg><span>Account</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
     <div class="syncStatus" data-sync-status><span data-sync-label role="status" aria-live="polite">Saved on this device</span><button type="button" data-sync-retry disabled>Retry sync</button></div>
     <div id="securityVerification" class="securityBlock">
       <h3>Email verification</h3><p>Verify your email to use cloud account features.</p>
@@ -515,7 +515,8 @@
       <label for="securityName">Profile name</label><input id="securityName" maxlength="100" autocomplete="nickname">
       <button data-security="name">Save name</button>
     </div>
-    <div class="securityBlock"><h3>Subscription</h3>
+    </div></details>
+    <details id="profileSubscriptionSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h4"/></svg><span>Subscription</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
       <p id="subscriptionStatus"></p>
 <p id="subscriptionExpiryReminder" class="subscriptionExpiryReminder" role="status" hidden></p>
 <button id="subscriptionRenewBtn" type="button" hidden>Renew subscription</button><p id="subscriptionHint">The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
@@ -527,9 +528,9 @@
       <button id="securityPremiumButton" data-security="premium">Submit payment for review</button>
       <p id="subscriptionRequestStatus"></p><button data-security="paymentStatus">Check payment status</button>
       </div>
-    </div>
-    <section class="securityBlock" id="readerDevicesSection">
-      <h3>Devices and sessions</h3>
+    </div></details>
+    <details class="profileSetting" name="profile-settings" id="readerDevicesSection">
+<summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="12" height="14" rx="2"/><rect x="15" y="9" width="6" height="12" rx="1"/><path d="M6 21h6M9 17v4"/></svg><span>Reading and devices</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
       <p>Subscribed accounts: 2 browser/PWA registrations and 1 online reading session. Online mode is the default and requires internet. Select Offline mode while connected to read with local saving until subscription expiry. Cloud syncing is paused in Offline mode. Each hosting URL counts separately.</p>
       <div class="securityActions readingModeControl">
         <label>Reading mode<select id="myReadingMode"><option value="strict">Online mode</option><option value="offline">Offline mode</option></select></label>
@@ -539,9 +540,9 @@
       <button id="readerDevicesRefresh">Manage devices</button>
       <p id="readerDevicesStatus" role="status" aria-live="polite"></p>
       <div id="readerDevicesList"></div>
-    </section>
-    <details class="securityBlock accountSecurity" id="accountSecuritySection">
-      <summary>Account Security</summary>
+    </div></details>
+    <details id="profileAppearanceSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 3v18"/></svg><span>Appearance</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent"><label class="uiAppearance">App appearance<select data-ui-theme-choice aria-label="App appearance"><option value="system">System</option><option value="light">Light</option><option value="dark">Dark</option></select></label></div></details>
+    <details class="securityBlock accountSecurity" id="accountSecuritySection" name="profile-settings" data-profile-setting><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="5" y="10" width="14" height="11" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg><span>Security and login</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
       <p>Login email: <strong id="accountSecurityEmail"></strong></p>
       <p>Your reading data, subscription and administrator role stay attached to the same account.</p>
       <p id="accountSecurityPending"></p>
@@ -568,9 +569,9 @@
       </div>
       <button id="accountSecurityRefresh" type="button">Refresh verified email</button>
       <p>These changes require internet access. Passwords are never saved as offline drafts.</p>
-    </details>
-    <details class="securityBlock" id="pushNotificationControls"><summary>Push notifications</summary><p>Optional alerts for messages, approved payments and renewal reminders. Details remain in your signed-in inbox.</p><p id="pushNotificationStatus" role="status" aria-live="polite"></p><label><input type="checkbox" id="pushCategory-messages" checked> Messages and announcements</label><label><input type="checkbox" id="pushCategory-payments" checked> Payment approval</label><label><input type="checkbox" id="pushCategory-reminders" checked> Subscription reminders</label><div class="communicationActions"><button id="pushEnable" type="button" disabled>Enable / Save preferences</button><button id="pushDisable" type="button" disabled>Disable on this browser</button><button id="pushRefresh" type="button">Refresh status</button></div></details>
-    <details class="securityBlock securityDanger profileDataActions"><summary>Data and account</summary>
+    </div></details>
+    <details class="securityBlock" id="pushNotificationControls" name="profile-settings" data-profile-setting><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Notifications</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent"><p>Optional alerts for messages, approved payments and renewal reminders. Details remain in your signed-in inbox.</p><p id="pushNotificationStatus" role="status" aria-live="polite"></p><label><input type="checkbox" id="pushCategory-messages" checked> Messages and announcements</label><label><input type="checkbox" id="pushCategory-payments" checked> Payment approval</label><label><input type="checkbox" id="pushCategory-reminders" checked> Subscription reminders</label><div class="communicationActions"><button id="pushEnable" type="button" disabled>Enable / Save preferences</button><button id="pushDisable" type="button" disabled>Disable on this browser</button><button id="pushRefresh" type="button">Refresh status</button></div></div></details>
+    <details class="securityBlock securityDanger profileDataActions" name="profile-settings" data-profile-setting><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/></svg><span>Data and account</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
       <h4>On this device</h4>
       <p>Remove PromoHub reading progress, bookmarks, practice results, settings and downloaded books from this browser. Unsynced changes will be lost.</p>
       <p>Your account, subscription and trial dates remain. Cloud-saved data may return when syncing resumes.</p>
@@ -578,7 +579,7 @@
       <h4>Delete account</h4>
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
-    </details>
+    </div></details>
   </section>
 
 </section>

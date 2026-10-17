@@ -1677,3 +1677,28 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .accountBody .logoutBtn{width:100%;margin-top:12px}
 @media(max-width:480px){.accountHeader{padding:12px;column-gap:10px}.accountBody{padding:12px}}
 @media(max-height:420px){.accountHeader{padding:8px 12px;row-gap:1px}.accountHeader #accountName{font-size:16px}.accountHeader #accountEmail,.accountHeader #accountType{font-size:12px}.accountBody{padding:10px 12px}}
+
+/* Compact profile settings, expanded only when requested. */
+.accountBody #myAccountPanel{display:grid;gap:0;border:1px solid var(--ui-border,#ccc);border-radius:16px;overflow:hidden;background:var(--ui-surface,#fff)}
+.accountBody #myAccountPanel[hidden]{display:none!important}
+.accountBody .profileSettingsHeading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
+.accountBody .profileSetting,.accountBody details[data-profile-setting]{min-width:0;margin:0;padding:0;border:0;border-bottom:1px solid var(--ui-border,#ccc)}
+.accountBody #myAccountPanel>details:last-child{border-bottom:0}
+.accountBody #myAccountPanel>details>summary{display:flex;align-items:center;gap:12px;min-height:56px;box-sizing:border-box;padding:12px 14px;margin:0;list-style:none;cursor:pointer;font-size:15px;font-weight:500;line-height:1.4;color:var(--ui-text,#222);background:var(--ui-surface,#fff)}
+.accountBody #myAccountPanel>details>summary::-webkit-details-marker{display:none}
+.accountBody #myAccountPanel>details>summary::marker{content:""}
+.accountBody #myAccountPanel>details>summary:hover{background:var(--ui-raised,#f1f2ef)}
+.profileSettingIcon{width:22px;height:22px;flex:0 0 22px}
+.profileSettingChevron{width:18px;height:18px;flex:0 0 18px;margin-left:auto}
+.accountBody #myAccountPanel>details[open]>summary .profileSettingChevron{transform:rotate(90deg)}
+.accountBody .profileSettingContent{padding:2px 14px 16px;min-width:0;border-top:1px solid var(--ui-border,#ccc);background:var(--ui-raised,#f5f5f3)}
+.accountBody .profileSettingContent>.securityBlock{border:0;padding:10px 0}
+.accountBody .profileSettingContent p{margin:10px 0;line-height:1.6}
+.accountBody .profileSettingContent label{margin-top:12px}
+.accountBody .profileSettingContent .uiAppearance{display:flex;margin:12px 0 0}
+.accountBody #pushNotificationControls .profileSettingContent>label{display:flex;align-items:center;gap:10px;margin:12px 0;min-height:44px}
+.accountBody #pushNotificationControls input[type="checkbox"]{width:20px;height:20px;min-height:20px;flex:0 0 20px;margin:0;accent-color:var(--ui-accent,#956433)}
+.accountBody #securityMessage{font-size:13px;line-height:1.5;margin:0 0 12px}
+.accountBody .administrationLink{display:block;padding:12px 14px;margin:0 0 12px;border:1px solid var(--ui-border,#ccc);border-radius:12px;text-decoration:none}
+.accountBody .logoutBtn{margin-top:16px}
+@media(max-width:480px){.accountBody #myAccountPanel>details>summary{min-height:54px;padding:12px;gap:10px}.accountBody .profileSettingContent{padding:2px 12px 14px}}

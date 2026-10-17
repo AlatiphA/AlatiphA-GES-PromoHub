@@ -2,8 +2,8 @@
 const test=require('node:test'),assert=require('node:assert/strict'),fs=require('node:fs'),vm=require('node:vm');
 const code=fs.readFileSync(require.resolve('../public/subscription-ui.js'),'utf8');
 function setup(){
- const elements={subscriptionPlan:{value:'m1'},subscriptionRenewBtn:{hidden:true},subscriptionExpiryReminder:{hidden:true}},stored=new Map();let admin=false,opened=0,focused=0;
- elements.subscriptionPlan.focus=()=>focused++;elements.subscriptionPlan.scrollIntoView=()=>{};
+ const elements={profileSubscriptionSettings:{open:false},subscriptionPlan:{value:'m1'},subscriptionRenewBtn:{hidden:true},subscriptionExpiryReminder:{hidden:true}},stored=new Map();let admin=false,opened=0,focused=0;
+ elements.subscriptionPlan.focus=()=>{assert.equal(elements.profileSubscriptionSettings.open,true);focused++;};elements.subscriptionPlan.scrollIntoView=()=>{};
  const ctx={cloudUser:{uid:'u',emailVerified:true},securityProfile:{subscriptionSchema:1,accountTier:'premium',accountStatus:'active',subscriptionEndsAtMs:Date.now()+3*86400000},securityLocalOwner:'u',securityIsAdmin:()=>admin,openAccount:()=>opened++,securitySelectTab(){},localStorage:{getItem:k=>stored.get(k)||null,setItem:(k,v)=>stored.set(k,v)},document:{getElementById:id=>elements[id]||={}},Date,JSON,Number,Map};
  vm.createContext(ctx);vm.runInContext(code.slice(0,code.indexOf('securityActions.premium=')),ctx);
  return {ctx,elements,run:s=>vm.runInContext(s,ctx),admin:v=>admin=v,opened:()=>opened,focused:()=>focused};
@@ -18,5 +18,5 @@ test('paid and expired subscribers see renewal controls while admin and trial ac
  s.admin(false);s.ctx.securityProfile.accountTier='free';s.run('subscriptionRender()');assert.equal(s.elements.subscriptionRenewBtn.hidden,true);
 });
 test('renewal opens and focuses existing plans without submitting payments and account reset clears old warnings',()=>{
- const s=setup();s.run('subscriptionRenew()');assert.equal(s.opened(),1);assert.equal(s.focused(),1);s.run('subscriptionRender();subscriptionResetPayment()');assert.equal(s.elements.subscriptionRenewBtn.hidden,true);assert.equal(s.elements.subscriptionExpiryReminder.textContent,'');
+ const s=setup();s.run('subscriptionRenew()');assert.equal(s.opened(),1);assert.equal(s.focused(),1);assert.equal(s.elements.profileSubscriptionSettings.open,true);s.run('subscriptionRender();subscriptionResetPayment()');assert.equal(s.elements.subscriptionRenewBtn.hidden,true);assert.equal(s.elements.subscriptionExpiryReminder.textContent,'');
 });
