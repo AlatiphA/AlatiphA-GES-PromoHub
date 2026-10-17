@@ -1,5 +1,5 @@
 'use strict';
-let quizEpoch=0,quizDialog=null,quizBody=null,quizTimer=null,quizHeartbeat=null,quizAttempt=null,quizBank=null,quizOwnLease=false,quizGrant=null,quizBusy=false,quizBanks=[],quizWarning='';
+let quizEpoch=0,quizDialog=null,quizBody=null,quizTimer=null,quizHeartbeat=null,quizAttempt=null,quizBank=null,quizOwnLease=false,quizGrant=null,quizBusy=false,quizBanks=[],quizWarning='',quizView='practice';
 const quizCore=window.PromoHubQuizCore;
 function quizKey(type){return 'ges-promohub-quiz-'+type+securityLocalSuffix();}
 function quizRead(type,fallback){try{return JSON.parse(localStorage.getItem(quizKey(type)))??fallback;}catch{return fallback;}}
@@ -32,7 +32,7 @@ async function quizLease(){
  }catch(e){quizLeaseRelease();throw e;}finally{quizBusy=false;}
 }
 function quizTick(){
- if(!quizAttempt)return;
+ if(quizView==='revision'||!quizAttempt)return;
  if(quizAttempt.finishedAtMs){if(!quizAccess()){quizBody.replaceChildren(quizEl('p','Reading access is paused. Close and reopen Practice tests after reconnecting or renewing. Your result is saved.'));}return;}
  if(quizAttempt.deadlineMs&&Date.now()>=quizAttempt.deadlineMs){quizFinish(false);return;}
  const t=document.getElementById('quizTimer');if(t){const left=Math.max(0,Math.ceil((quizAttempt.deadlineMs-Date.now())/1000));t.textContent=quizAttempt.deadlineMs?'Time remaining '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):'Untimed practice';}
@@ -42,12 +42,12 @@ function quizTick(){
 function quizHistory(){const h=quizRead('history',[]);return Array.isArray(h)?h.filter(v=>v&&typeof v.title==='string'&&Number.isFinite(v.percent)).slice(0,20):[];}
 function quizFinish(confirmFirst=true){
  if(!quizAttempt)return;if(confirmFirst&&!confirm('Submit this practice test? Unanswered questions receive no marks.'))return;
- const result=quizCore.finish(quizAttempt);quizSave();const history=quizHistory();if(!history.some(v=>v.startedAtMs===quizAttempt.startedAtMs))history.unshift({title:quizAttempt.title,startedAtMs:quizAttempt.startedAtMs,finishedAtMs:quizAttempt.finishedAtMs,...result});quizWrite('history',history.slice(0,20));clearInterval(quizTimer);quizResults();clearInterval(quizTimer);quizTimer=setInterval(quizTick,1000);
+ const result=quizCore.finish(quizAttempt);quizSave();const history=quizHistory(),record=window.PromoHubRevisionCore?.record(quizAttempt,quizCore)||{title:quizAttempt.title,startedAtMs:quizAttempt.startedAtMs,finishedAtMs:quizAttempt.finishedAtMs,...result};const existing=history.findIndex(v=>v.startedAtMs===quizAttempt.startedAtMs);if(existing<0)history.unshift(record);else history[existing]=record;quizWrite('history',history.slice(0,20));clearInterval(quizTimer);quizResults();clearInterval(quizTimer);quizTimer=setInterval(quizTick,1000);
 }
 function quizResults(){
  quizBody.replaceChildren();if(!quizAttempt)return;const s=quizCore.score(quizAttempt);const score=quizEl('section',undefined,'quizScoreCard');score.append(quizEl('h3','Your results'),quizEl('p',s.correct+' / '+s.total+' correct','quizScoreValue'),quizEl('p',s.percent+'% · '+s.unanswered+' unanswered','quizScoreMeta'));quizBody.append(score,quizEl('p','Saved on this device. These are practice results, not official examination results.','quizHint'));
  if(!quizAccess()){quizBody.append(quizEl('p','Renew your reading access to view explanations or retry.'));return;}
- const actions=quizEl('div',undefined,'quizTools quizResultActions');actions.append(quizButton('Revise mistakes',async()=>{const epoch=quizEpoch,owner=securityLocalOwner;const retry=quizCore.retry(quizAttempt);if(!retry){quizNotice('All answers were correct.');return;}try{await quizLease();if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizAttempt=retry;quizSave();quizQuestion();}catch(e){quizNotice(e.message);}}),quizButton('New quiz',quizSetup));quizBody.append(actions,quizEl('h3','Answer review','quizSectionHeading'));
+ const actions=quizEl('div',undefined,'quizTools quizResultActions');actions.append(quizButton('Revise mistakes',async()=>{const epoch=quizEpoch,owner=securityLocalOwner;const retry=quizCore.retry(quizAttempt);if(!retry){quizNotice('All answers were correct.');return;}try{await quizLease();if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizAttempt=retry;quizSave();quizQuestion();}catch(e){quizNotice(e.message);}}),quizButton('New quiz',quizSetup));if(typeof revisionShow==='function')actions.append(quizButton('Revision dashboard',revisionShow));quizBody.append(actions,quizEl('h3','Answer review','quizSectionHeading'));
  quizAttempt.questions.forEach((q,i)=>{
   const correct=quizAttempt.answers[i]===q.answer,d=quizEl('details',undefined,'quizAnswerCard'),summary=quizEl('summary');summary.append(quizEl('span',correct?'Correct':'Review','quizAnswerBadge '+(correct?'isCorrect':'isIncorrect')),quizEl('span',(i+1)+'. '+q.prompt,'quizAnswerTitle'));d.append(summary);
   const content=quizEl('div',undefined,'quizAnswerContent');
@@ -70,6 +70,8 @@ async function quizLoadBank(id){
  if(id==='assessment-learning'){const b=await (await fetch('./starter-quiz.json')).json();if(quizCore.validBank(b))return b;}throw new Error('Download this question set while online first.');
 }
 async function quizSetup(){
+ quizView='practice';
+ const heading=document.getElementById('quizHeading');if(heading)heading.textContent='Practice tests';
  clearInterval(quizTimer);quizLeaseRelease();quizBody.replaceChildren();quizBody.append(quizEl('p','Loading question sets…'));const epoch=quizEpoch,owner=securityLocalOwner;
  try{
   const cached=quizRead('banks',{}),starter=await (await fetch('./starter-quiz.json')).json();if(epoch!==quizEpoch||owner!==securityLocalOwner)return;
@@ -77,6 +79,7 @@ async function quizSetup(){
   if(cloudUser&&navigator.onLine){try{const r=await securityCall('getPromoHubQuizBanks');if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizBanks=r.banks;}catch(e){quizWarning='Using saved question sets. '+e.message;quizBanks=[...new Map([...quizBanks,...Object.values(cached).filter(quizCore.validBank).map(b=>({id:b.id,title:b.title,count:b.questions.length,topics:[...new Set(b.questions.map(q=>q.topic))]}))].map(b=>[b.id,b])).values()];}}
   else quizBanks=[...new Map([...quizBanks,...Object.values(cached).filter(quizCore.validBank).map(b=>({id:b.id,title:b.title,count:b.questions.length,topics:[...new Set(b.questions.map(q=>q.topic))]}))].map(b=>[b.id,b])).values()];
   quizBody.replaceChildren();quizBody.append(quizEl('p','Choose a reviewed question set. Scores and attempts stay on this device.'));
+  if(typeof revisionShow==='function')quizBody.append(quizButton('Revision dashboard',revisionShow));
   if(!quizBanks.length){quizBody.append(quizEl('p','No published question sets are available.'));return;}
   const form=document.createElement('form');form.className='quizSetupForm';const select=document.createElement('select'),topic=document.createElement('select'),count=document.createElement('input'),minutes=document.createElement('input');count.type=minutes.type='number';count.min='1';count.max='100';count.value='10';minutes.min='0';minutes.max='120';minutes.value='10';
   for(const b of quizBanks){const o=quizEl('option',b.title+' ('+b.count+' questions)');o.value=b.id;select.append(o);}const topics=()=>{topic.replaceChildren();const all=quizEl('option','All topics');all.value='all';topic.append(all);for(const t of quizBanks.find(b=>b.id===select.value).topics){const o=quizEl('option',t);o.value=t;topic.append(o);}};select.onchange=topics;topics();
@@ -87,9 +90,9 @@ async function quizSetup(){
   const h=quizHistory();if(h.length){quizBody.append(quizEl('h3','Recent results'));h.slice(0,5).forEach(v=>quizBody.append(quizEl('p',v.title+' · '+v.percent+'% · '+new Date(v.finishedAtMs).toLocaleDateString())));}if(quizWarning)quizNotice(quizWarning);
  }catch(e){if(epoch===quizEpoch)quizNotice(e.message||'Question sets unavailable.');}
 }
-function quizOpen(){
+function quizOpen(view='practice'){
  if(!quizDialog){quizDialog=document.createElement('dialog');quizDialog.className='quizDialog';quizDialog.id='quizDialog';quizDialog.setAttribute('aria-labelledby','quizHeading');const header=quizEl('div',undefined,'quizHeader'),h=quizEl('h2','Practice tests');h.id='quizHeading';const close=quizButton('',quizClose);close.className='quizClose';close.setAttribute('aria-label','Close practice tests');close.title='Close';close.innerHTML='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';header.append(h,close);quizBody=quizEl('div',undefined,'quizBody');quizDialog.append(header,quizBody);document.body.append(quizDialog);quizDialog.addEventListener('cancel',e=>{e.preventDefault();quizClose();});quizDialog.addEventListener('click',e=>{if(e.target===quizDialog)quizClose();});}
- quizEpoch++;quizDialog.showModal();quizSetup();
+ quizEpoch++;quizDialog.showModal();if(view==='revision'&&typeof revisionRender==='function')revisionRender();else quizSetup();
 }
 window.addEventListener('pagehide',quizSave);
 window.addEventListener('offline',quizTick);
