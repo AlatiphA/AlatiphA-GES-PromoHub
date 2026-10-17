@@ -75,7 +75,7 @@ function readerSessionRelease(){
  if(readerSessionUnlock){readerSessionUnlock();readerSessionUnlock=null;}
  if(grant&&!grant.exempt&&grant.online&&cloudUser?.uid===grant.uid&&navigator.onLine)securityCall('managePromoHubDevices',{operation:'release',deviceId:grant.deviceId,sessionId:grant.sessionId}).catch(()=>{});
 }
-function readerSessionReset(){readerSessionEpoch++;readerSessionRelease();if(window.PromoHubReaderRecovery)window.PromoHubReaderRecovery.reset();}
+function readerSessionReset(){if(window.PromoHubDeviceList)window.PromoHubDeviceList.stop(true);readerSessionEpoch++;readerSessionRelease();if(window.PromoHubReaderRecovery)window.PromoHubReaderRecovery.reset();}
 const readerSessionOpenLocal=openReader;
 openReader=function(){
  if((!cloudUser&&!readerSessionPaid())||securityIsAdmin())return readerSessionOpenLocal();
@@ -108,12 +108,19 @@ accountPanel.addEventListener('pointerdown',e=>{profileBackdropPressed=e.target=
 accountPanel.addEventListener('pointercancel',()=>{profileBackdropPressed=false;});
 accountPanel.addEventListener('click',e=>{if(e.target===accountPanel&&(profileBackdropPressed||e.detail===0))document.getElementById('accountClose').click();profileBackdropPressed=false;});
 async function readerDevicesRefresh(){
- const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList'),uid=cloudUser?.uid,epoch=readerSessionEpoch;
+ const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList'),uid=cloudUser?.uid,epoch=readerSessionEpoch,revision=window.PromoHubDeviceList?.revision();
  if(!uid){status.textContent='Sign in to manage registered devices.';list.replaceChildren();return;}
  status.textContent='Loading devices…';
  try{
   const result=await securityCall('managePromoHubDevices',{operation:'list'});
   if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
+  if(revision===window.PromoHubDeviceList?.revision())readerDevicesRender(result,uid,epoch);
+  if(window.PromoHubDeviceList)window.PromoHubDeviceList.start();
+ }catch(e){if(cloudUser?.uid===uid){status.textContent=e.message||'Unable to load devices.';}}
+}
+function readerDevicesRender(result,uid,epoch){
+ if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
+ const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList');
   list.replaceChildren();const access=result.readingAccessMode==='strict'?'Online mode, internet required':'Offline mode, local saving until subscription expiry';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
   for(const d of result.devices){
    const row=document.createElement('article');row.className='securityRecord';
@@ -130,7 +137,6 @@ async function readerDevicesRefresh(){
     catch(e){if(cloudUser?.uid===uid)status.textContent=e.message||'Unable to remove this registration.';}
    });row.append(remove);list.append(row);
   }
- }catch(e){if(cloudUser?.uid===uid){status.textContent=e.message||'Unable to load devices.';}}
 }
 document.getElementById('readerDevicesRefresh').addEventListener('click',readerDevicesRefresh);
 

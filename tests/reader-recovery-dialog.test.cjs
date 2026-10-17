@@ -66,3 +66,8 @@ test('profile Remove device invokes inline recovery and refreshes the list after
  vm.createContext(ctx);vm.runInContext(source.slice(start,end),ctx);await ctx.readerDevicesRefresh();await nodes.readerDevicesList.children[0].children[1].onclick();
  assert.equal(removal.id,'unused');assert.equal(lists,1);await removal.done();assert.equal(lists,2);assert.equal(nodes.readerDevicesList.children.length,0);
 });
+test('live recovery list updates preserve inline identity confirmation',async()=>{
+ const s=setup();s.api.show('quota',{code:'resource-exhausted'});await flush();await find(s,'button','Remove this registration and open book').onclick();
+ find(s,'input').value='secret';assert.equal(s.api.deviceListOpen(),true);s.api.renderDevices({devices:[{id:'new',label:'New browser'}]});
+ assert.ok(find(s,'p','New browser'));assert.equal(find(s,'p','Old browser'),undefined);assert.equal(find(s,'form').hidden,false);assert.equal(find(s,'input').value,'secret');s.api.reset();assert.equal(s.api.deviceListOpen(),false);
+});
