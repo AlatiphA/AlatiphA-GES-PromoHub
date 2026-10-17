@@ -35,3 +35,5 @@
 .dashboardDisclosure[open]>summary::after{transform:rotate(45deg)}
 .dashboardDisclosure[open]>summary{margin-bottom:12px}
 .dashboardDisclosure>summary:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:4px;border-radius:4px}
+
+.dashboardPracticeActions{display:flex;flex-wrap:wrap;gap:10px;grid-column:1/-1}.dashboardPracticeActions>button{flex:1 1 150px}
