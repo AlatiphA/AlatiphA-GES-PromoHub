@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.3";
+const APP_VERSION = "1.11.5";
 
 const versionEl =
   document.getElementById(
@@ -2765,6 +2765,7 @@ function updateAccountUI(user) {
   const administration=document.getElementById("administrationLink");if(administration)administration.hidden=!user || typeof securityIsAdmin!=='function' || !securityIsAdmin();
   accountPanel.classList.toggle("profileRefreshing", !!user && !securityProfile);
   accountPanel.classList.toggle("profilePending", !user);
+  if(typeof securityOfflineStatusRender==='function')securityOfflineStatusRender();
 }
 
 async function initFirebaseFeatures() {

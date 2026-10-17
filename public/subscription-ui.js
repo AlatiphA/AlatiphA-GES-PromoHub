@@ -13,6 +13,7 @@ function subscriptionCachedProfile(){
  try{return JSON.parse(subscriptionLocalRead('ges-promohub-subscription-'+securityLocalOwner));}catch{return null;}
 }
 function subscriptionReadable(){
+ if(typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return true;
  if(cloudUser && securityIsAdmin())return true;
  const p=securityProfile || subscriptionCachedProfile();
  if(securityLocalOwner && p)return (p.accountStatus==='active' && (subscriptionPaid(p)||subscriptionLegacy(p)||Number(p.trialEndsAtMs)>Date.now()));
@@ -57,12 +58,14 @@ function subscriptionRender(){
  const renew=dated && p.accountStatus==='active' && !securityIsAdmin();
  if(renewButton)renewButton.hidden=!renew;
  if(reminder){reminder.hidden=!renew || Number(p.subscriptionEndsAtMs)>Date.now()+7*86400000;reminder.textContent=renew?(subscriptionPaid(p)?subscriptionRemaining(p.subscriptionEndsAtMs)+'. Renew early to extend your current expiry.':'Your paid subscription has expired. Renew to restore reading access.') : '';}
- if(!p)return;
+ if(!p||!cloudUser?.uid)return;
  subscriptionLocalWrite('ges-promohub-subscription-'+cloudUser.uid,JSON.stringify(p));
+ // Repair a missing receipt whenever a verified online administrator is rendered.
+ const adminReadingReady=typeof securityCacheAdminReading==='function'&&typeof securityOfflineDeferred!=='undefined'&&!securityOfflineDeferred&&navigator.onLine!==false&&securityIsAdmin()?securityCacheAdminReading(cloudUser,securityClaims,p):null;
  const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionPaid(p)?`Paid subscription · ${subscriptionRemaining(p.subscriptionEndsAtMs)} · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
  document.getElementById('subscriptionStatus').textContent=text;
  const admin=securityIsAdmin(),purchaseControls=document.getElementById('subscriptionPurchaseControls');if(purchaseControls)purchaseControls.hidden=admin;
- document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
+ document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.'+(adminReadingReady===true?' Offline reading is ready on this device.':adminReadingReady===false?' Offline reading could not be prepared in this browser. Keep the connection on and reopen My Account.':''):'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
  document.getElementById('accountType').textContent=text;
  const premium=document.getElementById('securityPremiumButton');premium.textContent='Submit payment for review';
  document.getElementById('subscriptionPaymentDetails').textContent=`Pay GH₵${subscriptionPlans[document.getElementById('subscriptionPlan').value].price} to MTN MoMo 0243443688, Abdul-Latif Ahmed. Then enter the unique MoMo transaction ID from your SMS or receipt below, not the payment description.`;

@@ -6,7 +6,7 @@ function readerDeviceId(){let id=localStorage.getItem('ges-promohub-device-id');
 let readerBrowserSessionId;
 try {readerBrowserSessionId=navigator.locks ? sessionStorage.getItem('ges-promohub-reader-session') : null;if(!/^[a-f0-9]{32}$/.test(readerBrowserSessionId||'')){readerBrowserSessionId=readerSessionId();sessionStorage.setItem('ges-promohub-reader-session',readerBrowserSessionId);}} catch {readerBrowserSessionId=readerSessionId();}
 function readerSessionKey(uid){return 'ges-promohub-reader-grant-'+uid;}
-function readerSessionPaid(){const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
+function readerSessionPaid(){if(typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return false;const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
 function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(securityProfile?.readingAccessMode!=='offline'&&readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
 function readerSessionMessage(message,error){if(window.PromoHubReaderRecovery){window.PromoHubReaderRecovery.show(message,error);return;}securitySelectTab('account');securityMessage(message);accountPanel.classList.add('open');const status=document.getElementById('readerDevicesStatus');if(status)status.textContent=message;}
 function readerSessionStop(message){if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
@@ -17,7 +17,7 @@ async function readerSessionLock(uid){
   await new Promise(unlock=>{readerSessionUnlock=unlock;resolve();});
  }).catch(reject));
 }
-function readerSessionTransient(error){return /^(functions\/)?(unavailable|deadline-exceeded)$/.test(String(error?.code||''))||/^(auth\/)?network-request-failed$/.test(String(error?.code||''))||/network error|failed to fetch|network request failed/i.test(String(error?.message||''));}
+function readerSessionTransient(error){return /^(functions\/)?(unavailable|deadline-exceeded|internal|cancelled)$/.test(String(error?.code||''))||/^(auth\/)?network-request-failed$/.test(String(error?.code||''))||/network error|failed to fetch|network request failed/i.test(String(error?.message||''));}
 function readerSessionSavedGrant(uid,deviceId){
  const p=securityProfile||subscriptionCachedProfile();
  if(!p||p.accountStatus&&p.accountStatus!=='active'||p.readingAccessMode==='strict'||(!subscriptionPaid(p)&&!subscriptionLegacy(p)))return null;
@@ -78,7 +78,7 @@ function readerSessionRelease(){
 function readerSessionReset(){if(window.PromoHubDeviceList)window.PromoHubDeviceList.stop(true);readerSessionEpoch++;readerSessionRelease();if(window.PromoHubReaderRecovery)window.PromoHubReaderRecovery.reset();}
 const readerSessionOpenLocal=openReader;
 openReader=function(){
- if((!cloudUser&&!readerSessionPaid())||securityIsAdmin())return readerSessionOpenLocal();
+ if((!cloudUser&&!readerSessionPaid())||securityIsAdmin()||typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return readerSessionOpenLocal();
  if(readerSessionBusy)return false;
  const uid=cloudUser?.uid||securityLocalOwner,file=selectedBookFile,epoch=readerSessionEpoch;
  readerSessionBusy=true;
