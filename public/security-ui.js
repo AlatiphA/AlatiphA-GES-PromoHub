@@ -64,7 +64,7 @@ function securityRender(){
  const administrationLink=document.getElementById('administrationLink');if(administrationLink)administrationLink.hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
  const verification=document.getElementById('securityVerification');if(verification)verification.hidden=!!cloudUser?.emailVerified;
- subscriptionRender();if(typeof readerModeRender==='function')readerModeRender();if(typeof accountSecurityRender==='function')accountSecurityRender();
+ subscriptionRender();if(typeof readerModeRender==='function')readerModeRender();if(typeof window!=='undefined'&&window.PromoHubDeviceList)window.PromoHubDeviceList.start();if(typeof accountSecurityRender==='function')accountSecurityRender();
  if(document.activeElement!==document.getElementById('securityName'))document.getElementById('securityName').value=securityProfile?.displayName || cloudUser?.displayName || '';
 }
 let securityActivationPending=null;

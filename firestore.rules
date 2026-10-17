@@ -28,6 +28,10 @@ service cloud.firestore {
     && request.resource.data.photoURL is string && request.resource.data.photoURL.size() <= 2048
     && request.resource.data.updatedAt == request.time;
    allow create, delete: if false;
+   match /access/reader {
+    allow get: if owner(uid) && !exists(/databases/$(database)/documents/accountDeletions/$(uid));
+    allow list, write: if false;
+   }
    match /notifications/{noticeId} {
     allow read: if noticeOwner(uid);
     allow update: if noticeOwner(uid) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read','readAt']) && readMark();

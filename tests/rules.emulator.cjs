@@ -95,3 +95,23 @@ test('question reports, review state and push device tokens remain private to ca
   await assertFails(getDoc(doc(db,path)));
  }
 });
+
+test('device-list state allows only verified active owner get; all client writes and collection lists remain denied',async()=>{
+ await env.withSecurityRulesDisabled(async c=>{
+  const seed=c.firestore();for(const uid of ['alice','bob','suspended','trial','expired'])await setDoc(doc(seed,`users/${uid}/access/reader`),{devices:[{id:'private-device',label:'Mobile'}],lease:null});
+ });
+ await assertSucceeds(getDoc(doc(client('alice'),'users/alice/access/reader')));
+ for(const uid of ['trial','expired'])await assertSucceeds(getDoc(doc(client(uid),`users/${uid}/access/reader`)));
+ await assertFails(getDoc(doc(client('bob'),'users/alice/access/reader')));
+ await assertFails(getDoc(doc(client('alice',false),'users/alice/access/reader')));
+ await assertFails(getDoc(doc(client('suspended'),'users/suspended/access/reader')));
+ await assertFails(getDoc(doc(env.unauthenticatedContext().firestore(),'users/alice/access/reader')));
+ await assertFails(setDoc(doc(client('alice'),'users/alice/access/reader'),{devices:[],lease:null}));
+ await assertFails(updateDoc(doc(client('alice'),'users/alice/access/reader'),{devices:[]}));
+ const {collection,getDocs,deleteDoc}=require('../functions/node_modules/firebase/firestore');
+ await assertFails(deleteDoc(doc(client('alice'),'users/alice/access/reader')));
+ await assertFails(getDocs(collection(client('alice'),'users/alice/access')));
+ await assertFails(getDoc(doc(client('alice'),'users/alice/access/anything-else')));
+ await env.withSecurityRulesDisabled(c=>setDoc(doc(c.firestore(),'accountDeletions/bob'),{started:true}));
+ await assertFails(getDoc(doc(client('bob'),'users/bob/access/reader')));
+});
