@@ -54,12 +54,13 @@ function securityMessage(text){document.getElementById('securityMessage').textCo
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
 function securityRender(){
+ if(securityProfile)document.getElementById('accountPanel')?.classList?.remove('profileRefreshing');
  if(typeof window!=='undefined'&&window.PromoHubPush)window.PromoHubPush.update();
  if(typeof window!=='undefined'&&window.PromoHubSync)window.PromoHubSync.update();
  if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
  if(typeof dashboardUpdate==='function')dashboardUpdate();
- document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || 'GES PromoHub User';
- document.getElementById('accountType').textContent=cloudUser?.emailVerified ? `${securityProfile?.accountTier || 'free'} · ${securityProfile?.accountStatus || 'connecting'}` : 'Email verification required';
+ document.getElementById('accountName').textContent=securityProfile?.displayName || cloudUser?.displayName || cloudUser?.email || 'PromoHub user';
+ document.getElementById('accountType').textContent=cloudUser?.emailVerified ? (securityProfile ? `${securityProfile.accountTier || 'free'} · ${securityProfile.accountStatus || 'connecting'}` : 'Account details updating…') : 'Email verification required';
  const administrationLink=document.getElementById('administrationLink');if(administrationLink)administrationLink.hidden=!securityIsAdmin();
  if(!securityIsAdmin())securityResetAdmin();
  const verification=document.getElementById('securityVerification');if(verification)verification.hidden=!!cloudUser?.emailVerified;
@@ -96,6 +97,7 @@ async function securityAuthChanged(user,explicit=false){
  if(!explicit && typeof navigator!=='undefined' && !navigator.onLine && (!user || user.emailVerified && user.uid===securityLocalOwner) && securityOfflineReadingAllowed()){
   if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
   securityOfflineDeferred=true;securityEpoch++;cloudReady=false;cloudUser=user || null;
+  if(typeof updateAccountUI==='function')updateAccountUI(cloudUser);
   if(!user)securityClaims={};
   clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);
   if(securityStop){securityStop();securityStop=null;}
@@ -112,7 +114,9 @@ async function securityAuthChanged(user,explicit=false){
  if(typeof readerSessionReset==='function')readerSessionReset();
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
- cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};subscriptionSidebarRender();
+ cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};
+ if(typeof updateAccountUI==='function')updateAccountUI(cloudUser);
+ subscriptionSidebarRender();
  if(typeof dashboardReset==='function')dashboardReset();
  if(!user){accountPanel.classList.remove('open');if(securityGuestChosen && subscriptionReadable())hideAuth();else showAuth();if(resumeReaderAfterStartup())hideAuth();return;}
  securityEndGuestChoice();
@@ -120,7 +124,7 @@ async function securityAuthChanged(user,explicit=false){
  const authEpoch=securityEpoch;
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);await updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
+ try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
  catch(e){if(authEpoch!==securityEpoch)return;if(typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;hideAuth();return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}

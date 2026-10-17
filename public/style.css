@@ -1702,3 +1702,13 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .accountBody .administrationLink{display:block;padding:12px 14px;margin:0 0 12px;border:1px solid var(--ui-border,#ccc);border-radius:12px;text-decoration:none}
 .accountBody .logoutBtn{margin-top:16px}
 @media(max-width:480px){.accountBody #myAccountPanel>details>summary{min-height:54px;padding:12px;gap:10px}.accountBody .profileSettingContent{padding:2px 12px 14px}}
+
+/* Opening the profile never waits for the account-service round trip. */
+.profileStartupPanel{display:none;font-size:14px;line-height:1.6}
+.accountPanel.profilePending .profileStartupPanel{display:block}
+.accountPanel.profilePending #securityControls,.accountPanel.profilePending #logoutBtn{display:none!important}
+.profileStartupPanel p{margin:0 0 16px;overflow-wrap:anywhere}
+.profileStartupPanel button{min-height:44px;padding:10px 14px;font:inherit;border:1px solid var(--ui-border,#ccc);border-radius:10px;color:var(--ui-text,#222);background:var(--ui-raised,#f1f2ef);cursor:pointer}
+.profileStartupPanel button:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:3px}
+
+.accountPanel.profileRefreshing #myAccountPanel>details:not(#profileAccountSettings):not(#profileAppearanceSettings),.accountPanel.profileRefreshing #profileAccountSettings .syncStatus{display:none!important}

@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.0";
+const APP_VERSION = "1.11.1";
 
 const versionEl =
   document.getElementById(
@@ -2706,6 +2706,7 @@ if (bottomIncreaseFont) bottomIncreaseFont.addEventListener("click", markPrefere
 if (libraryDayNightBtn) libraryDayNightBtn.addEventListener("click", markPreferencesChanged);
 
 /* ---------- Firebase Authentication ---------- */
+let profileAuthResolved=false;
 const authScreen = document.getElementById("authScreen");
 const authName = document.getElementById("authName");
 const authEmail = document.getElementById("authEmail");
@@ -2751,15 +2752,19 @@ async function ensureUserProfile(user) {
   return securityActivate(user);
 }
 
-async function updateAccountUI(user) {
+function updateAccountUI(user) {
+  // Restored Auth supplies identity immediately; server profile updates arrive separately.
+  if ((user?.uid || '') !== (cloudUser?.uid || '')) return;
   [document.getElementById("profileAvatar"), document.getElementById("libraryProfileAvatar"), document.getElementById("accountAvatar")].forEach(el => setAvatar(el,user));
-  document.getElementById("accountName").textContent = user?.displayName || "GES PromoHub User";
+  document.getElementById("accountName").textContent = user ? (securityProfile?.displayName || user.displayName || user.email || "PromoHub user") : "Account connection paused";
   document.getElementById("accountEmail").textContent = user?.email || "";
-  try {
-    const s = await cloudDb.collection("users").doc(user.uid).get();
-    const d = s.data() || {};
-    document.getElementById("accountType").textContent = (d.accountTier || "free") + " · " + (d.accountStatus || "active");
-  } catch (_) {}
+  if (!user || !securityProfile) document.getElementById("accountType").textContent = !user ? "Reconnect to restore account controls" : user.emailVerified ? "Account details updating…" : "Email verification required";
+  const nameField=document.getElementById("securityName");
+  if(nameField && document.activeElement!==nameField)nameField.value=user ? (securityProfile?.displayName || user.displayName || '') : '';
+  const verification=document.getElementById("securityVerification");if(verification)verification.hidden=!user || !!user.emailVerified;
+  const administration=document.getElementById("administrationLink");if(administration)administration.hidden=!user || typeof securityIsAdmin!=='function' || !securityIsAdmin();
+  accountPanel.classList.toggle("profileRefreshing", !!user && !securityProfile);
+  accountPanel.classList.toggle("profilePending", !user);
 }
 
 async function initFirebaseFeatures() {
@@ -2769,7 +2774,7 @@ async function initFirebaseFeatures() {
     cloudAuth = firebase.auth();
     cloudDb = firebase.firestore();
     cloudAuth.setPersistence(firebase.auth.Auth.Persistence.LOCAL).catch(() => {});
-    cloudAuth.onAuthStateChanged(user => securityAuthChanged(user));
+    cloudAuth.onAuthStateChanged(user => { profileAuthResolved=true; securityAuthChanged(user); });
   } catch (e) { console.warn("Firebase startup:", e); resumeReaderAfterStartup(); }
 }
 
@@ -2821,8 +2826,20 @@ if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
 
 /* Account panel */
 const accountPanel = document.getElementById("accountPanel");
-function openAccount() { if (cloudUser) accountPanel.classList.add("open"); else showAuth(); }
+function openAccount() {
+  if (cloudUser) { updateAccountUI(cloudUser); accountPanel.classList.add("open"); return; }
+  const restoring=typeof securityLocalOwner!=='undefined' && !!securityLocalOwner && !securityGuestChosen && (!profileAuthResolved || securityOfflineReadingAllowed());
+  if (!restoring) { showAuth(); return; }
+  // A saved owner is only a restoration hint, never permission to expose controls.
+  updateAccountUI(null);
+  const offline=navigator.onLine===false;
+  document.getElementById("accountName").textContent=offline?"Account connection paused":"Restoring your account…";
+  document.getElementById("accountType").textContent=offline?"Reconnect to restore account controls":"Checking saved sign-in…";
+  document.getElementById("profileStartupStatus").textContent=offline?"Your sign-in is not restored yet. Reconnect to use account controls. You can close this panel and continue reading if your saved access allows it.":"Your saved sign-in is being restored. You can close this panel and continue reading while it connects.";
+  accountPanel.classList.add("open");
+}
 [document.getElementById("profileBtn"), document.getElementById("libraryProfileBtn")].forEach(b => b && b.addEventListener("click", e => { e.stopPropagation(); openAccount(); }));
+document.getElementById("profileStartupSignIn")?.addEventListener("click", () => { accountPanel.classList.remove("open"); showAuth(); });
 document.getElementById("accountClose")?.addEventListener("click", () => accountPanel.classList.remove("open"));
 document.getElementById("logoutBtn")?.addEventListener("click", async () => { accountPanel.classList.remove("open"); if (cloudAuth) { securityPrepareSignOut(); await cloudAuth.signOut(); } });
 
