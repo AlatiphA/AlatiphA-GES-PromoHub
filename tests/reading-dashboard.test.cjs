@@ -50,3 +50,14 @@ test('dashboard shares library scroller, responsive styles and service worker pr
  const html=fs.readFileSync(require.resolve('../public/index.html'),'utf8'),css=fs.readFileSync(require.resolve('../public/reading-dashboard.css'),'utf8'),sw=fs.readFileSync(require.resolve('../public/sw.js'),'utf8');
  assert.match(html,/<div class="libraryGrid">\s*<div id="readingDashboard"/);assert.match(css,/max-width:520px/);assert.match(css,/grid-template-columns:1fr/);for(const name of ['reading-dashboard.js','reading-dashboard.css'])assert.ok(sw.includes(name));
 });
+
+test('optional dashboard lists start collapsed and keep independent expansion through live updates',()=>{
+ const s=setup(),sections=()=>s.host.children[0].children.filter(n=>n.tag==='details');const [recent,marks]=sections();assert.equal(sections().length,2);assert.equal(recent.open,false);assert.equal(marks.open,false);assert.equal(recent.children[0].tag,'summary');assert.equal(marks.children[0].tag,'summary');
+ recent.open=true;s.store.set('data-one-epub-user-a',JSON.stringify({location:'epubcfi(a)',progress:42,updatedAtMs:2}));s.run('dashboardUpdate()');assert.equal(sections()[0],recent);assert.equal(recent.open,true);assert.equal(marks.open,false);
+ recent.open=false;marks.open=true;s.store.set('ges-promohub-bookmarks-./library/one.epub-user-a',JSON.stringify([{cfi:'epubcfi(note)',chapter:'New bookmark'}]));s.run('dashboardUpdate()');assert.equal(sections()[1],marks);assert.equal(marks.open,true);assert.equal(recent.open,false);assert.equal(s.run('dashboardView.markList.children.length'),1);
+ s.events.back();assert.equal(marks.open,true);assert.equal(recent.open,false);
+});
+test('a new account or page starts with both dashboard disclosures collapsed',()=>{
+ const s=setup();for(const n of s.host.children[0].children.filter(n=>n.tag==='details'))n.open=true;s.ctx.securityLocalOwner='b';s.run('dashboardUpdate()');assert.equal(s.host.children[0].children.filter(n=>n.tag==='details').every(n=>n.open===false),true);
+ const fresh=setup();assert.equal(fresh.host.children[0].children.filter(n=>n.tag==='details').every(n=>n.open===false),true);
+});

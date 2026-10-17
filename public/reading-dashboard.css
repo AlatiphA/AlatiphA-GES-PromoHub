@@ -24,3 +24,14 @@
 .dashboardContinue,.dashboardPanel{padding:16px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface)}
 .dashboardPanel>h3{margin:0 0 12px}
 @media(min-width:900px){.readingDashboardSection{grid-template-columns:1fr 1fr}.readingDashboardSection>h2,.readingDashboardSection>button,.readingDashboardSection>.dashboardHint,.dashboardContinue{grid-column:1/-1}}
+
+/* Keep optional lists compact until the reader expands them. */
+.dashboardDisclosure{align-self:start;min-width:0}
+.dashboardDisclosure>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:44px;cursor:pointer;list-style:none;color:var(--ui-text)}
+.dashboardDisclosure>summary::-webkit-details-marker{display:none}
+.dashboardDisclosure>summary::marker{content:""}
+.dashboardDisclosure>summary>h3{margin:0;font-size:1rem;line-height:1.4;overflow-wrap:anywhere}
+.dashboardDisclosure>summary::after{content:"";width:8px;height:8px;flex:0 0 8px;margin-right:4px;border-right:2px solid currentColor;border-bottom:2px solid currentColor;transform:rotate(-45deg)}
+.dashboardDisclosure[open]>summary::after{transform:rotate(45deg)}
+.dashboardDisclosure[open]>summary{margin-bottom:12px}
+.dashboardDisclosure>summary:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:4px;border-radius:4px}
