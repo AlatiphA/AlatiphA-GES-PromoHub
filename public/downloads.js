@@ -9,7 +9,7 @@
  const connected=()=>navigator.onLine!==false;
  const urlFor=file=>new URL(file,document.baseURI).href;
  const valid=async blob=>{const magic=new Uint8Array(await blob.slice(0,4).arrayBuffer());return blob.size>=4&&magic[0]===80&&magic[1]===75&&magic[2]===3&&magic[3]===4;};
- function text(file){const s=states.get(file)||{};if(s.busy)return 'Downloading '+size(s.received||0)+(s.total?' of '+size(s.total)+' ('+Math.min(99,Math.round((s.received||0)/s.total*100))+'%)':'');if(s.error)return s.error+(s.bytes?' Previous download retained.':'');return s.bytes?(assetsReady?'Ready offline':'Book downloaded; reader setup incomplete')+' · '+size(s.bytes):'Not downloaded';}
+ function text(file){const s=states.get(file)||{};if(s.busy)return 'Downloading '+size(s.received||0)+(s.total?' of '+size(s.total)+' ('+Math.min(99,Math.round((s.received||0)/s.total*100))+'%)':'');if(s.error)return s.error+(s.bytes?' Previous download retained.':'');return s.bytes?(assetsReady?'Downloaded':'Book downloaded; reader setup incomplete')+' · '+size(s.bytes):'Not downloaded';}
  function render(){
   for(const [file,row] of rows){const s=states.get(file)||{};row.state.textContent=text(file);row.progress.hidden=!s.busy;row.progress.removeAttribute('value');if(s.total)row.progress.value=Math.min(99,(s.received||0)/s.total*100);row.download.textContent=s.bytes?'Download again':'Download';row.download.disabled=!supported||!ready||!connected()||running;row.remove.hidden=!s.bytes;row.remove.disabled=running;}
   for(const card of document.querySelectorAll('.bookCard')){const file=card.dataset.file;if(!catalog.has(file))continue;let label=card.querySelector('.offlineBookStatus');if(!label){label=document.createElement('div');label.className='offlineBookStatus';card.querySelector('.bookInfo')?.append(label);}label.textContent=text(file);}
@@ -20,7 +20,7 @@
  function workerVersion(){return new Promise(resolve=>{const worker=navigator.serviceWorker?.controller;if(!worker){resolve('');return;}const channel=new MessageChannel(),timer=setTimeout(()=>{channel.port1.close();resolve('');},2000);channel.port1.onmessage=e=>{clearTimeout(timer);channel.port1.close();resolve(e.data);};worker.postMessage('PROMOHUB_DOWNLOADS_CAPABILITIES',[channel.port2]);});}
  async function scan(){
   if(running)return;const epoch=++scanEpoch;
-  if(!supported){status.textContent='Offline downloads are unavailable in this browser. Use a browser with service workers and Cache Storage.';render();return;}
+  if(!supported){status.textContent='Book downloads are unavailable in this browser. Use a browser with service workers and Cache Storage.';render();return;}
   try{
    ready=(await workerVersion())?.bookCache===CACHE;if(epoch!==scanEpoch)return;
    const cache=await caches.open(CACHE),allNames=(await caches.keys()).filter(n=>n.startsWith('alatipha-ges-promohub-'));
@@ -29,7 +29,7 @@
    if(epoch!==scanEpoch)return;assetsReady=allAssets;
    for(const book of BOOKS){const response=await cache.match(urlFor(book.file));let bytes=0;if(response?.ok){const blob=await response.blob();if(await valid(blob))bytes=blob.size;}if(epoch!==scanEpoch)return;states.set(book.file,{bytes});}
    const count=[...states.values()].filter(s=>s.bytes).length,total=[...states.values()].reduce((n,s)=>n+(s.bytes||0),0);
-   status.textContent=!ready?'Reopen PromoHub to finish the update before downloading books.':count+' of '+BOOKS.length+' books downloaded'+(total?' · '+size(total):'')+'. '+(!assetsReady?'Reader setup is incomplete. Connect and reopen PromoHub to cache its reader files.':!connected()?'Offline. Saved books are available subject to your reading access.':'Reader files are cached. Choose the books you need.');
+   status.textContent=!ready?'Reopen PromoHub to finish the update before downloading books.':count+' of '+BOOKS.length+' books downloaded'+(total?' · '+size(total):'')+'. '+(!assetsReady?'Reader setup is incomplete. Connect and reopen PromoHub to cache its reader files.':!connected()?'No internet connection. Downloaded books remain available with valid reading access.':'Reader files are cached. Choose the books you need.');
    if(navigator.storage?.estimate){const estimate=await navigator.storage.estimate();if(epoch!==scanEpoch)return;document.getElementById('downloadsStorage').textContent=estimate.quota?'Browser storage: '+size(estimate.usage||0)+' used of about '+size(estimate.quota)+'. Shared with other data on this site.':'';}
   }catch(e){if(epoch!==scanEpoch)return;ready=false;status.textContent='Could not check browser storage: '+(e.message||'storage is unavailable.');}
   if(epoch===scanEpoch)render();

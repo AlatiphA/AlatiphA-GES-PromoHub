@@ -53,7 +53,7 @@ test('administrator record can be saved without the reader module being availabl
  const s=setup();s.run('readerDeviceId=undefined');assert.equal(s.run('securityCacheAdminReading(cloudUser,{promohubAdmin:true},{accountStatus:"active"})'),true);assert.ok(s.storage.has('ges-promohub-admin-reader-u'));
 });
 test('verified online admin rendering repairs a missing record before an offline restart',async()=>{
- const s=setup();s.ctx.navigator.onLine=true;await s.run('securityActivateCore(cloudUser)');s.storage.delete('ges-promohub-admin-reader-u');s.run('subscriptionRender()');assert.ok(s.storage.has('ges-promohub-admin-reader-u'));assert.match(s.node('subscriptionHint').textContent,/Offline reading is ready/);
+ const s=setup();s.ctx.navigator.onLine=true;await s.run('securityActivateCore(cloudUser)');s.storage.delete('ges-promohub-admin-reader-u');s.run('subscriptionRender()');assert.ok(s.storage.has('ges-promohub-admin-reader-u'));assert.match(s.node('subscriptionHint').textContent,/Reading is ready/);
  s.run('securityProfile=null;securityClaims={}');s.ctx.navigator.onLine=false;await s.run('securityAuthChanged(cloudUser)');assert.equal(s.run('subscriptionReadable()'),true);s.ctx.openReader();await s.settle();assert.equal(s.opens(),1);assert.equal(s.run('securityIsAdmin()'),false);
 });
 test('storage failure is reported as offline preparation unavailable while admin stays online',async()=>{

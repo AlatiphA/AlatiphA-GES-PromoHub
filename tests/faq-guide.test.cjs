@@ -37,7 +37,7 @@ test('complete guide links resolve and optional support remains separate from su
 test('FAQ and complete guide document automatic connectivity and live administration',()=>{
  for(const name of ['faq.html','user-guide.html']){
   const html=fs.readFileSync(path.join(root,name),'utf8');
-  for(const phrase of ['350-millisecond','25 matching users','Open Administration','no added 24-hour cutoff','2 browser/PWA registrations','1 online reading session','Syncing then resumes automatically','guide-modes','guide-devices','v1.11.9'])assert.ok(html.includes(phrase),name+' missing '+phrase);
+  for(const phrase of ['350-millisecond','25 matching users','Open Administration','no added 24-hour cutoff','2 browser/PWA registrations','1 online reading session','Syncing then resumes automatically','guide-modes','guide-devices','v1.11.10'])assert.ok(html.includes(phrase),name+' missing '+phrase);
   assert.doesNotMatch(html,/The Administration tab|covers app v1\.7\.4/);
   assert.match(html,/starts-with, not substring/);assert.match(html,/Premium profiles can include expired subscriptions/);assert.match(html,/cannot guarantee one reader across disconnected devices/);
  }
@@ -47,4 +47,13 @@ test('shared complete guide chapters agree in embedded FAQ and standalone page',
  for(const id of ['guide-sync','guide-modes','guide-devices','guide-admin','guide-support']){
   const pattern=new RegExp('<section id="'+id+'">[\\s\\S]*?</section>');assert.equal(faq.match(pattern)[0],guide.match(pattern)[0],id);
  }
+});
+
+test('app and help descriptions no longer instruct readers to select a removed mode or disconnect',()=>{
+ for(const name of ['index.html','faq.html','user-guide.html','downloads.js']){
+  const value=fs.readFileSync(path.join(root,name),'utf8');
+  assert.doesNotMatch(value,/choose Offline mode|select Save mode|Online mode requires internet|does not switch automatically|Offline mode persists|Before disconnecting|Ready offline|Close duplicate reading tabs/i,name);
+ }
+ const html=fs.readFileSync(path.join(root,'index.html'),'utf8');assert.match(html,/aria-label="Downloads" title="Downloads"/);assert.match(html,/id="downloadsTitle">Downloads</);assert.match(html,/No mode switch or disconnection is needed/);
+ assert.match(faq,/Do I need to change a reading mode\?/);assert.match(faq,/How do I download books\?/);
 });

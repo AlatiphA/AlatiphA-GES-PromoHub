@@ -60,7 +60,7 @@ async function securityUsers(direction=false){
   securityCursor=result.cursor || null;state.host.replaceChildren();
   for(const u of result.users){
    const row=document.createElement('article');row.className='securityRecord securityUserRow';securityIdentity(row,u);
-   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · Automatic online/offline reading`;row.append(status);
+   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · Automatic reading`;row.append(status);
    const details=document.createElement('details');details.className='securityUserManage';const summary=document.createElement('summary');summary.textContent='Manage';details.append(summary);
    const actions=document.createElement('div');actions.className='securityActions';
    for(const [action,label] of [['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Set to Free']]){

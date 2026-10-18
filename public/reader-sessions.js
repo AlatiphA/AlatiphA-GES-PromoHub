@@ -171,7 +171,7 @@ async function readerDevicesRefresh(){
 function readerDevicesRender(result,uid,epoch){
  if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
  const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList');
-  list.replaceChildren();const access='Automatic online/offline reading';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading device`;
+  list.replaceChildren();const access='Automatic reading';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading device`;
   for(const d of result.devices){
    const row=document.createElement('article');row.className='securityRecord';
    const name=document.createElement('p');name.textContent=d.label+(d.id===readerDeviceId()?' · This browser':'')+(d.active?' · Reading now':'');row.append(name);
@@ -192,5 +192,5 @@ document.getElementById('readerDevicesRefresh').addEventListener('click',readerD
 
 function readerModeRender(){
  const status=document.getElementById('automaticReadingStatus');if(!status)return;
- status.textContent='Reading adapts automatically to your connection. Download books and open one online to prepare this browser for offline reading.';
+ status.textContent='Reading works automatically with or without internet. Download books and open one while connected to prepare this browser.';
 }

@@ -88,7 +88,7 @@
 
   <div class="libraryHeader">
     <div class="headerActions libraryActions" role="group" aria-label="App controls">
-<button id="downloadsOpen" type="button" class="downloadManagerBtn" aria-label="Offline downloads" title="Offline downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
+<button id="downloadsOpen" type="button" class="downloadManagerBtn" aria-label="Downloads" title="Downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
 
     <button type="button" class="iconBtn inboxBell" data-open-inbox aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="inboxBadge" data-inbox-badge hidden></span></button>
     <button id="libraryProfileBtn" class="libraryDayNightBtn profileBtn" aria-label="Account">
@@ -533,8 +533,8 @@
     <details class="profileSetting" name="profile-settings" id="readerDevicesSection">
 <summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><rect x="3" y="3" width="12" height="14" rx="2"/><rect x="15" y="9" width="6" height="12" rx="1"/><path d="M6 21h6M9 17v4"/></svg><span>Reading and devices</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
       <p>Paid accounts support 2 browser/PWA registrations and 1 online reading device at a time. The PWA and browser tabs sharing this browser and hosting address count as one registration. Different browsers and hosting addresses register separately.</p>
-      <p id="automaticReadingStatus">Reading adapts automatically to your connection. Download books and open one online to prepare this browser for offline reading.</p>
-      <p>While offline, progress stays on this device and reading permission lasts until subscription expiry. Reconnect to verify access and sync. Trial progress stays on this device. Disconnected devices cannot enforce a shared online session limit.</p>
+      <p id="automaticReadingStatus">Reading works automatically with or without internet. Download books and open one while connected to prepare this browser.</p>
+      <p>Downloaded books stay available while your saved reading permission is valid. Paid progress syncs when connected and access is confirmed. Trial progress stays on this device. The shared-device limit can only be checked while connected.</p>
       <button id="readerDevicesRefresh">Manage devices</button>
       <p id="readerDevicesStatus" role="status" aria-live="polite"></p>
       <div id="readerDevicesList"></div>
@@ -624,12 +624,14 @@
 <script src="./push-notifications.js"></script>
 <script src="./question-reports.js"></script>
 <dialog id="downloadsDialog" class="downloadsDialog" aria-labelledby="downloadsTitle">
- <div class="downloadsHeading"><h2 id="downloadsTitle">Offline downloads</h2><button id="downloadsClose" type="button" class="navControl" aria-label="Close downloads" title="Close downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
- <p>Downloaded books are stored in this browser on this device. Reading access still follows your trial, subscription and Online/Offline mode.</p>
+ <div class="downloadsHeading"><h2 id="downloadsTitle">Downloads</h2><button id="downloadsClose" type="button" class="navControl" aria-label="Close downloads" title="Close downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></div>
+ <div class="downloadsBody">
+ <p>Save books in this browser to read with or without internet. Reading adapts automatically to your connection. Your trial or subscription must still be valid.</p>
  <p id="downloadsStatus" role="status" aria-live="polite"></p><p id="downloadsStorage"></p>
  <div class="downloadsActions"><button id="downloadsAll" type="button">Download all books</button><button id="downloadsCancel" type="button" hidden>Cancel download</button><button id="downloadsRefresh" type="button">Check downloads</button></div>
  <div id="downloadsList"></div>
- <p class="downloadsNote">Before disconnecting, choose Offline mode in My Account while connected. Trial and guest reading remain local. Clearing browser data or browser storage eviction can remove downloads. Removing a book here keeps your reading progress and bookmarks.</p>
+ <p class="downloadsNote">Download books and open one while connected to prepare this browser. No mode switch or disconnection is needed. Trial and guest progress stays on this device. Clearing browser storage can remove downloads. Remove download keeps your progress and bookmarks.</p>
+ </div>
 </dialog>
 <script src="./quiz-core.js"></script><script src="./revision-core.js"></script><script src="./practice-tests.js"></script><script src="./revision-dashboard.js"></script><script src="./reading-dashboard.js"></script>
 <script src="./downloads.js"></script>
