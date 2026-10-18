@@ -3,7 +3,7 @@ const test=require('node:test'),assert=require('node:assert/strict'),vm=require(
 function setup(){
  const listeners={},deleted=[],fetched=[],stored=[];
  const cache={addAll:async()=>{},add:async()=>{},match:async()=>undefined,put:async r=>stored.push(r.url)};
- const scope={addEventListener:(name,f)=>listeners[name]=f,location:{origin:'https://example.test'},clients:{claim:async()=>{}}};
+ const scope={registration:{scope:'https://example.test/'},addEventListener:(name,f)=>listeners[name]=f,location:{origin:'https://example.test'},clients:{claim:async()=>{}}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/sw.js'),'utf8'),{self:scope,caches:{open:async()=>cache,keys:async()=>['alatipha-ges-promohub-push-bind-v1','other-app-v1','alatipha-ges-promohub-v1.5.4','alatipha-ges-promohub-v1.5.8','alatipha-ges-promohub-v1.5.9','alatipha-ges-promohub-v1.5.10','alatipha-ges-promohub-v1.5.11','alatipha-ges-promohub-v1.5.12','alatipha-ges-promohub-v1.5.13','alatipha-ges-promohub-v1.5.14','alatipha-ges-promohub-v1.5.15','alatipha-ges-promohub-v1.6.0','alatipha-ges-promohub-v1.6.1','alatipha-ges-promohub-v1.6.2','alatipha-ges-promohub-v1.6.3','alatipha-ges-promohub-v1.6.4','alatipha-ges-promohub-v1.6.5','alatipha-ges-promohub-v1.6.6','alatipha-ges-promohub-v1.6.7','alatipha-ges-promohub-v1.7.0','alatipha-ges-promohub-v1.7.1','alatipha-ges-promohub-v1.7.6','alatipha-ges-promohub-v1.7.7','alatipha-ges-promohub-v1.7.8','alatipha-ges-promohub-v1.7.9','alatipha-ges-promohub-v1.8.0','alatipha-ges-promohub-v1.8.1','alatipha-ges-promohub-v1.8.2','alatipha-ges-promohub-v1.8.3','alatipha-ges-promohub-v1.8.4','alatipha-ges-promohub-v1.8.5','alatipha-ges-promohub-v1.8.6','alatipha-ges-promohub-v1.8.7','alatipha-ges-promohub-v1.9.0','alatipha-ges-promohub-v1.9.1','alatipha-ges-promohub-v1.9.2','alatipha-ges-promohub-v1.9.3','alatipha-ges-promohub-v1.9.4','alatipha-ges-promohub-v1.9.5','alatipha-ges-promohub-v1.9.6','alatipha-ges-promohub-v1.9.7','alatipha-ges-promohub-v1.10.5','alatipha-ges-promohub-v1.10.6'],delete:async n=>deleted.push(n)},fetch:async r=>{fetched.push(r.url);throw new Error('offline');},URL,Response,console,Promise});
  return {listeners,deleted,fetched,stored,cache};
 }
@@ -22,3 +22,5 @@ test('failed core precache fails installation rather than activating an incomple
 test('same-origin Firebase reserved auth routes are not intercepted',()=>{
  const s=setup();s.listeners.fetch({request:{method:'GET',url:'https://example.test/__/auth/handler'},respondWith:()=>assert.fail('Auth handler cached')});assert.equal(s.fetched.length,0);
 });
+
+test('release checks bypass cached responses',()=>{const s=setup();s.listeners.fetch({request:{method:'GET',url:'https://example.test/version.json'},respondWith:()=>assert.fail('Release metadata intercepted')});});

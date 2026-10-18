@@ -134,10 +134,8 @@
   document.head.appendChild(style);
 
   const INSTALL_KEY = "gespromohub_install_dismissed";
-  const dismissed =
-    localStorage.getItem(INSTALL_KEY);
-
-  if (dismissed) return;
+  function wasDismissed() { try { return !!localStorage.getItem(INSTALL_KEY); } catch { return false; } }
+  function rememberDismissal() { try { localStorage.setItem(INSTALL_KEY, "1"); } catch {} }
 
   /* ── ANDROID / DESKTOP (Chrome) ── */
   let deferredPrompt = null;
@@ -149,11 +147,12 @@
       deferredPrompt = e;
 
       /* Show after 4 seconds of reading */
-      setTimeout(() => showInstallBanner(), 4000);
+      if (!wasDismissed() && !isInStandalone) setTimeout(() => { if (deferredPrompt) showInstallBanner(); }, 4000);
     }
   );
 
   function showInstallBanner() {
+    if (document.getElementById("installBanner") || installed) return;
 
     const banner =
       document.createElement("div");
@@ -181,24 +180,14 @@
     document.getElementById("ibInstall")
       .addEventListener("click", async () => {
         banner.classList.remove("show");
-        if (deferredPrompt) {
-          deferredPrompt.prompt();
-          const result =
-            await deferredPrompt.userChoice;
-          if (result.outcome === "accepted") {
-            localStorage.setItem(
-              INSTALL_KEY, "1"
-            );
-          }
-          deferredPrompt = null;
-        }
+        await requestInstall();
         setTimeout(() => banner.remove(), 400);
       });
 
     document.getElementById("ibDismiss")
       .addEventListener("click", () => {
         banner.classList.remove("show");
-        localStorage.setItem(INSTALL_KEY, "1");
+        rememberDismissal();
         setTimeout(() => banner.remove(), 400);
       });
 
@@ -216,7 +205,45 @@
       "(display-mode: standalone)"
     ).matches;
 
-  if (isIOS && !isInStandalone) {
+  let installed = isInStandalone;
+  function installStatus(message) {
+    const status = document.getElementById("aboutInstallStatus");
+    if (status) status.textContent = message;
+  }
+  async function requestInstall() {
+    if (installed) { installStatus("PromoHub is installed and running as an app."); return; }
+    if (!deferredPrompt) {
+      installStatus(isIOS ? "In Safari, tap Share, then Add to Home Screen." : "Open your browser menu and choose Install app or Add to Home screen. If that option is unavailable, open PromoHub in Chrome, Edge or Safari.");
+      return;
+    }
+    const prompt = deferredPrompt;
+    deferredPrompt = null;
+    try {
+      await prompt.prompt();
+      const result = await prompt.userChoice;
+      installStatus(result.outcome === "accepted" ? "Installation accepted. Follow your browser’s instructions to finish." : "Installation cancelled. You can try again from the browser menu.");
+      if (result.outcome === "accepted") rememberDismissal();
+    } catch (error) {
+      installStatus("Installation could not start. Try Install app from your browser menu.");
+      console.error("PromoHub installation:", error);
+    }
+  }
+  window.promoHubInstall = requestInstall;
+  window.addEventListener("appinstalled", () => {
+    installed = true;
+    deferredPrompt = null;
+    document.getElementById("installBanner")?.remove();
+    document.getElementById("iosBanner")?.remove();
+    installStatus("PromoHub has been installed.");
+    const button = document.getElementById("aboutInstallApp");
+    if (button) { button.textContent = "Installed"; button.disabled = true; }
+  });
+  if (installed) {
+    const button = document.getElementById("aboutInstallApp");
+    if (button) { button.textContent = "Installed"; button.disabled = true; }
+  }
+
+  if (isIOS && !isInStandalone && !wasDismissed()) {
 
     setTimeout(() => {
 
@@ -244,7 +271,7 @@
       document.getElementById("iosClose")
         .addEventListener("click", () => {
           banner.classList.remove("show");
-          localStorage.setItem(INSTALL_KEY, "1");
+          rememberDismissal();
           setTimeout(() => banner.remove(), 400);
         });
 
