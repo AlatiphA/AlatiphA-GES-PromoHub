@@ -72,3 +72,6 @@ test('leaving for Administration saves the latest reading location before naviga
  h.listeners['admin-click']();assert.equal(h.data.get('alice'+reading.bookFile).location,'latest-admin-cfi');
  assert.equal(JSON.parse(h.storage.get('ges-promohub-reader-view')).view,'reader');
 });
+test('late pagehide from a background PWA preserves the browser newer position',()=>{
+ const h=setup(reading),key='alice./library/mat1.epub',latest={location:'epubcfi(browser-new)',progress:58,updatedAtMs:Date.now()};h.data.set(key,latest);h.listeners.pagehide();assert.equal(h.data.get(key),latest);h.context.persistCurrentReaderPosition();assert.equal(h.data.get(key),latest);
+});

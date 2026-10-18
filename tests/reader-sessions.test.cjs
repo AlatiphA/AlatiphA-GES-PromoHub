@@ -16,7 +16,7 @@ test('first paid reader registers one device; repeat claim and heartbeat are ide
 test('second simultaneous reader is rejected and a closed session permits another device',async()=>{const s=setup();await s.claim();await assert.rejects(s.claim('b','2'),e=>e.code==='already-exists');await s.manage('release');await s.claim('b','2');assert.equal((await s.manage('list')).devices.length,2);});
 test('third registration is refused even when no reader is active',async()=>{const s=setup();await s.claim();await s.manage('release');await s.claim('b','2');await s.manage('release','b','2');await assert.rejects(s.claim('c','3'),e=>e.code==='resource-exhausted');});
 test('racing claims cannot both hold the account lease',async()=>{const s=setup();const r=await Promise.allSettled([s.claim('a','1'),s.claim('b','2')]);assert.equal(r.filter(x=>x.status==='fulfilled').length,1);});
-test('expired lease can be replaced, while the old session cannot renew or release its replacement',async()=>{const s=setup();await s.claim();s.rows.get('users/u/access/reader').lease.expiresAtMs=0;await s.claim('b','2');await s.manage('release');assert.equal(s.rows.get('users/u/access/reader').lease.deviceId,'b'.repeat(32));await assert.rejects(s.claim('a','1',{renew:true}),e=>e.code==='already-exists');});
+test('expired lease can be replaced, while the old session cannot renew or release its replacement',async()=>{const s=setup();await s.claim();s.rows.get('users/u/access/reader').lease.expiresAtMs=0;s.rows.get('users/u/access/reader').windows.forEach(w=>w.expiresAtMs=0);await s.claim('b','2');await s.manage('release');assert.equal(s.rows.get('users/u/access/reader').lease.deviceId,'b'.repeat(32));await assert.rejects(s.claim('a','1',{renew:true}),e=>e.code==='already-exists');});
 test('device removal requires recent auth, releases its lease and rejects the removed heartbeat',async()=>{const s=setup();await s.claim();await assert.rejects(s.manage('remove','a','1',{auth_time:1}),e=>e.code==='failed-precondition');await s.manage('remove');await assert.rejects(s.claim('a','1',{renew:true}),e=>e.code==='permission-denied');assert.equal((await s.manage('list')).devices.length,0);});
 test('unverified, disabled, suspended, expired and deleting accounts cannot claim',async()=>{const s=setup();await assert.rejects(s.api.claimPromoHubReaderSession(s.req({deviceId:'a'.repeat(32),sessionId:'1'.repeat(32)},{email_verified:false})));s.records.set('u',{disabled:true,emailVerified:true});await assert.rejects(s.claim());s.records.set('u',{emailVerified:true});s.rows.get('users/u').accountStatus='suspended';await assert.rejects(s.claim());s.rows.get('users/u').accountStatus='active';s.rows.get('users/u').subscriptionEndsAtMs=0;await assert.rejects(s.claim());s.rows.get('users/u').trialEndsAtMs=Date.now()+100000;s.rows.set('accountDeletions/u',{});await assert.rejects(s.claim());});
 test('owner-issued administrator claim is checked in current Auth; stale claim gets no exemption',async()=>{const s=setup();s.records.set('u',{emailVerified:true,customClaims:{promohubAdmin:true}});const data={deviceId:'a'.repeat(32),sessionId:'1'.repeat(32)};assert.equal((await s.api.claimPromoHubReaderSession(s.req(data,{promohubAdmin:true}))).reason,'administrator');s.records.set('u',{emailVerified:true});assert.equal((await s.api.claimPromoHubReaderSession(s.req(data,{promohubAdmin:true}))).exempt,false);});
@@ -34,7 +34,7 @@ test('legacy offline accounts now enforce one online lease and retain two regist
 test('legacy Premium automatic permission retains its established undated entitlement',async()=>{const s=setup();s.rows.get('users/u').readingAccessMode='offline';s.rows.get('users/u').subscriptionSchema=0;s.rows.get('users/u').securitySchemaVersion=2;const first=await s.claim(),second=await s.claim('a','1',{renew:true});assert.equal(first.offlineUntilMs,253402300799000);assert.equal(second.readingAccessMode,'auto');});
 
 test('automatic reconnect resumes an expired lease but cannot reregister a removed device',async()=>{
- const s=setup();await s.claim();s.rows.get('users/u/access/reader').lease.expiresAtMs=0;
+ const s=setup();await s.claim();s.rows.get('users/u/access/reader').lease.expiresAtMs=0;s.rows.get('users/u/access/reader').windows.forEach(w=>w.expiresAtMs=0);
  const grant=await s.claim('a','1',{resume:true});assert.equal(grant.readingAccessMode,'auto');assert.equal((await s.manage('list')).devices.length,1);
  await s.manage('remove');await assert.rejects(s.claim('a','1',{resume:true}),e=>e.code==='permission-denied');assert.equal((await s.manage('list')).devices.length,0);
 });
@@ -44,4 +44,20 @@ test('automatic trial grants end at the server trial expiry without registering 
 });
 test('legacy mode API requests normalize to automatic and cannot disable online concurrency',async()=>{
  const s=setup();await s.api.setMyPromoHubReadingMode(s.req({mode:'offline'}));assert.equal(s.rows.get('users/u').readingAccessMode,'auto');await s.claim();await assert.rejects(s.claim('b','2'),e=>e.code==='already-exists');
+});
+
+test('PWA and browser windows on one registration share online admission without device removal',async()=>{
+ const s=setup();await s.claim('a','1');await s.claim('a','2');await s.claim('a','1',{renew:true});assert.equal((await s.manage('list')).devices.length,1);assert.equal(s.rows.get('users/u/access/reader').windows.length,2);await assert.rejects(s.claim('b','3'),e=>e.code==='already-exists');
+});
+test('closing either same-device window cannot release another open window lease',async()=>{
+ for(const session of ['1','2']){const s=setup();await s.claim('a','1');await s.claim('a','2');await s.manage('release','a',session);await assert.rejects(s.claim('b','3'),e=>e.code==='already-exists');const remaining=session==='1'?'2':'1';await s.manage('release','a',remaining);await s.claim('b','3');}
+});
+test('legacy per-window leases are adopted without deleting their device or saved entitlement',async()=>{
+ const s=setup();s.rows.set('users/u/access/reader',{devices:[{id:'a'.repeat(32),label:'Mobile'}],lease:{deviceId:'a'.repeat(32),sessionId:'1'.repeat(32),expiresAtMs:Date.now()+120000}});const result=await s.claim('a','2');assert.equal(result.offlineUntilMs,s.rows.get('users/u').subscriptionEndsAtMs);assert.equal(s.rows.get('users/u/access/reader').windows.length,2);await s.manage('release','a','1');await assert.rejects(s.claim('b','3'),e=>e.code==='already-exists');
+});
+test('device removal removes every window lease and prevents any removed-window renewal',async()=>{
+ const s=setup();await s.claim('a','1');await s.claim('a','2');await s.manage('remove');assert.equal(s.rows.get('users/u/access/reader').windows.length,0);await assert.rejects(s.claim('a','2',{renew:true}),e=>e.code==='permission-denied');await s.claim('b','3');
+});
+test('same-device window records are bounded and expired records do not accumulate',async()=>{
+ const s=setup();for(let i=0;i<32;i++)await s.claim('a','1',{sessionId:i.toString(16).padStart(32,'0')});await assert.rejects(s.claim('a','f'),e=>e.code==='failed-precondition');s.rows.get('users/u/access/reader').windows.forEach(w=>w.expiresAtMs=0);await s.claim('a','f');assert.equal(s.rows.get('users/u/access/reader').windows.length,1);
 });

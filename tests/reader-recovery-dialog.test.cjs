@@ -71,3 +71,7 @@ test('live recovery list updates preserve inline identity confirmation',async()=
  find(s,'input').value='secret';assert.equal(s.api.deviceListOpen(),true);s.api.renderDevices({devices:[{id:'new',label:'New browser'}]});
  assert.ok(find(s,'p','New browser'));assert.equal(find(s,'p','Old browser'),undefined);assert.equal(find(s,'form').hidden,false);assert.equal(find(s,'input').value,'secret');s.api.reset();assert.equal(s.api.deviceListOpen(),false);
 });
+
+test('session conflicts offer retry without device removal or password confirmation',async()=>{
+ for(const code of ['already-exists','functions/already-exists']){const s=setup();s.api.show('Another registered device is reading',{code});await flush();assert.equal(find(s,'button','Registered devices').hidden,true);assert.equal(find(s,'form').hidden,true);assert.equal(s.calls.length,0);await find(s,'button','Retry opening book').onclick();assert.equal(s.opens(),1);assert.equal(s.removed(),0);}
+});

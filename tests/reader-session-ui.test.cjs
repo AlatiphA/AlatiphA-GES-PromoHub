@@ -35,8 +35,8 @@ test('reopening waits for the previous server release before fresh admission',as
 test('account switch while waiting for release prevents the pending reopen',async()=>{
  const s=setup(),locks=delayedLocks();s.context.navigator.locks=locks.api;s.context.openReader();await s.settle();s.context.backBtn.click();s.context.openReader();await s.settle();s.context.readerSessionReset();s.context.cloudUser={uid:'other'};s.context.securityLocalOwner='other';locks.finish();await s.settle();assert.equal(s.opens(),1);
 });
-test('a lock owned by another tab still blocks reader admission',async()=>{
- const s=setup();let message='';s.context.navigator.locks={request:async(name,options,callback)=>callback(null)};s.context.window.PromoHubReaderRecovery={show:text=>message=text};s.context.openReader();await s.settle();assert.equal(s.opens(),0);assert.match(message,/another tab/);assert.equal(s.claims(),0);
+test('an occupied local lock still blocks duplicate opening in that window',async()=>{
+ const s=setup();let message='';s.context.navigator.locks={request:async(name,options,callback)=>callback(null)};s.context.window.PromoHubReaderRecovery={show:text=>message=text};s.context.openReader();await s.settle();assert.equal(s.opens(),0);assert.match(message,/this window/);assert.equal(s.claims(),0);
 });
 test('ordinary Back then reopen also waits for browser lock release',async()=>{
  const s=setup(),locks=delayedLocks();s.context.navigator.locks=locks.api;s.context.openReader();await s.settle();s.context.backBtn.click();s.context.openReader();await s.settle();assert.equal(s.opens(),1);locks.finish();await s.settle();assert.equal(s.opens(),2);
@@ -92,4 +92,18 @@ test('denial on initial online opening removes old permission before a later off
 });
 test('a transient in-flight check survives deferred null Auth for the same offline account',async()=>{
  const s=setup();s.context.openReader();await s.settle();let reject;s.context.securityCall=()=>new Promise((_,r)=>reject=r);const work=s.context.readerSessionHeartbeat();s.context.cloudUser=null;s.context.navigator.onLine=false;s.handlers.offline();reject(Object.assign(Error('Network lost'),{code:'functions/unavailable'}));await work;assert.ok(s.context.rendition);assert.equal(s.context.cloudReady,false);
+});
+
+test('PWA and browser contexts sharing storage use different local lock names and both open',async()=>{
+ const a=setup(),b=setup(),held=new Set(),names=[];
+ const locks={request:async(name,opts,callback)=>{names.push(name);if(held.has(name))return callback(null);held.add(name);try{return await callback({name});}finally{held.delete(name);}}};
+ b.context.localStorage=a.context.localStorage;a.context.navigator.locks=b.context.navigator.locks=locks;
+ a.context.openReader();await a.settle();b.context.openReader();await b.settle();assert.equal(a.opens(),1);assert.equal(b.opens(),1);assert.notEqual(names[0],names[1]);assert.equal(a.context.readerDeviceId(),b.context.readerDeviceId());
+ a.context.backBtn.click();b.context.backBtn.click();await a.settle();
+});
+test('hidden or unfocused windows do not renew or produce conflict popups in the background',async()=>{
+ const s=setup();s.context.openReader();await s.settle();const claims=s.claims();s.context.document.visibilityState='hidden';await s.context.readerSessionHeartbeat();assert.equal(s.claims(),claims);s.context.document.visibilityState='visible';s.context.document.hasFocus=()=>false;await s.context.readerSessionHeartbeat();assert.equal(s.claims(),claims);assert.ok(s.context.rendition);
+});
+test('returning to a PWA restores the same-account position saved by the browser',async()=>{
+ const s=setup();s.context.openReader();await s.settle();const shown=[];s.context.rendition.display=cfi=>{shown.push(cfi);return Promise.resolve();};s.context.loadReaderData=()=>({location:'epubcfi(web-position)'});s.context.currentLocation={start:{cfi:'epubcfi(old-pwa)'}};await s.context.readerSessionForeground();assert.deepEqual(shown,['epubcfi(web-position)']);
 });

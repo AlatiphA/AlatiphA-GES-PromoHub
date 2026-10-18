@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.8";
+const APP_VERSION = "1.11.9";
 
 const versionEl =
   document.getElementById(
@@ -1412,7 +1412,7 @@ function startReader() {
 
     try {
 
-      if (!isCurrentReader()) return;
+      if (!isCurrentReader() || typeof document!=='undefined'&&document.visibilityState==='hidden') return;
       currentLocation =
         location;
       const percent = updateReadingLocationDisplay(location, locationsReady);
@@ -2991,6 +2991,8 @@ function resumeReaderAfterStartup() {
 function persistCurrentReaderPosition() {
   if (!rendition || !currentLocation?.start?.cfi) return;
   const saved = loadReaderData();
+  // A background PWA must not overwrite newer progress saved by its browser tab.
+  if (saved.location && saved.location !== currentLocation.start.cfi && Number(saved.updatedAtMs) > 0) return;
   saveReaderData({ ...saved, location: currentLocation.start.cfi,
     chapter: currentLocation.start.href || saved.chapter || "",
     lastRead: new Date().toISOString() });

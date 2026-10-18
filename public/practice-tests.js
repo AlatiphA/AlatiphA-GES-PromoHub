@@ -29,6 +29,7 @@ async function quizLease(){
  }catch(e){quizLeaseRelease();throw e;}finally{quizBusy=false;}
 }
 async function quizRefreshLease(){
+ if(document.visibilityState==='hidden'||typeof document.hasFocus==='function'&&!document.hasFocus())return;
  if(!quizOwnLease||quizBusy)return;
  const epoch=quizEpoch,owner=securityLocalOwner;quizBusy=true;
  try{
