@@ -1,11 +1,11 @@
-/* Two browser/PWA registrations and one online reader lease per paid account. */
+/* Two registrations; PWA/tabs share admission on one online reading device. */
 let readerSessionExpiryTimer=null;
 let readerSessionLockDone=Promise.resolve(),readerSessionReleaseDone=Promise.resolve();
 let readerSessionGrant=null,readerSessionTimer=null,readerSessionBusy=false,readerSessionEpoch=0,readerSessionUnlock=null;
 function readerSessionId(){const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
 function readerDeviceId(){let id=localStorage.getItem('ges-promohub-device-id');if(!/^[a-f0-9]{32}$/.test(id||'')){id=readerSessionId();localStorage.setItem('ges-promohub-device-id',id);}return id;}
-let readerBrowserSessionId;
-try {readerBrowserSessionId=navigator.locks ? sessionStorage.getItem('ges-promohub-reader-session') : null;if(!/^[a-f0-9]{32}$/.test(readerBrowserSessionId||'')){readerBrowserSessionId=readerSessionId();sessionStorage.setItem('ges-promohub-reader-session',readerBrowserSessionId);}} catch {readerBrowserSessionId=readerSessionId();}
+// A fresh window token prevents a cloned tab from sharing a release token.
+const readerBrowserSessionId=readerSessionId();
 function readerSessionKey(uid){return 'ges-promohub-reader-grant-'+uid;}
 function readerSessionPaid(){if(typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return false;const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
 function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&navigator.onLine&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
@@ -16,8 +16,8 @@ async function readerSessionLock(uid){
  await readerSessionReleaseDone;
  if(!navigator.locks)return;
  await new Promise((resolve,reject)=>{
-  const request=navigator.locks.request('promohub-reader-'+uid,{ifAvailable:true},async lock=>{
-  if(!lock){reject(new Error('This account already has a reader open in another tab. Close it first.'));return;}
+  const request=navigator.locks.request('promohub-reader-'+uid+'-'+readerBrowserSessionId,{ifAvailable:true},async lock=>{
+  if(!lock){reject(new Error('A reader is already opening in this window. Wait a moment and try again.'));return;}
   await new Promise(unlock=>{readerSessionUnlock=unlock;resolve();});
   });
   readerSessionLockDone=request.catch(()=>{});
@@ -88,6 +88,7 @@ function readerSessionWatchExpiry(){
  },Math.min(2147483647,Math.max(0,deadline-Date.now())));
 }
 async function readerSessionHeartbeat(){
+ if(document.visibilityState==='hidden'||typeof document.hasFocus==='function'&&!document.hasFocus())return;
  if(!rendition||!(cloudUser||securityLocalOwner)||readerSessionBusy)return;
  if(readerSessionGrant?.exempt&&!readerSessionPaid()){readerSessionStateChanged();return;}
  readerSessionBusy=true;const epoch=readerSessionEpoch;
@@ -141,7 +142,16 @@ window.addEventListener('offline',()=>{
  if(rendition&&readerSessionPaid()&&!readerSessionUseOffline())readerSessionStop('This browser needs one online access check before it can read offline. Reconnect and tap Retry.');
  if(window.PromoHubSync)window.PromoHubSync.update();
 });
-document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')readerSessionHeartbeat();});
+function readerSessionForeground(){
+ if(document.visibilityState==='hidden')return;
+ if(rendition&&typeof loadReaderData==='function'){
+  const saved=loadReaderData(),current=typeof currentLocation!=='undefined'?currentLocation?.start?.cfi:null;
+  if(typeof saved?.location==='string'&&saved.location.startsWith('epubcfi(')&&saved.location!==current)rendition.display(saved.location).catch(()=>{});
+ }
+ return readerSessionHeartbeat();
+}
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')readerSessionForeground();});
+window.addEventListener('focus',readerSessionForeground);
 // A matching press and click on the actual backdrop closes the profile, not a drag from the card.
 let profileBackdropPressed=false;
 accountPanel.addEventListener('pointerdown',e=>{profileBackdropPressed=e.target===accountPanel;});
@@ -161,7 +171,7 @@ async function readerDevicesRefresh(){
 function readerDevicesRender(result,uid,epoch){
  if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
  const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList');
-  list.replaceChildren();const access='Automatic online/offline reading';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
+  list.replaceChildren();const access='Automatic online/offline reading';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading device`;
   for(const d of result.devices){
    const row=document.createElement('article');row.className='securityRecord';
    const name=document.createElement('p');name.textContent=d.label+(d.id===readerDeviceId()?' · This browser':'')+(d.active?' · Reading now':'');row.append(name);

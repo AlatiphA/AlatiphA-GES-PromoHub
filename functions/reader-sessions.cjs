@@ -2,7 +2,9 @@
 const subscriptions=require('./subscriptions.cjs');
 // Existing profiles use automatic access without a destructive profile migration.
 function readingMode(){return 'auto';}
-const MAX_DEVICES=2,LEASE_MS=120000;
+const MAX_DEVICES=2,LEASE_MS=120000,MAX_WINDOWS=32;
+function activeWindows(state,now){return (Array.isArray(state.windows)?state.windows:state.lease?[state.lease]:[]).filter(s=>s&&s.expiresAtMs>now);}
+function deviceLease(windows){return windows.reduce((last,s)=>!last||s.expiresAtMs>last.expiresAtMs?s:last,null);}
 module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
  function id(value){if(typeof value!=='string'||!/^[a-f0-9]{32}$/.test(value))throw new HttpsError('invalid-argument','Invalid device or session identifier.');return value;}
  async function account(req){
@@ -31,13 +33,17 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
     let device=devices.find(d=>d.id===deviceId);
     if((renew||resume)&&!device)throw new HttpsError('permission-denied','This device was removed. Open My Account to register again.');
     if(!device&&devices.length>=MAX_DEVICES)throw new HttpsError('resource-exhausted','Two devices are already registered. Remove an unused device in My Account, then try again.');
-    const lease=state.lease;
-    if(lease&&lease.expiresAtMs>now&&(lease.deviceId!==deviceId||lease.sessionId!==sessionId))throw new HttpsError('already-exists','This account is reading in another session. Close that reader, or wait up to 2 minutes after it disconnects.');
-    if(renew&&(!lease||lease.deviceId!==deviceId||lease.sessionId!==sessionId||lease.expiresAtMs<=now))throw new HttpsError('failed-precondition','Your reader session ended. Open the book again.');
+    const windows=activeWindows(state,now);
+    const lease=deviceLease(windows);
+    // Browser tabs and the installed PWA share a registration, not a per-window lease.
+    if(lease&&lease.expiresAtMs>now&&lease.deviceId!==deviceId)throw new HttpsError('already-exists','This account is reading on another registered device. Close that reader, or wait up to 2 minutes after it disconnects.');
     if(!device){device={id:deviceId,label:String(req.data?.label||'Browser / PWA').slice(0,80),registeredAtMs:now};devices.push(device);}
     device.lastSeenAtMs=now;
+    const own=windows.filter(s=>s.deviceId!==deviceId||s.sessionId!==sessionId);
+    if(own.length>=MAX_WINDOWS)throw new HttpsError('failed-precondition','Close unused PromoHub windows before opening another reader.');
     const expiresAtMs=now+LEASE_MS,offlineUntilMs=subscriptions.legacy(p)?253402300799000:Number(p.subscriptionEndsAtMs);
-    tx.set(ref,{devices,lease:{deviceId,sessionId,expiresAtMs},updatedAtMs:now});
+    own.push({deviceId,sessionId,expiresAtMs});
+    tx.set(ref,{devices,windows:own,lease:deviceLease(own),updatedAtMs:now});
     return {exempt:false,readingAccessMode:readingMode(p),expiresAtMs,offlineUntilMs,maxDevices:MAX_DEVICES,maxSessions:1};
    });
   }),
@@ -73,16 +79,18 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
    const operation=req.data?.operation||'list';
    if(!['list','remove','release'].includes(operation))throw new HttpsError('invalid-argument','Unknown device operation.');
    return transact(req,({who,p,state,tx,ref,now})=>{
-    const devices=Array.isArray(state.devices)?state.devices:[],lease=state.lease;
+    const devices=Array.isArray(state.devices)?state.devices:[],windows=activeWindows(state,now),lease=deviceLease(windows);
     if(operation==='list')return {exempt:who.admin,readingAccessMode:readingMode(p),maxDevices:MAX_DEVICES,maxSessions:1,devices:devices.map(d=>({...d,active:lease?.deviceId===d.id&&lease.expiresAtMs>now}))};
     const deviceId=id(req.data?.deviceId);
     if(operation==='remove'){
      const authTime=Number(req.auth.token.auth_time);
      if(!Number.isFinite(authTime)||now/1000-authTime>300)throw new HttpsError('failed-precondition','Sign out and sign in again before removing a device.');
-     tx.set(ref,{devices:devices.filter(d=>d.id!==deviceId),lease:lease?.deviceId===deviceId?null:lease,updatedAtMs:now});
+     const remaining=windows.filter(s=>s.deviceId!==deviceId);
+     tx.set(ref,{devices:devices.filter(d=>d.id!==deviceId),windows:remaining,lease:deviceLease(remaining),updatedAtMs:now});
     }else{
      const sessionId=id(req.data?.sessionId);
-     if(lease?.deviceId===deviceId&&lease.sessionId===sessionId)tx.set(ref,{devices,lease:null,updatedAtMs:now});
+     const remaining=windows.filter(s=>s.deviceId!==deviceId||s.sessionId!==sessionId);
+     tx.set(ref,{devices,windows:remaining,lease:deviceLease(remaining),updatedAtMs:now});
     }
     return {ok:true};
    });

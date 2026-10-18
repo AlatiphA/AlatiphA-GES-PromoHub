@@ -19,3 +19,6 @@ test('explicit practice reconnect rejection invalidates permission and releases 
 test('closing practice after offline fallback releases its original browser lock',async()=>{
  const s=setup();s.ctx.readerSessionEpoch=4;await s.run('quizLease()');s.ctx.readerSessionGrant={...s.ctx.readerSessionGrant,online:false};s.run('quizClose()');assert.equal(s.released(),1);
 });
+test('background practice windows do not renew online admission',async()=>{
+ const s=setup();await s.run('quizLease()');s.ctx.document.visibilityState='hidden';s.ctx.readerSessionClaim=()=>assert.fail('background renewal');await s.run('quizRefreshLease()');assert.equal(s.run('quizOwnLease'),true);
+});
