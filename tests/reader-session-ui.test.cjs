@@ -24,3 +24,38 @@ test('offline mode never enables cloud syncing even with internet available',asy
 test('user mode switch requires connection and clears old offline permission when selecting online',async()=>{const s=setup();let request;s.context.securityCall=async(name,data)=>{request={name,data};return {ok:true};};s.context.navigator.onLine=false;await s.context.readerModeSave();assert.equal(request,undefined);s.context.navigator.onLine=true;s.node('myReadingMode').value='strict';s.data.set('ges-promohub-reader-grant-u','old');await s.context.readerModeSave();assert.equal(request.name,'setMyPromoHubReadingMode');assert.equal(request.data.mode,'strict');assert.equal(request.data.uid,undefined);assert.equal(s.context.securityProfile.readingAccessMode,'strict');assert.equal(s.data.has('ges-promohub-reader-grant-u'),false);});
 test('late own-mode response cannot change another account',async()=>{const s=setup();let resolve;s.context.securityCall=()=>new Promise(r=>resolve=r);s.node('myReadingMode').value='offline';const pending=s.context.readerModeSave();s.context.cloudUser={uid:'other'};s.context.securityEpoch++;s.context.securityProfile={paid:true,readingAccessMode:'strict'};resolve({ok:true});await pending;assert.equal(s.context.securityProfile.readingAccessMode,'strict');});
 test('My Account selector defaults online and preserves explicit offline mode',()=>{const s=setup();s.context.cloudUser.emailVerified=true;s.context.readerModeRender();assert.equal(s.node('myReadingMode').value,'strict');s.context.securityProfile.readingAccessMode='offline';s.context.readerModeRender();assert.equal(s.node('myReadingMode').value,'offline');});
+
+function delayedLocks(){
+ let held=false,finish;
+ return {api:{async request(name,options,callback){if(held)return callback(null);held=true;try{await callback({name});await new Promise(resolve=>{finish=resolve;});}finally{held=false;}}},finish(){assert.ok(finish,'old lock callback is awaiting release');const resolve=finish;finish=null;resolve();},held:()=>held};
+}
+test('mode switch waits for actual browser lock release before reopening',async()=>{
+ const s=setup(),locks=delayedLocks();s.context.navigator.locks=locks.api;
+ let message='';s.context.window.PromoHubReaderRecovery={show:text=>message=text};
+ s.context.openReader();await s.settle();assert.equal(s.opens(),1);
+ s.node('myReadingMode').value='offline';const saving=s.context.readerModeSave();await s.settle();
+ assert.equal(s.opens(),1);assert.equal(locks.held(),true);assert.equal(message,'');
+ locks.finish();await saving;await s.settle();assert.equal(s.opens(),2);assert.equal(message,'');assert.equal(s.context.securityProfile.readingAccessMode,'offline');
+});
+test('mode switch waits for server release before claiming again in either direction',async()=>{
+ for(const mode of ['strict','offline']){
+  const s=setup();s.context.openReader();await s.settle();let release,claims=0;
+  s.context.securityCall=async(name,args)=>{if(args?.operation==='release'){await new Promise(resolve=>release=resolve);return {ok:true};}if(name==='setMyPromoHubReadingMode')return {ok:true};claims++;return {readingAccessMode:mode,expiresAtMs:Date.now()+120000,offlineUntilMs:Date.now()+60000};};
+  s.node('myReadingMode').value=mode;const saving=s.context.readerModeSave();await s.settle();assert.equal(s.opens(),1);assert.equal(claims,0);
+  release();await saving;await s.settle();assert.equal(s.opens(),2);assert.equal(claims,1);
+ }
+});
+test('account switch during lock release cannot reopen or overwrite the new account',async()=>{
+ const s=setup(),locks=delayedLocks();s.context.navigator.locks=locks.api;s.context.openReader();await s.settle();
+ s.node('myReadingMode').value='offline';const saving=s.context.readerModeSave();await s.settle();s.context.readerSessionReset();s.context.securityEpoch++;s.context.cloudUser={uid:'other'};s.context.securityProfile={paid:true,readingAccessMode:'strict'};
+ locks.finish();await saving;await s.settle();assert.equal(s.opens(),1);assert.equal(s.context.securityProfile.readingAccessMode,'strict');
+});
+test('a lock owned by another tab still blocks reader admission',async()=>{
+ const s=setup();let message='';s.context.navigator.locks={request:async(name,options,callback)=>callback(null)};s.context.window.PromoHubReaderRecovery={show:text=>message=text};s.context.openReader();await s.settle();assert.equal(s.opens(),0);assert.match(message,/another tab/);assert.equal(s.claims(),0);
+});
+test('ordinary Back then reopen also waits for browser lock release',async()=>{
+ const s=setup(),locks=delayedLocks();s.context.navigator.locks=locks.api;s.context.openReader();await s.settle();s.context.backBtn.click();s.context.openReader();await s.settle();assert.equal(s.opens(),1);locks.finish();await s.settle();assert.equal(s.opens(),2);
+});
+test('a failed server release settles and allows a fresh checked admission',async()=>{
+ const s=setup();s.context.openReader();await s.settle();const call=s.context.securityCall;s.context.securityCall=async(name,args)=>{if(args?.operation==='release')throw Error('network unavailable');return call(name,args);};s.context.backBtn.click();s.context.openReader();await s.settle();assert.equal(s.opens(),2);
+});
