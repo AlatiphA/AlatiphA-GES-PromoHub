@@ -1,5 +1,6 @@
 /* Two browser/PWA registrations and one online reader lease per paid account. */
 let readerSessionExpiryTimer=null;
+let readerSessionLockDone=Promise.resolve(),readerSessionReleaseDone=Promise.resolve();
 let readerSessionGrant=null,readerSessionTimer=null,readerSessionBusy=false,readerSessionEpoch=0,readerSessionUnlock=null;
 function readerSessionId(){const bytes=new Uint8Array(16);crypto.getRandomValues(bytes);return Array.from(bytes,b=>b.toString(16).padStart(2,'0')).join('');}
 function readerDeviceId(){let id=localStorage.getItem('ges-promohub-device-id');if(!/^[a-f0-9]{32}$/.test(id||'')){id=readerSessionId();localStorage.setItem('ges-promohub-device-id',id);}return id;}
@@ -11,11 +12,17 @@ function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(securityPro
 function readerSessionMessage(message,error){if(window.PromoHubReaderRecovery){window.PromoHubReaderRecovery.show(message,error);return;}securitySelectTab('account');securityMessage(message);accountPanel.classList.add('open');const status=document.getElementById('readerDevicesStatus');if(status)status.textContent=message;}
 function readerSessionStop(message){if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
 async function readerSessionLock(uid){
+ // A released lock remains held until the Web Locks callback has settled.
+ await readerSessionReleaseDone;
  if(!navigator.locks)return;
- await new Promise((resolve,reject)=>navigator.locks.request('promohub-reader-'+uid,{ifAvailable:true},async lock=>{
+ await new Promise((resolve,reject)=>{
+  const request=navigator.locks.request('promohub-reader-'+uid,{ifAvailable:true},async lock=>{
   if(!lock){reject(new Error('This account already has a reader open in another tab. Close it first.'));return;}
   await new Promise(unlock=>{readerSessionUnlock=unlock;resolve();});
- }).catch(reject));
+  });
+  readerSessionLockDone=request.catch(()=>{});
+  request.catch(reject);
+ });
 }
 function readerSessionTransient(error){return /^(functions\/)?(unavailable|deadline-exceeded|internal|cancelled)$/.test(String(error?.code||''))||/^(auth\/)?network-request-failed$/.test(String(error?.code||''))||/network error|failed to fetch|network request failed/i.test(String(error?.message||''));}
 function readerSessionSavedGrant(uid,deviceId){
@@ -73,7 +80,12 @@ function readerSessionRelease(){
  clearInterval(readerSessionTimer);readerSessionTimer=null;clearTimeout(readerSessionExpiryTimer);readerSessionExpiryTimer=null;
  const grant=readerSessionGrant;readerSessionGrant=null;
  if(readerSessionUnlock){readerSessionUnlock();readerSessionUnlock=null;}
- if(grant&&!grant.exempt&&grant.online&&cloudUser?.uid===grant.uid&&navigator.onLine)securityCall('managePromoHubDevices',{operation:'release',deviceId:grant.deviceId,sessionId:grant.sessionId}).catch(()=>{});
+ const serverRelease=grant&&!grant.exempt&&grant.online&&cloudUser?.uid===grant.uid&&navigator.onLine
+  ? securityCall('managePromoHubDevices',{operation:'release',deviceId:grant.deviceId,sessionId:grant.sessionId}).catch(()=>{})
+  : Promise.resolve();
+ // Finish the old server release before a new claim can reuse this session ID.
+ readerSessionReleaseDone=Promise.all([readerSessionReleaseDone,readerSessionLockDone,serverRelease]).then(()=>{});
+ return readerSessionReleaseDone;
 }
 function readerSessionReset(){if(window.PromoHubDeviceList)window.PromoHubDeviceList.stop(true);readerSessionEpoch++;readerSessionRelease();if(window.PromoHubReaderRecovery)window.PromoHubReaderRecovery.reset();}
 const readerSessionOpenLocal=openReader;
@@ -86,6 +98,7 @@ openReader=function(){
  (async()=>{
   try{
    await readerSessionLock(uid);
+   if((cloudUser?.uid||securityLocalOwner)!==uid||selectedBookFile!==file||readerSessionEpoch!==epoch){readerSessionRelease();return;}
    const grant=await readerSessionClaim();
    readerSessionGrant=grant;
    if((cloudUser?.uid||securityLocalOwner)!==uid||selectedBookFile!==file||readerSessionEpoch!==epoch){readerSessionRelease();return;}cloudReady=subscriptionCloudAllowed();
@@ -156,6 +169,9 @@ async function readerModeSave(){
   if(cloudUser?.uid!==uid||securityEpoch!==epoch)return;
   const reopen=!!rendition;
   if(reopen){persistCurrentReaderPosition();backBtn.click();}else readerSessionReset();
+  const releasedEpoch=readerSessionEpoch;
+  await readerSessionReleaseDone;
+  if(cloudUser?.uid!==uid||securityEpoch!==epoch||readerSessionEpoch!==releasedEpoch)return;
   localStorage.removeItem(readerSessionKey(uid));
   if(securityProfile)securityProfile.readingAccessMode=mode;
   if(typeof subscriptionRender==='function')subscriptionRender();
