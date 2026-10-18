@@ -11,7 +11,7 @@ window.PromoHubDeviceList=(()=>{
   if(!last||!permitted()||uid!==cloudUser?.uid||epoch!==securityEpoch)return;
   clearTimeout(expiryTimer);expiryTimer=null;
   const now=Date.now(),lease=last.lease,rows=(Array.isArray(last.devices)?last.devices:[]).map(d=>({...d,active:lease?.deviceId===d.id&&lease.expiresAtMs>now}));
-  const result={devices:rows,readingAccessMode:securityProfile.readingAccessMode==='offline'?'offline':'strict',exempt:securityIsAdmin()};
+  const result={devices:rows,readingAccessMode:'auto',exempt:securityIsAdmin()};
   const next=JSON.stringify([uid,profileVisible(),recoveryVisible(),result.readingAccessMode,result.exempt,rows.map(d=>[d.id,d.label,d.active])]);
   if(next!==signature){signature=next;version++;if(profileVisible())readerDevicesRender(result,uid,readerSessionEpoch);if(recoveryVisible())window.PromoHubReaderRecovery.renderDevices(result);}
   if(lease?.expiresAtMs>now)expiryTimer=setTimeout(paint,Math.min(2147483647,lease.expiresAtMs-now+20));

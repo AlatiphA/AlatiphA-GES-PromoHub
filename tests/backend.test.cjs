@@ -18,7 +18,7 @@ test('initialize preserves suspended state and existing reading data',async()=>{
 });
 test('new verified account gets Free tier; injected admin and Premium fields are ignored',async()=>{
  const s=setup();s.authUsers.set('u',{emailVerified:true,email:'u@example.test'});
- await s.output.initializePromoHubAccount(s.request('u',{}, {accountTier:'premium',role:'admin',readingAccessMode:'offline'}));assert.equal(s.data.get('users/u').accountTier,'free');assert.equal(s.data.get('users/u').role,undefined);assert.equal(s.data.get('users/u').readingAccessMode,'strict');
+ await s.output.initializePromoHubAccount(s.request('u',{}, {accountTier:'premium',role:'admin',readingAccessMode:'offline'}));assert.equal(s.data.get('users/u').accountTier,'free');assert.equal(s.data.get('users/u').role,undefined);assert.equal(s.data.get('users/u').readingAccessMode,'auto');
 });
 test('unverified accounts cannot initialize',async()=>{
  const s=setup();await assert.rejects(s.output.initializePromoHubAccount(s.request('u',{email_verified:false})),e=>e.code==='permission-denied');assert.equal(s.data.size,0);

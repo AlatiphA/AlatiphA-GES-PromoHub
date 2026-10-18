@@ -27,25 +27,7 @@ function securityResetAdmin(){
  for(const b of document.querySelectorAll('.securityAdminNavigation button'))b.setAttribute('aria-pressed','false');
 
 }
-function securityReadingModeControl(row,u,state){
- const field=document.createElement('div');field.className='securityActions readingModeControl';
- const label=document.createElement('label');label.textContent='Reading access mode';
- const select=document.createElement('select');select.setAttribute('aria-label','Reading access mode for '+securityAccountLabel(u));
- for(const [value,text] of [['strict','Online mode'],['offline','Offline mode']]){const option=document.createElement('option');option.value=value;option.textContent=text;select.append(option);}
- select.value=u.readingAccessMode==='offline'?'offline':'strict';
- const save=document.createElement('button');save.textContent='Save mode';select.disabled=save.disabled=u.uid===cloudUser.uid;
- if(save.disabled)save.title='Administrator access is exempt.';
- save.onclick=()=>securityWork(async()=>{
-  if(!securityAdminCurrent(state))return;
-  const mode=select.value;
-  if(!confirm('Change reading access for '+securityAccountLabel(u)+' to '+(mode==='strict'?'Online mode':'Offline mode')+'? A disconnected device retains any existing offline permission until it reconnects or their subscription expires. Users can also change their own mode online.'))return;
-  save.disabled=true;
-  try{await securityCall('setPromoHubReadingMode',{uid:u.uid,mode});if(securityAdminCurrent(state)){u.readingAccessMode=mode;securityMessage('Reading access mode saved.');}}
-  finally{if(securityAdminCurrent(state))save.disabled=false;}
- });
- label.append(select);field.append(label,save);row.append(field);
-}
-function securityUserFilters(){return {search:document.getElementById('securityUserSearch').value||'',searchField:document.getElementById('securityUserSearchField').value||'name',tier:document.getElementById('securityUserTier').value||'all',status:document.getElementById('securityUserStatus').value||'all',mode:document.getElementById('securityUserMode').value||'all'};}
+function securityUserFilters(){return {search:document.getElementById('securityUserSearch').value||'',searchField:document.getElementById('securityUserSearchField').value||'name',tier:document.getElementById('securityUserTier').value||'all',status:document.getElementById('securityUserStatus').value||'all',mode:'all'};}
 async function securityUsers(direction=false){
  if(!securityIsAdmin())return;
  const next=direction===true||direction==='next',previous=direction==='previous',refresh=direction==='refresh';
@@ -78,9 +60,8 @@ async function securityUsers(direction=false){
   securityCursor=result.cursor || null;state.host.replaceChildren();
   for(const u of result.users){
    const row=document.createElement('article');row.className='securityRecord securityUserRow';securityIdentity(row,u);
-   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · ${u.readingAccessMode==='offline'?'Offline mode':'Online mode'}`;row.append(status);
+   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · Automatic online/offline reading`;row.append(status);
    const details=document.createElement('details');details.className='securityUserManage';const summary=document.createElement('summary');summary.textContent='Manage';details.append(summary);
-   securityReadingModeControl(details,u,state);
    const actions=document.createElement('div');actions.className='securityActions';
    for(const [action,label] of [['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Set to Free']]){
     const b=document.createElement('button');b.textContent=label;b.disabled=u.uid===cloudUser.uid;

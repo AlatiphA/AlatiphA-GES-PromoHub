@@ -1,5 +1,5 @@
 'use strict';
-let quizEpoch=0,quizDialog=null,quizBody=null,quizTimer=null,quizHeartbeat=null,quizAttempt=null,quizBank=null,quizOwnLease=false,quizGrant=null,quizBusy=false,quizBanks=[],quizWarning='',quizView='practice';
+let quizEpoch=0,quizDialog=null,quizBody=null,quizTimer=null,quizHeartbeat=null,quizAttempt=null,quizBank=null,quizOwnLease=false,quizLeaseOwnerEpoch=null,quizGrant=null,quizBusy=false,quizBanks=[],quizWarning='',quizView='practice';
 const quizCore=window.PromoHubQuizCore;
 function quizKey(type){return 'ges-promohub-quiz-'+type+securityLocalSuffix();}
 function quizRead(type,fallback){try{return JSON.parse(localStorage.getItem(quizKey(type)))??fallback;}catch{return fallback;}}
@@ -7,12 +7,13 @@ function quizWrite(type,data){try{localStorage.setItem(quizKey(type),JSON.string
 function quizEl(tag,text,cls){const n=document.createElement(tag);if(text!==undefined)n.textContent=text;if(cls)n.className=cls;return n;}
 function quizButton(text,fn){const b=quizEl('button',text);b.type='button';b.onclick=fn;return b;}
 function quizSave(){if(quizAttempt)quizWrite('attempt',quizAttempt);}
-function quizLeaseRelease(){clearInterval(quizHeartbeat);quizHeartbeat=null;if(quizOwnLease&&readerSessionGrant===quizGrant)readerSessionRelease();quizOwnLease=false;quizGrant=null;}
+function quizLeaseRelease(){clearInterval(quizHeartbeat);quizHeartbeat=null;if(quizOwnLease&&(quizLeaseOwnerEpoch===null?readerSessionGrant===quizGrant:readerSessionEpoch===quizLeaseOwnerEpoch))readerSessionRelease();quizOwnLease=false;quizLeaseOwnerEpoch=null;quizGrant=null;}
 function quizClose(){quizEpoch++;clearInterval(quizTimer);quizSave();quizLeaseRelease();quizBusy=false;if(quizDialog?.open)quizDialog.close();}
 function quizReset(){quizClose();quizAttempt=null;quizBank=null;quizBanks=[];quizWarning='';}
 function quizAccess(){
+ if(!quizOwnLease&&rendition)quizGrant=readerSessionGrant;
  if(!subscriptionReadable())return false;
- if(readerSessionPaid())return !!(quizGrant&&(quizGrant.exempt||quizGrant.readingAccessMode==='offline'&&quizGrant.offlineUntilMs>Date.now()||quizGrant.readingAccessMode==='strict'&&navigator.onLine&&quizGrant.expiresAtMs>Date.now()));
+ if(readerSessionPaid())return !!(quizGrant&&(quizGrant.exempt||['auto','offline'].includes(quizGrant.readingAccessMode)&&quizGrant.offlineUntilMs>Date.now()||quizGrant.readingAccessMode==='strict'&&navigator.onLine&&quizGrant.expiresAtMs>Date.now()));
  return true;
 }
 async function quizLease(){
@@ -22,14 +23,29 @@ async function quizLease(){
  try{
   if(readerSessionPaid()){
    if(rendition&&readerSessionGrant){quizGrant=readerSessionGrant;quizOwnLease=false;}
-   else{await readerSessionLock(owner);quizOwnLease=true;quizGrant=await readerSessionClaim();if(epoch!==quizEpoch||owner!==securityLocalOwner){if(readerSessionUnlock){readerSessionUnlock();readerSessionUnlock=null;}throw new Error('Account changed.');}readerSessionGrant=quizGrant;}
-   clearInterval(quizHeartbeat);quizHeartbeat=setInterval(async()=>{
-    if(!quizOwnLease||epoch!==quizEpoch||owner!==securityLocalOwner)return;
-    try{const grant=await readerSessionClaim(true);if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizGrant=grant;readerSessionGrant=grant;quizWarning='';}
-    catch(e){if(epoch===quizEpoch){quizWarning=e.message||'Reconnect to verify your reading session.';quizTick();}}
-   },40000);
+   else{await readerSessionLock(owner);quizOwnLease=true;quizLeaseOwnerEpoch=typeof readerSessionEpoch==='number'?readerSessionEpoch:null;quizGrant=await readerSessionClaim();if(epoch!==quizEpoch||owner!==securityLocalOwner){if(readerSessionUnlock){readerSessionUnlock();readerSessionUnlock=null;}throw new Error('Account changed.');}readerSessionGrant=quizGrant;if(typeof readerSessionWatchExpiry==='function')readerSessionWatchExpiry();if(typeof readerSessionStateChanged==='function')readerSessionStateChanged();}
+   clearInterval(quizHeartbeat);quizHeartbeat=setInterval(quizRefreshLease,40000);
   }
  }catch(e){quizLeaseRelease();throw e;}finally{quizBusy=false;}
+}
+async function quizRefreshLease(){
+ if(!quizOwnLease||quizBusy)return;
+ const epoch=quizEpoch,owner=securityLocalOwner;quizBusy=true;
+ try{
+  const grant=await readerSessionClaim(!!quizGrant?.online&&quizGrant.expiresAtMs>Date.now());
+  if(epoch!==quizEpoch||owner!==securityLocalOwner)return;
+  quizGrant=grant;readerSessionGrant=grant;quizWarning='';
+  if(typeof readerSessionWatchExpiry==='function')readerSessionWatchExpiry();
+  if(typeof readerSessionStateChanged==='function')readerSessionStateChanged();
+ }catch(e){
+  if(epoch!==quizEpoch||owner!==securityLocalOwner)return;
+  if(quizOwnLease)readerSessionRelease();quizOwnLease=false;quizGrant=null;readerSessionGrant=null;
+  if(typeof readerSessionTransient==='function'&&!readerSessionTransient(e)){
+   try{localStorage.removeItem(readerSessionKey(owner));}catch{}
+  }
+  if(typeof cloudReady!=='undefined')cloudReady=false;
+  quizWarning=e.message||'Reconnect to verify your reading session.';quizTick();
+ }finally{if(epoch===quizEpoch)quizBusy=false;}
 }
 function quizTick(){
  if(quizView==='revision'||!quizAttempt)return;
@@ -37,7 +53,7 @@ function quizTick(){
  if(quizAttempt.deadlineMs&&Date.now()>=quizAttempt.deadlineMs){quizFinish(false);return;}
  const t=document.getElementById('quizTimer');if(t){const left=Math.max(0,Math.ceil((quizAttempt.deadlineMs-Date.now())/1000));t.textContent=quizAttempt.deadlineMs?'Time remaining '+Math.floor(left/60)+':'+String(left%60).padStart(2,'0'):'Untimed practice';}
  const field=document.getElementById('quizQuestionField');if(field)field.hidden=!quizAccess();
- const n=document.getElementById('quizAccessStatus');if(n)n.textContent=quizAccess()?quizWarning:(quizWarning||'Reading access is paused. Reconnect in Online mode, or renew expired access. The timer continues.');
+ const n=document.getElementById('quizAccessStatus');if(n)n.textContent=quizAccess()?quizWarning:(quizWarning||'Reading access is paused. Reconnect to verify access, or renew expired access. The timer continues.');
 }
 function quizHistory(){const h=quizRead('history',[]);return Array.isArray(h)?h.filter(v=>v&&typeof v.title==='string'&&Number.isFinite(v.percent)).slice(0,20):[];}
 function quizFinish(confirmFirst=true){
@@ -85,7 +101,7 @@ async function quizSetup(){
   for(const b of quizBanks){const o=quizEl('option',b.title+' ('+b.count+' questions)');o.value=b.id;select.append(o);}const topics=()=>{topic.replaceChildren();const all=quizEl('option','All topics');all.value='all';topic.append(all);for(const t of quizBanks.find(b=>b.id===select.value).topics){const o=quizEl('option',t);o.value=t;topic.append(o);}};select.onchange=topics;topics();
   for(const [label,input] of [['Question set',select],['Topic',topic],['Questions',count],['Time limit (minutes)',minutes]]){const l=quizEl('label',label,'quizField');l.append(input);if(input===select||input===topic)l.classList.add('quizFieldWide');if(input===count)l.append(quizEl('small','Up to the number available for your topic.','quizFieldHelp'));if(input===minutes)l.append(quizEl('small','Choose 0 for untimed practice.','quizFieldHelp'));form.append(l);}
   const start=quizEl('button','Start practice');start.type='submit';start.className='quizPrimary';const startRow=quizEl('div',undefined,'quizSetupStart');startRow.append(start);form.append(startRow);form.onsubmit=async e=>{e.preventDefault();if(quizBusy)return;const previous=quizRead('attempt',null);if(quizCore.validAttempt(previous,securityLocalOwner)&&!previous.finishedAtMs&&!confirm('Replace the unfinished practice attempt?'))return;start.disabled=true;const epoch=quizEpoch,owner=securityLocalOwner;try{const b=await quizLoadBank(select.value);if(epoch!==quizEpoch||owner!==securityLocalOwner)return;const settings={owner,count:Number(count.value),minutes:Number(minutes.value),topic:topic.value};quizCore.create(b,settings);await quizLease();const a=quizCore.create(b,settings);if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizAttempt=a;quizSave();quizQuestion();}catch(e){if(epoch===quizEpoch)quizNotice(e.message);}finally{start.disabled=false;}};quizBody.append(form);
-  quizBody.append(quizButton('Save question set for offline',async()=>{const epoch=quizEpoch,owner=securityLocalOwner;try{const b=await quizLoadBank(select.value);if(epoch!==quizEpoch||owner!==securityLocalOwner)return;const all=quizRead('banks',{});all[b.id]=b;quizWrite('banks',all);quizNotice(quizWarning||'Question set saved for offline practice. Your reading mode and subscription still apply.');}catch(e){if(epoch===quizEpoch)quizNotice(e.message);}}));
+  quizBody.append(quizButton('Save question set for offline',async()=>{const epoch=quizEpoch,owner=securityLocalOwner;try{const b=await quizLoadBank(select.value);if(epoch!==quizEpoch||owner!==securityLocalOwner)return;const all=quizRead('banks',{});all[b.id]=b;quizWrite('banks',all);quizNotice(quizWarning||'Question set saved for offline practice. Your saved reading permission and subscription expiry still apply.');}catch(e){if(epoch===quizEpoch)quizNotice(e.message);}}));
   const saved=quizRead('attempt',null);if(quizCore.validAttempt(saved,owner))quizBody.append(quizButton(saved.finishedAtMs?'View latest result':'Resume saved attempt',async()=>{try{await quizLease();if(epoch!==quizEpoch||owner!==securityLocalOwner)return;quizAttempt=saved;if(saved.finishedAtMs){quizResults();clearInterval(quizTimer);quizTimer=setInterval(quizTick,1000);}else quizQuestion();}catch(e){quizNotice(e.message);}}));
   const h=quizHistory();if(h.length){quizBody.append(quizEl('h3','Recent results'));h.slice(0,5).forEach(v=>quizBody.append(quizEl('p',v.title+' · '+v.percent+'% · '+new Date(v.finishedAtMs).toLocaleDateString())));}if(quizWarning)quizNotice(quizWarning);
  }catch(e){if(epoch===quizEpoch)quizNotice(e.message||'Question sets unavailable.');}
@@ -95,6 +111,10 @@ function quizOpen(view='practice'){
  quizEpoch++;quizDialog.showModal();if(view==='revision'&&typeof revisionRender==='function')revisionRender();else quizSetup();
 }
 window.addEventListener('pagehide',quizSave);
-window.addEventListener('offline',quizTick);
+window.addEventListener('online',quizRefreshLease);
+window.addEventListener('offline',()=>{
+ if(quizOwnLease&&quizGrant){const old=quizGrant;quizGrant={...old,online:false};if(readerSessionGrant===old)readerSessionGrant=quizGrant;}
+ quizTick();
+});
 window.addEventListener('online',quizTick);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')quizTick();});

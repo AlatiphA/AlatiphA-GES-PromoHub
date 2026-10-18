@@ -25,9 +25,9 @@ test('internal callable failure preserves a valid paid offline grant on a connec
  const s=setup();s.paid();s.ctx.navigator.onLine=true;s.ctx.securityCall=async()=>{throw Object.assign(Error('internal'),{code:'functions/internal'});};
  const grant=await s.run('readerSessionClaim()');assert.equal(grant.online,false);assert.ok(s.storage.has('ges-promohub-reader-grant-u'));
 });
-test('permission denial and strict mode cannot fall back to paid offline access',async()=>{
+test('permission denial and old strict grants cannot fall back to paid offline access',async()=>{
  const s=setup();s.paid();s.ctx.navigator.onLine=true;s.ctx.securityCall=async()=>{throw Object.assign(Error('suspended'),{code:'functions/permission-denied'});};await assert.rejects(s.run('readerSessionClaim()'),/suspended/);
- s.ctx.navigator.onLine=false;const p=JSON.parse(s.storage.get('ges-promohub-subscription-u'));p.readingAccessMode='strict';s.storage.set('ges-promohub-subscription-u',JSON.stringify(p));assert.equal(s.run('securityOfflineReadingAllowed()'),false);await assert.rejects(s.run('readerSessionClaim()'),/online access check/);
+ assert.equal(s.storage.has('ges-promohub-reader-grant-u'),false);s.paid();s.ctx.navigator.onLine=false;const g=JSON.parse(s.storage.get('ges-promohub-reader-grant-u'));g.readingAccessMode='strict';g.offlineUntilMs=0;s.storage.set('ges-promohub-reader-grant-u',JSON.stringify(g));assert.equal(s.run('securityOfflineReadingAllowed()'),false);await assert.rejects(s.run('readerSessionClaim()'),/online access check/);
 });
 test('admin receipt is browser and owner scoped, and removed on sign-out or confirmed role removal',()=>{
  const s=setup();s.run('securityCacheAdminReading(cloudUser,{promohubAdmin:true},{accountStatus:"active"})');assert.equal(s.run('securityOfflineAdminReading()'),true);
@@ -71,4 +71,8 @@ test('new device identity is generated and verified before saving admin reading 
 });
 test('a fully new offline runtime restores persisted admin reading with verified or deferred null Auth',async()=>{
  for(const hasUser of [true,false]){const online=setup();online.ctx.navigator.onLine=true;await online.run('securityActivateCore(cloudUser)');const cold=setup(online.storage);if(!hasUser)cold.ctx.cloudUser=null;await cold.run('securityAuthChanged(cloudUser)');assert.equal(cold.run('securityIsAdmin()'),false);assert.equal(cold.run('subscriptionReadable()'),true);cold.ctx.openReader();await cold.settle();assert.equal(cold.opens(),1);assert.equal(cold.calls(),0);}
+});
+test('logout and returning to the same account invalidate pending book loads',()=>{
+ const s=setup();s.ctx.readerLoadGeneration=4;s.ctx.localPreferences=()=>({});s.ctx.applyLibraryDayNight=()=>{};s.ctx.BOOKS=[];s.ctx.confirm=()=>false;
+ s.run('securitySwitchLocal(null);securitySwitchLocal({uid:"u"})');assert.equal(s.ctx.readerLoadGeneration,6);assert.equal(s.run('securityLocalOwner'),'u');
 });

@@ -39,8 +39,8 @@ test('unverified, inactive and signed-out accounts never attach listeners',()=>{
 test('listener errors preserve rows and give an explicit refresh path',()=>{
  const s=setup();s.api.start();const sub=s.subscriptions[0];s.emit(sub,state(['phone']));sub.error(Error('denied'));assert.equal(sub.stopped,true);assert.equal(s.renders.length,1);assert.match(s.status.textContent,/Live device updates paused/);s.api.start();assert.equal(s.subscriptions.length,2);
 });
-test('profile mode changes rerender counts without another listener',()=>{
- const s=setup();s.api.start();s.emit(s.subscriptions[0],state(['phone']));s.ctx.securityProfile.readingAccessMode='offline';s.api.start();assert.equal(s.renders[1].r.readingAccessMode,'offline');assert.equal(s.subscriptions.length,1);
+test('legacy mode fields do not change automatic policy or rebuild device rows',()=>{
+ const s=setup();s.api.start();s.emit(s.subscriptions[0],state(['phone']));s.ctx.securityProfile.readingAccessMode='offline';s.api.start();assert.equal(s.renders.length,1);assert.equal(s.renders[0].r.readingAccessMode,'auto');assert.equal(s.subscriptions.length,1);
 });
 test('PC reading-access list receives live snapshots without opening the profile',()=>{
  const s=setup();s.panel.opened=false;let open=true;const received=[];s.ctx.window.PromoHubReaderRecovery={deviceListOpen:()=>open,renderDevices:r=>received.push(r)};

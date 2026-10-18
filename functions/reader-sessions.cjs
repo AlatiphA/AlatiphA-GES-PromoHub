@@ -1,6 +1,7 @@
 'use strict';
 const subscriptions=require('./subscriptions.cjs');
-function readingMode(p){return p?.readingAccessMode==='offline'?'offline':'strict';}
+// Existing profiles use automatic access without a destructive profile migration.
+function readingMode(){return 'auto';}
 const MAX_DEVICES=2,LEASE_MS=120000;
 module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
  function id(value){if(typeof value!=='string'||!/^[a-f0-9]{32}$/.test(value))throw new HttpsError('invalid-argument','Invalid device or session identifier.');return value;}
@@ -21,28 +22,28 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
  }
  return {
   claimPromoHubReaderSession:onCall(options,async req=>{
-   const deviceId=id(req.data?.deviceId),sessionId=id(req.data?.sessionId),renew=req.data?.renew===true;
+   const deviceId=id(req.data?.deviceId),sessionId=id(req.data?.sessionId),renew=req.data?.renew===true,resume=req.data?.resume===true;
    return transact(req,({who,p,state,tx,ref,now})=>{
     if(who.admin)return {exempt:true,reason:'administrator'};
     if(!subscriptions.readable(p,now))throw new HttpsError('permission-denied','Your trial or subscription has expired.');
-    if(!subscriptions.cloud(p,now))return {exempt:true,reason:'trial'};
+    if(!subscriptions.cloud(p,now))return {exempt:true,reason:'trial',offlineUntilMs:Number(p.trialEndsAtMs)};
     const devices=Array.isArray(state.devices)?state.devices:[];
     let device=devices.find(d=>d.id===deviceId);
-    if(renew&&!device)throw new HttpsError('permission-denied','This device was removed. Open My Account to register again.');
+    if((renew||resume)&&!device)throw new HttpsError('permission-denied','This device was removed. Open My Account to register again.');
     if(!device&&devices.length>=MAX_DEVICES)throw new HttpsError('resource-exhausted','Two devices are already registered. Remove an unused device in My Account, then try again.');
     const lease=state.lease;
-    if(readingMode(p)==='strict'&&lease&&lease.expiresAtMs>now&&(lease.deviceId!==deviceId||lease.sessionId!==sessionId))throw new HttpsError('already-exists','This account is reading in another session. Close that reader, or wait up to 2 minutes after it disconnects.');
-    if(readingMode(p)==='strict'&&renew&&(!lease||lease.deviceId!==deviceId||lease.sessionId!==sessionId||lease.expiresAtMs<=now))throw new HttpsError('failed-precondition','Your reader session ended. Open the book again.');
+    if(lease&&lease.expiresAtMs>now&&(lease.deviceId!==deviceId||lease.sessionId!==sessionId))throw new HttpsError('already-exists','This account is reading in another session. Close that reader, or wait up to 2 minutes after it disconnects.');
+    if(renew&&(!lease||lease.deviceId!==deviceId||lease.sessionId!==sessionId||lease.expiresAtMs<=now))throw new HttpsError('failed-precondition','Your reader session ended. Open the book again.');
     if(!device){device={id:deviceId,label:String(req.data?.label||'Browser / PWA').slice(0,80),registeredAtMs:now};devices.push(device);}
     device.lastSeenAtMs=now;
-    const expiresAtMs=now+LEASE_MS,offlineUntilMs=readingMode(p)==='strict'?0:(subscriptions.legacy(p)?253402300799000:Number(p.subscriptionEndsAtMs));
-    tx.set(ref,{devices,lease:readingMode(p)==='strict'?{deviceId,sessionId,expiresAtMs}:(lease?.deviceId===deviceId&&lease?.sessionId===sessionId?null:lease),updatedAtMs:now});
+    const expiresAtMs=now+LEASE_MS,offlineUntilMs=subscriptions.legacy(p)?253402300799000:Number(p.subscriptionEndsAtMs);
+    tx.set(ref,{devices,lease:{deviceId,sessionId,expiresAtMs},updatedAtMs:now});
     return {exempt:false,readingAccessMode:readingMode(p),expiresAtMs,offlineUntilMs,maxDevices:MAX_DEVICES,maxSessions:1};
    });
   }),
   setMyPromoHubReadingMode:onCall(options,async req=>{
-   const mode=req.data?.mode;
-   if(!['strict','offline'].includes(mode)||req.data?.uid!==undefined)throw new HttpsError('invalid-argument','Choose Online or Offline mode for your own account.');
+   const requestedMode=req.data?.mode,mode='auto';
+   if(!['strict','offline','auto'].includes(requestedMode)||req.data?.uid!==undefined)throw new HttpsError('invalid-argument','Reading access is automatic. Update only your own account.');
    const event=db.collection('auditLogs').doc();
    return transact(req,({who,p,tx})=>{
     if(who.admin)throw new HttpsError('failed-precondition','Administrator reading is exempt from these modes.');
@@ -52,9 +53,9 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
    });
   }),
   setPromoHubReadingMode:onCall(options,async req=>{
-   const actor=await account(req),uid=req.data?.uid,mode=req.data?.mode;
+   const actor=await account(req),uid=req.data?.uid,requestedMode=req.data?.mode,mode='auto';
    if(!actor.admin)throw new HttpsError('permission-denied','Administrator access required.');
-   if(typeof uid!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(uid)||!['strict','offline'].includes(mode))throw new HttpsError('invalid-argument','Choose a valid account and reading access mode.');
+   if(typeof uid!=='string'||!/^[A-Za-z0-9_-]{1,128}$/.test(uid)||!['strict','offline','auto'].includes(requestedMode))throw new HttpsError('invalid-argument','Choose a valid account and reading access mode.');
    if((await db.doc(`accountDeletions/${uid}`).get()).exists)throw new HttpsError('permission-denied','Account deletion is in progress.');
    const actual=await admin.auth().getUser(uid);
    if(actual.customClaims?.promohubAdmin===true)throw new HttpsError('failed-precondition','Administrators are exempt from reading restrictions.');
