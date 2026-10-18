@@ -51,7 +51,7 @@ exports.initializePromoHubAccount = onCall(options,async req => {
   if(p.pendingLoginEmail && String(p.pendingLoginEmail).toLowerCase()===String(record.email||'').toLowerCase())data.pendingLoginEmail='';
   if(old.exists && p.email && String(p.email).toLowerCase()!==String(record.email||'').toLowerCase())audit(tx,uid,'account.emailChanged',uid);
   data.securitySchemaVersion=2;
-  if (!old.exists) { data.createdAt=stamp(); data.readingAccessMode='strict'; }
+  if (!old.exists) { data.createdAt=stamp(); data.readingAccessMode='auto'; }
   tx.set(ref,data,{merge:true});
  });
  return (await ref.get()).data();

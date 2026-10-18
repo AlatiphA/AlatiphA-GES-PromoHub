@@ -74,7 +74,7 @@ module.exports=function({onCall,onDocumentWritten,options,HttpsError,db,admin,me
    const status={active:'reactivated',suspended:'suspended',disabled:'disabled'}[after.accountStatus];
    if(status)await put(uid,key,notice('Account access updated','Your account was '+status+'. Check My Account for current access.','account'));
   }else if((before.readingAccessMode||'strict')!==(after.readingAccessMode||'strict')){
-   await put(uid,key,notice('Reading mode updated','Your reading mode was changed to '+(after.readingAccessMode==='offline'?'Offline':'Online')+'. Check Devices and sessions for the current setting.','mode'));
+   await put(uid,key,notice('Reading mode updated','Your reading mode was changed to '+(after.readingAccessMode==='auto'?'Automatic online/offline':after.readingAccessMode==='offline'?'Offline':'Online')+'. Check Devices and sessions for the current setting.','mode'));
   }else if(before.subscriptionStatus!==after.subscriptionStatus && after.subscriptionStatus==='cancelled'){
    await put(uid,key,notice('Subscription access updated','Your paid access was removed. Open My Account to check your current subscription.','subscription'));
   }

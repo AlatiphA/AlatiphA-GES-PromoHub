@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.6";
+const APP_VERSION = "1.11.8";
 
 const versionEl =
   document.getElementById(
@@ -247,6 +247,7 @@ document.querySelectorAll(".bookCard")
 if (backBtn) {
   backBtn.addEventListener("click", () => {
     persistCurrentReaderPosition();
+    readerLoadGeneration++;
     rememberReaderView("library");
     readerApp.style.display = "none";
     libraryScreen.style.display = "flex";
@@ -635,12 +636,16 @@ function loadBookmarks() {
    LOAD BOOK
 ============== */
 
+let readerLoadGeneration = 0;
 async function loadBook() {
+  const generation = ++readerLoadGeneration;
+  const owner = securityLocalOwner, file = selectedBookFile;
+  const current = () => generation === readerLoadGeneration && owner === securityLocalOwner && file === selectedBookFile;
 
   try {
 
     const response =
-      await fetch(selectedBookFile);
+      await fetch(file);
 
     if (!response.ok) {
 
@@ -653,6 +658,7 @@ async function loadBook() {
     const blob =
       await response.blob();
 
+    if (!current()) return;
     book = ePub(blob);
 
     startReader();
@@ -661,6 +667,7 @@ async function loadBook() {
 
   catch (error) {
 
+    if (!current()) return;
     console.error(error);
 
     alert(
@@ -1002,6 +1009,7 @@ function updateReadingLocationDisplay(location, locationsReady) {
 
 function startReader() {
   const readingBook = book;
+  const readingOwner = securityLocalOwner, readingGeneration = readerLoadGeneration, readingFile = selectedBookFile;
   let locationsReady = false;
 
   rendition =
@@ -1055,11 +1063,11 @@ function startReader() {
   const dashboardLocation = typeof dashboardStart === "function" ? dashboardStart() : null;
   const savedLocation = dashboardLocation || readerData.location;
   const readingRendition = rendition;
-  const isCurrentReader = () => book === readingBook && rendition === readingRendition;
+  const isCurrentReader = () => book === readingBook && rendition === readingRendition && securityLocalOwner === readingOwner && readerLoadGeneration === readingGeneration && selectedBookFile === readingFile;
 
   rendition
     .display(savedLocation || undefined)
-    .catch(() => rendition.display());
+    .catch(() => { if (isCurrentReader()) return readingRendition.display(); });
 
   /* BACKGROUND SETUP — TOC + locations, never blocks rendering */
 
@@ -1404,10 +1412,9 @@ function startReader() {
 
     try {
 
+      if (!isCurrentReader()) return;
       currentLocation =
         location;
-
-      if (!isCurrentReader()) return;
       const percent = updateReadingLocationDisplay(location, locationsReady);
       const saved = loadReaderData();
       saveReaderData({
@@ -2568,16 +2575,20 @@ async function mergePreferencesFromCloud() {
 }
 
 async function mergeProgressFromCloud() {
-  if (!cloudReady || !cloudUser || !cloudDb) return;
+  if (!cloudReady || !cloudUser || !cloudDb || cloudUser.uid !== securityLocalOwner) return;
+  const owner = securityLocalOwner, epoch = securityEpoch, file = selectedBookFile;
+  const key = getBookReaderDataKey(), readingRendition = rendition;
+  const current = () => cloudReady && cloudUser?.uid === owner && securityLocalOwner === owner && securityEpoch === epoch && selectedBookFile === file && rendition === readingRendition;
   try {
-    const ref = cloudDb.collection("users").doc(cloudUser.uid).collection("reading").doc(bookCloudId());
+    const ref = cloudDb.collection("users").doc(owner).collection("reading").doc(bookCloudId());
     const snap = await ref.get();
+    if (!current()) return;
     const local = loadReaderData();
     if (!snap.exists) { if (local.location) scheduleProgressSync(local); return; }
     const remote = snap.data() || {};
     if ((Number(remote.updatedAtMs) || 0) > (Number(local.updatedAtMs) || 0) && remote.cfi) {
       const merged = { location: remote.cfi, progress: remote.progress || 0, chapter: remote.chapter || "", lastRead: new Date().toISOString(), updatedAtMs: remote.updatedAtMs };
-      localStorage.setItem(getBookReaderDataKey(), JSON.stringify(merged));
+      localStorage.setItem(key, JSON.stringify(merged));
       if (rendition) rendition.display(remote.cfi).catch(() => {});
     } else if (local.location && Number(local.updatedAtMs||0)>Number(remote.updatedAtMs||0)) {
       scheduleProgressSync(local);

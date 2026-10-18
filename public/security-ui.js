@@ -52,10 +52,9 @@ function securityOfflineReadingAllowed(){
  const p=securityProfile || subscriptionCachedProfile();
  if(!p || p.accountStatus!=='active')return false;
  if(!subscriptionPaid(p) && !subscriptionLegacy(p))return Number(p.trialEndsAtMs)>Date.now();
- if(p.readingAccessMode!=='offline')return false;
  try{
   const g=JSON.parse(localStorage.getItem('ges-promohub-reader-grant-'+securityLocalOwner));
-  return g?.uid===securityLocalOwner && g.readingAccessMode==='offline' && g.deviceId===localStorage.getItem('ges-promohub-device-id') && /^[a-f0-9]{32}$/.test(g.deviceId||'') && Number.isFinite(g.offlineUntilMs) && g.offlineUntilMs>Date.now();
+  return g?.uid===securityLocalOwner && ['auto','offline'].includes(g.readingAccessMode) && g.deviceId===localStorage.getItem('ges-promohub-device-id') && /^[a-f0-9]{32}$/.test(g.deviceId||'') && Number.isFinite(g.offlineUntilMs) && g.offlineUntilMs>Date.now();
  }catch{return false;}
 }
 function securityEndGuestChoice(){securityGuestChosen=false;try{sessionStorage.removeItem('ges-promohub-guest-choice');}catch{}}
@@ -64,6 +63,7 @@ function securityLocalSuffix(){return securityLocalOwner ? '-user-'+securityLoca
 function securitySwitchLocal(user){
  const next=user?.uid || '';
  if(securityLocalOwner!==next){
+  if(typeof readerLoadGeneration==='number')readerLoadGeneration++;
   if(rendition)backBtn.click();
   localStorage.setItem('ges-promohub-account-prefs-'+(securityLocalOwner || 'guest'),JSON.stringify(localPreferences()));
   securityLocalOwner=next;
@@ -123,7 +123,7 @@ async function securityActivateCore(user){
  securityCacheAdminReading(user,claims,profile);
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();securityCacheAdminReading(user,securityClaims,securityProfile);const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused in Offline mode, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();securityCacheAdminReading(user,securityClaims,securityProfile);const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused while offline, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
  return cloudReady;
 }
 async function securityAuthChanged(user,explicit=false){
@@ -146,14 +146,15 @@ async function securityAuthChanged(user,explicit=false){
   securityOfflineStatusRender();
   hideAuth();resumeReaderAfterStartup();return;
  }
+ const continueReading=!explicit&&user?.uid===securityLocalOwner&&!!(rendition||typeof quizOwnLease!=='undefined'&&quizOwnLease);
  securityOfflineDeferred=false;
  if(window.PromoHubPush)window.PromoHubPush.pause();
  if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();
 
- if(typeof quizReset==='function')quizReset();
+ if(!continueReading&&typeof quizReset==='function')quizReset();
  securityMessage('');
  if(window.PromoHubInbox)window.PromoHubInbox.reset();
- if(typeof readerSessionReset==='function')readerSessionReset();
+ if(!continueReading&&typeof readerSessionReset==='function')readerSessionReset();
  securityEpoch++;securityResetAdmin();subscriptionResetPayment();if(typeof accountSecurityReset==='function')accountSecurityReset();clearTimeout(preferenceSyncTimer);clearTimeout(progressSyncTimer);if(securityStop){securityStop();securityStop=null;}
  securitySwitchLocal(user);
  cloudUser=user || null;cloudReady=false;securityProfile=null;securityClaims={};
@@ -166,7 +167,7 @@ async function securityAuthChanged(user,explicit=false){
  const authEpoch=securityEpoch;
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
+ try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(continueReading){if(typeof readerSessionHeartbeat==='function')await readerSessionHeartbeat();if(typeof quizRefreshLease==='function')await quizRefreshLease();if(authEpoch!==securityEpoch)return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
  catch(e){if(authEpoch!==securityEpoch)return;if(!/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||'')) && typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;securityOfflineStatusRender();hideAuth();return;}if(/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||''))){securityClearAdminReading();try{localStorage.removeItem('ges-promohub-reader-grant-'+user.uid);}catch{}}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}

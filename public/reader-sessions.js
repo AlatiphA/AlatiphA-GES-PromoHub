@@ -8,9 +8,9 @@ let readerBrowserSessionId;
 try {readerBrowserSessionId=navigator.locks ? sessionStorage.getItem('ges-promohub-reader-session') : null;if(!/^[a-f0-9]{32}$/.test(readerBrowserSessionId||'')){readerBrowserSessionId=readerSessionId();sessionStorage.setItem('ges-promohub-reader-session',readerBrowserSessionId);}} catch {readerBrowserSessionId=readerSessionId();}
 function readerSessionKey(uid){return 'ges-promohub-reader-grant-'+uid;}
 function readerSessionPaid(){if(typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return false;const p=securityProfile||subscriptionCachedProfile();return !!(cloudUser||securityLocalOwner)&&!securityIsAdmin()&&(subscriptionPaid(p)||subscriptionLegacy(p));}
-function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(securityProfile?.readingAccessMode!=='offline'&&readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
+function readerSessionCloudAllowed(){return !readerSessionPaid()||!!(readerSessionGrant&&readerSessionGrant.uid===cloudUser?.uid&&readerSessionGrant.readingAccessMode!=='offline'&&navigator.onLine&&readerSessionGrant.online&&readerSessionGrant.expiresAtMs>Date.now());}
 function readerSessionMessage(message,error){if(window.PromoHubReaderRecovery){window.PromoHubReaderRecovery.show(message,error);return;}securitySelectTab('account');securityMessage(message);accountPanel.classList.add('open');const status=document.getElementById('readerDevicesStatus');if(status)status.textContent=message;}
-function readerSessionStop(message){if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();persistCurrentReaderPosition();if(rendition)backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
+function readerSessionStop(message){if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();persistCurrentReaderPosition();backBtn.click();readerSessionGrant=null;cloudReady=false;readerSessionMessage(message);}
 async function readerSessionLock(uid){
  // A released lock remains held until the Web Locks callback has settled.
  await readerSessionReleaseDone;
@@ -27,9 +27,9 @@ async function readerSessionLock(uid){
 function readerSessionTransient(error){return /^(functions\/)?(unavailable|deadline-exceeded|internal|cancelled)$/.test(String(error?.code||''))||/^(auth\/)?network-request-failed$/.test(String(error?.code||''))||/network error|failed to fetch|network request failed/i.test(String(error?.message||''));}
 function readerSessionSavedGrant(uid,deviceId){
  const p=securityProfile||subscriptionCachedProfile();
- if(!p||p.accountStatus&&p.accountStatus!=='active'||p.readingAccessMode==='strict'||(!subscriptionPaid(p)&&!subscriptionLegacy(p)))return null;
+ if(!p||p.accountStatus&&p.accountStatus!=='active'||(!subscriptionPaid(p)&&!subscriptionLegacy(p)))return null;
  let saved;try{saved=JSON.parse(localStorage.getItem(readerSessionKey(uid)));}catch{return null;}
- if(saved?.uid&&saved.uid!==uid||saved?.readingAccessMode!=='offline'||saved?.deviceId!==deviceId||!Number.isFinite(saved?.offlineUntilMs)||saved.offlineUntilMs<=Date.now())return null;
+ if(saved?.uid&&saved.uid!==uid||!['auto','offline'].includes(saved?.readingAccessMode)||saved?.deviceId!==deviceId||!Number.isFinite(saved?.offlineUntilMs)||saved.offlineUntilMs<=Date.now())return null;
  if(!subscriptionLegacy(p)&&Number.isFinite(Number(p.subscriptionEndsAtMs))&&Number(p.subscriptionEndsAtMs)<=Date.now())return null;
  return {...saved,uid,online:false,offlineUntilMs:!subscriptionLegacy(p)&&Number.isFinite(Number(p.subscriptionEndsAtMs))?Math.min(saved.offlineUntilMs,Number(p.subscriptionEndsAtMs)):saved.offlineUntilMs};
 }
@@ -39,7 +39,7 @@ async function readerSessionClaim(renew=false){
  const deviceId=readerDeviceId(),sessionId=readerBrowserSessionId;
  if(!navigator.onLine){
   const p=securityProfile||subscriptionCachedProfile();
-  if(!subscriptionPaid(p)&&!subscriptionLegacy(p)){if(typeof subscriptionReadable==='function'&&!subscriptionReadable())throw Error('Your trial or subscription has expired. Open My Account to renew.');return {exempt:true};}
+  if(!subscriptionPaid(p)&&!subscriptionLegacy(p)){if(typeof subscriptionReadable==='function'&&!subscriptionReadable())throw Error('Your trial or subscription has expired. Open My Account to renew.');return {exempt:true,reason:'trial',offlineUntilMs:Number(p?.trialEndsAtMs)};}
   const saved=readerSessionSavedGrant(uid,deviceId);
   if(!saved)throw new Error('This browser needs one online access check before it can read offline. Connect and tap Retry.');
   return saved;
@@ -48,32 +48,51 @@ async function readerSessionClaim(renew=false){
  if(typeof securityActivationPending!=='undefined'&&securityActivationPending?.uid===uid&&!securityProfile){
   let timer;try{await Promise.race([securityActivationPending.promise,new Promise((_,reject)=>{timer=setTimeout(()=>{const e=Error('Account confirmation is taking longer than expected. Tap Retry to try again.');e.code='functions/deadline-exceeded';reject(e);},12000);})]);}
   catch(e){const saved=epoch===readerSessionEpoch&&cloudUser?.uid===uid&&readerSessionTransient(e)&&readerSessionSavedGrant(uid,deviceId);if(saved)return saved;throw e;}finally{clearTimeout(timer);}
-  if(epoch!==readerSessionEpoch||cloudUser?.uid!==uid)throw Error('Account changed while opening the reader.');
+  if(epoch!==readerSessionEpoch||(cloudUser?.uid||securityLocalOwner)!==uid)throw Error('Account changed while opening the reader.');
  }
- let result;try{result=await securityCall('claimPromoHubReaderSession',{deviceId,sessionId,renew,label:(/Android|iPhone|iPad/i.test(navigator.userAgent)?'Mobile':'Computer')+' · '+location.hostname});}catch(e){if(epoch!==readerSessionEpoch||cloudUser?.uid!==uid)throw e;const saved=readerSessionTransient(e)&&readerSessionSavedGrant(uid,deviceId);if(saved)return saved;throw e;}
- if(epoch!==readerSessionEpoch||cloudUser?.uid!==uid)throw new Error('Account changed while opening the reader.');
- if(!result.exempt&&securityProfile&&['strict','offline'].includes(result.readingAccessMode)&&securityProfile.readingAccessMode!==result.readingAccessMode){
+ let result;try{result=await securityCall('claimPromoHubReaderSession',{deviceId,sessionId,renew,resume:!!readerSessionSavedGrant(uid,deviceId),label:(/Android|iPhone|iPad/i.test(navigator.userAgent)?'Mobile':'Computer')+' · '+location.hostname});}catch(e){if(epoch!==readerSessionEpoch||(cloudUser?.uid||securityLocalOwner)!==uid)throw e;if(!readerSessionTransient(e)){try{localStorage.removeItem(readerSessionKey(uid));}catch{}throw e;}const saved=readerSessionSavedGrant(uid,deviceId);if(saved)return saved;throw e;}
+ if(epoch!==readerSessionEpoch||(cloudUser?.uid||securityLocalOwner)!==uid)throw new Error('Account changed while opening the reader.');
+ if(!result.exempt&&securityProfile&&['auto','strict','offline'].includes(result.readingAccessMode)&&securityProfile.readingAccessMode!==result.readingAccessMode){
   securityProfile.readingAccessMode=result.readingAccessMode;
   if(typeof subscriptionRender==='function')subscriptionRender();
   readerModeRender();
  }
- const grant={...result,deviceId,sessionId,uid,online:true};
+ const grant={...result,deviceId,sessionId,uid,online:navigator.onLine!==false};
  if(!result.exempt){try{localStorage.setItem(readerSessionKey(uid),JSON.stringify(grant));}catch{}}
  return grant;
 }
+function readerSessionStateChanged(){
+ const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();
+ if(!wasReady&&cloudReady&&window.PromoHubSync?.retry)window.PromoHubSync.retry();
+ if(typeof bookmarkLiveUpdate==='function')bookmarkLiveUpdate();
+ if(window.PromoHubSync)window.PromoHubSync.update();
+ if(typeof dashboardUpdate==='function')dashboardUpdate();
+}
+function readerSessionUseOffline(){
+ const uid=cloudUser?.uid||securityLocalOwner;
+ const saved=uid&&readerSessionSavedGrant(uid,readerDeviceId());
+ if(!saved)return false;
+ readerSessionGrant=saved;readerSessionWatchExpiry();readerSessionStateChanged();return true;
+}
 function readerSessionWatchExpiry(){
  clearTimeout(readerSessionExpiryTimer);readerSessionExpiryTimer=null;
- const grant=readerSessionGrant;
- if(grant?.readingAccessMode==='strict'&&!grant.exempt){
-  readerSessionExpiryTimer=setTimeout(()=>{if(readerSessionGrant===grant&&rendition)readerSessionStop('Your online reader session could not be verified. Reconnect and open the book again.');},Math.max(0,grant.expiresAtMs-Date.now()));
- }
+ const grant=readerSessionGrant;if(!grant)return;
+ const deadline=grant.readingAccessMode==='strict'?grant.expiresAtMs:
+  grant.online&&!grant.exempt?Math.min(grant.expiresAtMs,grant.offlineUntilMs):grant.offlineUntilMs;
+ if(!Number.isFinite(deadline)||deadline<=0)return;
+ readerSessionExpiryTimer=setTimeout(()=>{
+  if(readerSessionGrant!==grant)return;
+  if(Date.now()<deadline){readerSessionWatchExpiry();return;}
+  if(!grant.exempt&&grant.readingAccessMode!=='strict'&&readerSessionUseOffline())return;
+  readerSessionStop('Your saved reading permission has expired. Connect to refresh access or renew your subscription.');
+ },Math.min(2147483647,Math.max(0,deadline-Date.now())));
 }
 async function readerSessionHeartbeat(){
  if(!rendition||!(cloudUser||securityLocalOwner)||readerSessionBusy)return;
- if(readerSessionGrant?.exempt&&!readerSessionPaid())return;
+ if(readerSessionGrant?.exempt&&!readerSessionPaid()){readerSessionStateChanged();return;}
  readerSessionBusy=true;const epoch=readerSessionEpoch;
- try {const grant=await readerSessionClaim(!!readerSessionGrant?.online&&(readerSessionGrant.readingAccessMode==='offline'||readerSessionGrant.expiresAtMs>Date.now()));if(epoch!==readerSessionEpoch)return;readerSessionGrant=grant;readerSessionWatchExpiry();cloudReady=subscriptionCloudAllowed();}
- catch(e){if(epoch!==readerSessionEpoch)return;if(!navigator.onLine&&readerSessionGrant?.readingAccessMode!=='strict'&&readerSessionGrant?.offlineUntilMs>Date.now()){readerSessionGrant.online=false;cloudReady=false;}else{try{if(!readerSessionTransient(e)&&navigator.onLine!==false)localStorage.removeItem(readerSessionKey(cloudUser?.uid||securityLocalOwner));}catch{}readerSessionStop(e.message||'Reader session ended.');}}
+ try {const grant=await readerSessionClaim(!!readerSessionGrant?.online&&readerSessionGrant.expiresAtMs>Date.now());if(epoch!==readerSessionEpoch)return;readerSessionGrant=grant;readerSessionWatchExpiry();readerSessionStateChanged();}
+ catch(e){if(epoch!==readerSessionEpoch)return;try{if(!readerSessionTransient(e))localStorage.removeItem(readerSessionKey(cloudUser?.uid||securityLocalOwner));}catch{}readerSessionStop(e.message||'Reader session ended.');}
  finally{readerSessionBusy=false;}
 }
 function readerSessionRelease(){
@@ -90,7 +109,13 @@ function readerSessionRelease(){
 function readerSessionReset(){if(window.PromoHubDeviceList)window.PromoHubDeviceList.stop(true);readerSessionEpoch++;readerSessionRelease();if(window.PromoHubReaderRecovery)window.PromoHubReaderRecovery.reset();}
 const readerSessionOpenLocal=openReader;
 openReader=function(){
- if((!cloudUser&&!readerSessionPaid())||securityIsAdmin()||typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return readerSessionOpenLocal();
+ if(securityIsAdmin()||typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return readerSessionOpenLocal();
+ if(!cloudUser&&!readerSessionPaid()){
+  const opened=readerSessionOpenLocal(),p=securityProfile||subscriptionCachedProfile();
+  const until=Number(p?.trialEndsAtMs)||(!securityLocalOwner&&typeof subscriptionTrialMs!=='undefined'?Number(localStorage.getItem('ges-promohub-guest-trial-start'))+subscriptionTrialMs:0);
+  if(opened!==false&&until>0){readerSessionGrant={exempt:true,reason:'trial',offlineUntilMs:until};readerSessionWatchExpiry();}
+  return opened;
+ }
  if(readerSessionBusy)return false;
  const uid=cloudUser?.uid||securityLocalOwner,file=selectedBookFile,epoch=readerSessionEpoch;
  readerSessionBusy=true;
@@ -101,8 +126,8 @@ openReader=function(){
    if((cloudUser?.uid||securityLocalOwner)!==uid||selectedBookFile!==file||readerSessionEpoch!==epoch){readerSessionRelease();return;}
    const grant=await readerSessionClaim();
    readerSessionGrant=grant;
-   if((cloudUser?.uid||securityLocalOwner)!==uid||selectedBookFile!==file||readerSessionEpoch!==epoch){readerSessionRelease();return;}cloudReady=subscriptionCloudAllowed();
-   readerSessionWatchExpiry();
+   if((cloudUser?.uid||securityLocalOwner)!==uid||selectedBookFile!==file||readerSessionEpoch!==epoch){readerSessionRelease();return;}
+   readerSessionWatchExpiry();readerSessionStateChanged();
    if(readerSessionOpenLocal()===false){readerSessionRelease();readerApp.style.display='none';libraryScreen.style.display='flex';return;}
    clearInterval(readerSessionTimer);readerSessionTimer=setInterval(readerSessionHeartbeat,40000);
   }catch(e){if((cloudUser?.uid||securityLocalOwner)!==uid||readerSessionEpoch!==epoch)return;readerSessionRelease();readerApp.style.display='none';libraryScreen.style.display='flex';readerSessionMessage(e.message||'Unable to confirm reader access.',e);}
@@ -110,9 +135,11 @@ openReader=function(){
  })();
 };
 backBtn.addEventListener('click',()=>{readerSessionEpoch++;readerSessionRelease();});
-window.addEventListener('online',readerSessionHeartbeat);
+window.addEventListener('online',()=>{if(!readerSessionPaid())readerSessionStateChanged();return readerSessionHeartbeat();});
 window.addEventListener('offline',()=>{
- if(rendition&&readerSessionPaid()&&readerSessionGrant?.readingAccessMode==='strict')readerSessionStop('Online mode requires an internet connection. Reconnect to resume from your saved position.');
+ cloudReady=false;
+ if(rendition&&readerSessionPaid()&&!readerSessionUseOffline())readerSessionStop('This browser needs one online access check before it can read offline. Reconnect and tap Retry.');
+ if(window.PromoHubSync)window.PromoHubSync.update();
 });
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')readerSessionHeartbeat();});
 // A matching press and click on the actual backdrop closes the profile, not a drag from the card.
@@ -134,7 +161,7 @@ async function readerDevicesRefresh(){
 function readerDevicesRender(result,uid,epoch){
  if(cloudUser?.uid!==uid||epoch!==readerSessionEpoch)return;
  const status=document.getElementById('readerDevicesStatus'),list=document.getElementById('readerDevicesList');
-  list.replaceChildren();const access=result.readingAccessMode==='strict'?'Online mode, internet required':'Offline mode, local saving until subscription expiry';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
+  list.replaceChildren();const access='Automatic online/offline reading';status.textContent=result.exempt?'Administrator access is exempt from these limits.':`${access} · ${result.devices.length} of 2 registrations · 1 online reading session`;
   for(const d of result.devices){
    const row=document.createElement('article');row.className='securityRecord';
    const name=document.createElement('p');name.textContent=d.label+(d.id===readerDeviceId()?' · This browser':'')+(d.active?' · Reading now':'');row.append(name);
@@ -154,31 +181,6 @@ function readerDevicesRender(result,uid,epoch){
 document.getElementById('readerDevicesRefresh').addEventListener('click',readerDevicesRefresh);
 
 function readerModeRender(){
- const select=document.getElementById('myReadingMode'),button=document.getElementById('myReadingModeSave');
- if(!select||!button)return;
- select.value=securityProfile?.readingAccessMode==='offline'?'offline':'strict';
- select.disabled=button.disabled=!cloudUser?.emailVerified||securityIsAdmin();
+ const status=document.getElementById('automaticReadingStatus');if(!status)return;
+ status.textContent='Reading adapts automatically to your connection. Download books and open one online to prepare this browser for offline reading.';
 }
-async function readerModeSave(){
- const uid=cloudUser?.uid,epoch=securityEpoch,select=document.getElementById('myReadingMode'),button=document.getElementById('myReadingModeSave');
- if(!uid||!navigator.onLine){securityMessage('Connect to the internet to change reading mode.');return;}
- if(readerSessionBusy){securityMessage('Wait for the current reader access check, then try again.');return;}
- const mode=select.value;button.disabled=true;
- try{
-  await securityCall('setMyPromoHubReadingMode',{mode});
-  if(cloudUser?.uid!==uid||securityEpoch!==epoch)return;
-  const reopen=!!rendition;
-  if(reopen){persistCurrentReaderPosition();backBtn.click();}else readerSessionReset();
-  const releasedEpoch=readerSessionEpoch;
-  await readerSessionReleaseDone;
-  if(cloudUser?.uid!==uid||securityEpoch!==epoch||readerSessionEpoch!==releasedEpoch)return;
-  localStorage.removeItem(readerSessionKey(uid));
-  if(securityProfile)securityProfile.readingAccessMode=mode;
-  if(typeof subscriptionRender==='function')subscriptionRender();
-  cloudReady=false;readerModeRender();
-  securityMessage(mode==='offline'?'Offline mode selected. Open a book online once to confirm this browser; then read offline until subscription expiry. Cloud syncing is paused.':'Online mode selected. Internet is required while reading.');
-  if(reopen)openReader();
- }catch(e){if(cloudUser?.uid===uid&&securityEpoch===epoch)securityMessage(e.message||'Unable to change reading mode.');}
- finally{if(cloudUser?.uid===uid&&securityEpoch===epoch)button.disabled=securityIsAdmin();}
-}
-document.getElementById('myReadingModeSave').addEventListener('click',()=>securityWork(readerModeSave));

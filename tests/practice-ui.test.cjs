@@ -6,3 +6,16 @@ test('quiz reset saves only the old account attempt and clears in-memory data',(
 test('practice reuses a current book lease and does not release it on close',async()=>{const s=setup();s.ctx.rendition={};s.ctx.readerSessionGrant={readingAccessMode:'strict',expiresAtMs:Date.now()+10000};await s.run('quizLease()');s.run('quizClose()');assert.equal(s.released(),0);});
 test('standalone paid practice claims and releases its own lease',async()=>{const s=setup();await s.run('quizLease()');assert.equal(s.run('quizOwnLease'),true);assert.equal(s.ctx.readerSessionGrant.readingAccessMode,'strict');s.run('quizClose()');assert.equal(s.released(),1);});
 test('practice UI and starter are precached, modal blocks refresh, and editor requires review',()=>{const sw=fs.readFileSync(require.resolve('../public/sw.js'),'utf8'),app=fs.readFileSync(require.resolve('../public/app.js'),'utf8'),editor=fs.readFileSync(require.resolve('../public/quiz-admin.js'),'utf8');for(const f of ['practice-tests.js','practice-tests.css','quiz-core.js','starter-quiz.json','quiz-admin.js'])assert.ok(sw.includes(f));assert.ok(app.includes('document.getElementById("quizDialog")?.open===true'));assert.ok(editor.includes("status==='published'&&!review.checked"));assert.ok(editor.includes('expectedVersion:model.version||0'));});
+
+test('automatic practice permission works offline only until expiry',()=>{
+ const s=setup();s.ctx.navigator.onLine=false;s.run("quizGrant={readingAccessMode:'auto',offlineUntilMs:Date.now()+100000}");assert.equal(s.run('quizAccess()'),true);s.run('quizGrant.offlineUntilMs=Date.now()-1');assert.equal(s.run('quizAccess()'),false);
+});
+test('standalone practice reconnect reacquires instead of renewing an old offline lease',async()=>{
+ const s=setup();let renewal;s.ctx.readerSessionClaim=async renew=>{renewal=renew;return {readingAccessMode:'auto',online:true,expiresAtMs:Date.now()+100000,offlineUntilMs:Date.now()+200000};};await s.run('quizLease()');s.run('quizGrant.online=false');await s.run('quizRefreshLease()');assert.equal(renewal,false);assert.equal(s.run('quizAccess()'),true);
+});
+test('explicit practice reconnect rejection invalidates permission and releases its lock',async()=>{
+ const s=setup();await s.run('quizLease()');s.ctx.readerSessionClaim=async()=>{throw Object.assign(Error('Device removed'),{code:'functions/permission-denied'});};await s.run('quizRefreshLease()');assert.equal(s.run('quizAccess()'),false);assert.equal(s.run('quizOwnLease'),false);assert.equal(s.released(),1);
+});
+test('closing practice after offline fallback releases its original browser lock',async()=>{
+ const s=setup();s.ctx.readerSessionEpoch=4;await s.run('quizLease()');s.ctx.readerSessionGrant={...s.ctx.readerSessionGrant,online:false};s.run('quizClose()');assert.equal(s.released(),1);
+});
