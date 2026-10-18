@@ -1711,4 +1711,4 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .profileStartupPanel button{min-height:44px;padding:10px 14px;font:inherit;border:1px solid var(--ui-border,#ccc);border-radius:10px;color:var(--ui-text,#222);background:var(--ui-raised,#f1f2ef);cursor:pointer}
 .profileStartupPanel button:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:3px}
 
-.accountPanel.profileRefreshing #myAccountPanel>details:not(#profileAccountSettings):not(#profileAppearanceSettings),.accountPanel.profileRefreshing #profileAccountSettings .syncStatus{display:none!important}
+.accountPanel.profileRefreshing #myAccountPanel>details:not(#profileAccountSettings):not(#profileAppearanceSettings):not(#profileAboutSettings),.accountPanel.profileRefreshing #profileAccountSettings .syncStatus{display:none!important}

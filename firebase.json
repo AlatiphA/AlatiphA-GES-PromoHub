@@ -24,6 +24,7 @@
                                    "**/*.tmp",
                                    "baseline-correction-backup-*/**"
                                ],
+                    "site":  "ges-promohub",
                     "headers":  [
                                     {
                                         "source":  "sw.js",
@@ -33,9 +34,17 @@
                                                             "value":  "no-cache"
                                                         }
                                                     ]
+                                    },
+                                    {
+                                        "source":  "version.json",
+                                        "headers":  [
+                                                        {
+                                                            "key":  "Cache-Control",
+                                                            "value":  "no-store"
+                                                        }
+                                                    ]
                                     }
-                                ],
-                    "site":  "ges-promohub"
+                                ]
                 },
     "emulators":  {
                       "firestore":  {

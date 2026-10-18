@@ -1,11 +1,11 @@
-/* Account security patch. SW cache version is independent of app version. */
-const APP_VERSION='v1.10.12';
+/* PromoHub release version, shared by the app and application-shell cache. */
+const APP_VERSION='v1.11.11';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';
 const BOOK_CACHE='alatipha-ges-promohub-books-v1';
 const BOOK_FILES=['gespasco','mat1','mat2','etmala','nfatfges','eigala'].map(name=>'./library/'+name+'.epub');
-const CORE=['./device-list-live.js','./revision-core.js','./revision-dashboard.js','./reader-recovery.js','./push-notifications.js','./question-reports.js','./reports-push-admin.js','./sync-status.js','./sync-status.css','./auth-pages.css','./privacy.html','./terms.html','./quiz-core.js','./practice-tests.js','./practice-tests.css','./quiz-admin.js','./starter-quiz.json','./reading-dashboard.js','./reading-dashboard.css','./admin-overview.js','./downloads.js','./downloads.css','./navigation.css','./notifications.js','./notifications.css','./notifications-admin.js','./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
+const CORE=['./about.js','./device-list-live.js','./revision-core.js','./revision-dashboard.js','./reader-recovery.js','./push-notifications.js','./question-reports.js','./reports-push-admin.js','./sync-status.js','./sync-status.css','./auth-pages.css','./privacy.html','./terms.html','./quiz-core.js','./practice-tests.js','./practice-tests.css','./quiz-admin.js','./starter-quiz.json','./reading-dashboard.js','./reading-dashboard.css','./admin-overview.js','./downloads.js','./downloads.css','./navigation.css','./notifications.js','./notifications.css','./notifications-admin.js','./admin.html','./admin.css','./admin-ui.js','./admin-page.js','./','./index.html','./style.css','./app.js','./install.js','./security-ui.js', './subscription-ui.js','./ui-theme.js','./account-security.js','./reader-sessions.js','./firebase-config.js','./faq.html','./user-guide.html','./manifest.json','./icon-192.png','./icon-512.png'];
 const OPTIONAL=['./fonts/OpenSans-VariableFont_wdth_wght.ttf','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js','https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.1/css/all.min.css',...['app','auth','firestore','functions','messaging'].map(name=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${name}-compat.js`)];
 self.addEventListener('install',event=>event.waitUntil((async()=>{
  const cache=await caches.open(CACHE_NAME);
@@ -31,6 +31,7 @@ self.addEventListener('fetch',event=>{
  if(event.request.method!=='GET')return;
  const url=new URL(event.request.url),same=url.origin===self.location.origin;
  if(same && url.pathname.startsWith('/__/'))return;
+ if(same && url.pathname===new URL('./version.json',self.registration.scope).pathname)return;
  // A user-requested download must reach the network rather than reuse an old book.
  if(same && event.request.headers?.get('X-PromoHub-Download')==='1')return;
  const approvedCDN=['www.gstatic.com','cdn.jsdelivr.net','cdnjs.cloudflare.com'].includes(url.hostname);
