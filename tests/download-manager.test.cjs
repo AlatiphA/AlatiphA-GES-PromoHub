@@ -23,7 +23,7 @@ test('offline-ready requires cached reader dependencies as well as a complete bo
  const s=await prepared();const shell=await s.context.caches.open('alatipha-ges-promohub-v1.8.3');
  for(const n of ['app','auth','firestore','functions'])await shell.put('https://www.gstatic.com/firebasejs/10.14.1/firebase-'+n+'-compat.js',new Response('sdk'));
  for(const u of ['https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js'])await shell.put(u,new Response('js'));
- await s.api.scan();await s.api.download('./library/mat1.epub');assert.match(state(s),/Ready offline/);s.navigator.onLine=false;await s.api.scan();assert.match(state(s),/Ready offline/);assert.equal(s.ids.downloadsAll.disabled,true);
+ await s.api.scan();await s.api.download('./library/mat1.epub');assert.match(state(s),/Downloaded/);s.navigator.onLine=false;await s.api.scan();assert.match(state(s),/Downloaded/);assert.equal(s.ids.downloadsAll.disabled,true);
 });
 test('HTML responses and corrupt EPUB files never become ready downloads',async()=>{
  const s=await prepared();s.setFetch(async()=>new Response('<html>app</html>',{headers:{'Content-Type':'text/html'}}));await s.api.download('./library/mat1.epub');assert.equal(s.stores.get(cache).has(url),false);assert.match(state(s),/instead of an EPUB/);

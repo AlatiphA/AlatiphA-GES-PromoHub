@@ -162,7 +162,7 @@
       <img src="icon-192.png" alt="icon" />
       <div class="ib-text">
         <div class="ib-title">AlatiphA GES PromoHub</div>
-        <div class="ib-sub">Add to Home Screen for offline reading</div>
+        <div class="ib-sub">Add to Home Screen for quick access</div>
       </div>
       <div class="ib-actions">
         <button class="ib-install" id="ibInstall">Install</button>

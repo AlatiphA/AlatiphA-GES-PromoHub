@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.9";
+const APP_VERSION = "1.11.10";
 
 const versionEl =
   document.getElementById(
@@ -2808,7 +2808,7 @@ if (authOfflineBtn) authOfflineBtn.addEventListener("click", () => { securityCho
 if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
   e.preventDefault();
   if (!document.getElementById("authForm").reportValidity()) return;
-  if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
+  if (!cloudAuth) { authError.textContent = "Sign-in is not available yet. You can use the guest trial."; return; }
   authError.textContent = "";
   try {
     if (authMode === "signup") {
@@ -2830,7 +2830,7 @@ if (authPrimaryBtn) authPrimaryBtn.addEventListener("click", async e => {
   finally { securityRegistering = false; }
 });
 if (googleSignInBtn) googleSignInBtn.addEventListener("click", async () => {
-  if (!cloudAuth) { authError.textContent = "Firebase is not configured yet. You can continue offline."; return; }
+  if (!cloudAuth) { authError.textContent = "Sign-in is not available yet. You can use the guest trial."; return; }
   try { securityEndGuestChoice();
     await cloudAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider()); window.PromoHubInbox?.login("google"); }
   catch (e) { authError.textContent = e.message || "Google sign-in failed."; }
