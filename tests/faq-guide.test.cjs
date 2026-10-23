@@ -37,7 +37,7 @@ test('complete guide links resolve and optional support remains separate from su
 test('FAQ and complete guide document automatic connectivity and live administration',()=>{
  for(const name of ['faq.html','user-guide.html']){
   const html=fs.readFileSync(path.join(root,name),'utf8');
-  for(const phrase of ['350-millisecond','25 matching users','Open Administration','no added 24-hour cutoff','2 browser/PWA registrations','1 online reading session','Syncing then resumes automatically','guide-modes','guide-devices','v1.11.11'])assert.ok(html.includes(phrase),name+' missing '+phrase);
+  for(const phrase of ['350-millisecond','25 matching users','Open Administration','no added 24-hour cutoff','2 browser/PWA registrations','1 online reading session','Syncing then resumes automatically','guide-modes','guide-devices','v1.11.12'])assert.ok(html.includes(phrase),name+' missing '+phrase);
   assert.doesNotMatch(html,/The Administration tab|covers app v1\.7\.4/);
   assert.match(html,/starts-with, not substring/);assert.match(html,/Premium profiles can include expired subscriptions/);assert.match(html,/cannot guarantee one reader across disconnected devices/);
  }

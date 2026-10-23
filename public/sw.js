@@ -1,5 +1,5 @@
 /* PromoHub release version, shared by the app and application-shell cache. */
-const APP_VERSION='v1.11.11';
+const APP_VERSION='v1.11.12';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';
@@ -54,7 +54,7 @@ self.addEventListener('fetch',event=>{
   }
  })());
 });
-self.addEventListener('message',event=>{if(event.data?.type==='PROMOHUB_PUSH_BIND')event.waitUntil(storePushBinding(event));if(event.data==='GET_VERSION'&&event.ports[0])event.ports[0].postMessage(APP_VERSION);if(event.data==='PROMOHUB_DOWNLOADS_CAPABILITIES'&&event.ports[0])event.ports[0].postMessage({bookCache:BOOK_CACHE,version:APP_VERSION});});
+self.addEventListener('message',event=>{if(event.data?.type==='PROMOHUB_ACTIVATE_UPDATE')event.waitUntil(activateRequestedUpdate(event));if(event.data?.type==='PROMOHUB_PUSH_BIND')event.waitUntil(storePushBinding(event));if(event.data==='GET_VERSION'&&event.ports[0])event.ports[0].postMessage(APP_VERSION);if(event.data==='PROMOHUB_DOWNLOADS_CAPABILITIES'&&event.ports[0])event.ports[0].postMessage({bookCache:BOOK_CACHE,version:APP_VERSION});});
 
 // Focus the existing reader without changing its book; cold starts use an account-bound route.
 self.addEventListener('notificationclick',event=>{
@@ -80,3 +80,12 @@ self.addEventListener('push',event=>{event.waitUntil((async()=>{
  let payload;try{payload=event.data?.json();}catch{return;}const d=payload?.data;if(d?.promoHub!=='1'||typeof d.uid!=='string'||d.uid!==(await readPushBinding()))return;
  const root=new URL('./',self.registration.scope);await self.registration.showNotification(String(d.title||'PromoHub').slice(0,120),{body:'Open PromoHub to view your notification.',icon:new URL('icon-192.png',root).href,badge:new URL('icon-192.png',root).href,tag:'promohub-push-'+String(d.eventId||'notice').slice(0,64),data:{uid:d.uid,push:true,noticeId:d.noticeId,source:d.source}});
 })());});
+
+// Only an explicit update request from the app page activates a waiting release.
+async function activateRequestedUpdate(event){
+ try{
+  const source=new URL(event.source.url),root=new URL('./',self.registration.scope);
+  if(source.origin!==root.origin||![root.pathname,new URL('index.html',root).pathname].includes(source.pathname))return;
+  await self.skipWaiting();
+ }catch(error){console.warn('Update activation:',error);}
+}
