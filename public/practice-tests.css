@@ -36,3 +36,50 @@
 .revisionTopic progress{display:block;width:100%;height:8px;accent-color:var(--ui-accent,#956433)}
 .revisionHistory summary{cursor:pointer;min-height:44px;display:flex;align-items:center;font-weight:600}.revisionHistory ol{margin:8px 0 0;padding:0;list-style:none}.revisionHistory li{padding:12px 0;border-top:1px solid var(--ui-border)}.revisionHistory li>strong,.revisionHistory li>span{display:block}.revisionHistory li>span{font-size:12px;color:var(--ui-muted);margin-top:4px}
 @media(max-width:520px){.revisionTopics{grid-template-columns:1fr}.revisionStats{gap:6px}.revisionStat{padding:10px}.revisionStat>strong{font-size:20px}.revisionStat>span{font-size:11px}}
+
+/* Keep the question-bank editor separate from account-field sizing rules. */
+#securityControls .quizAdmin{width:100%;font-size:15px;line-height:1.55;text-align:left}
+#securityControls .quizAdmin .quizAdminNote{font-size:13px;color:var(--ui-muted);margin:0 0 20px;line-height:1.65}
+#securityControls .quizAdmin .quizAdminLibrary,#securityControls .quizAdmin .quizAdminEditor{padding:20px;margin:0 0 20px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface);min-width:0}
+#securityControls .quizAdmin .quizAdminLibraryTools{margin:0 0 18px;gap:10px}
+#securityControls .quizAdmin .quizAdminBanks{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(240px,100%),1fr));gap:10px;margin-top:18px}
+#securityControls .quizAdmin .quizAdminBank{display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:14px;text-align:left;white-space:normal;overflow-wrap:anywhere}
+#securityControls .quizAdmin .quizAdminBank strong{font-size:14px;line-height:1.5}
+#securityControls .quizAdmin .quizAdminBank span{font-size:12px;color:var(--ui-muted);text-transform:capitalize}
+#securityControls .quizAdmin .quizAdminHeading{padding:0 0 16px;margin-bottom:20px;border-bottom:1px solid var(--ui-border)}
+#securityControls .quizAdmin .quizAdminHeading h3{font-size:20px;line-height:1.4;margin:0 0 6px;overflow-wrap:anywhere}
+#securityControls .quizAdmin .quizAdminMeta{font-size:13px;color:var(--ui-muted);margin:0}
+#securityControls .quizAdmin .quizAdminMetadata{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.5fr);gap:16px;margin-bottom:22px}
+#securityControls .quizAdmin .quizField{display:grid;gap:7px;margin:0;min-width:0;font-size:13px;font-weight:600;line-height:1.5}
+#securityControls .quizAdmin .quizField input,#securityControls .quizAdmin .quizField textarea{width:100%;min-width:0;max-width:100%;margin:0;padding:10px 12px;min-height:44px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);color:var(--ui-text);font:inherit;font-size:15px;font-weight:400;line-height:1.55;box-sizing:border-box}
+#securityControls .quizAdmin .quizField textarea{min-height:96px;resize:vertical}
+#securityControls .quizAdmin .quizField input:focus-visible,#securityControls .quizAdmin .quizField textarea:focus-visible{outline:2px solid var(--ui-accent);outline-offset:2px}
+#securityControls .quizAdmin .quizField input:disabled{opacity:.65;cursor:not-allowed}
+#securityControls .quizAdmin input[type=file]{margin:0;padding:8px;min-height:48px;font-size:13px;font-weight:400;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);color:var(--ui-text)}
+#securityControls .quizAdmin input[type=file]::file-selector-button{font:inherit;padding:7px 10px;margin-right:10px;border:1px solid var(--ui-border);border-radius:6px;background:var(--ui-surface);color:var(--ui-text);cursor:pointer}
+#securityControls .quizAdmin .quizAdminQuestions{display:grid;gap:10px}
+#securityControls .quizAdmin .quizAdminQuestion{margin:0;padding:0;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-surface);overflow:hidden}
+#securityControls .quizAdmin .quizAdminQuestion>summary{display:flex;align-items:flex-start;gap:12px;padding:14px;cursor:pointer;list-style:none;min-height:52px;box-sizing:border-box}
+#securityControls .quizAdmin .quizAdminQuestion>summary::-webkit-details-marker{display:none}
+#securityControls .quizAdmin .quizAdminQuestion>summary::after{content:'+';flex-shrink:0;margin-left:auto;color:var(--ui-muted);font-size:21px;line-height:28px}
+#securityControls .quizAdmin .quizAdminQuestion[open]>summary::after{content:'−'}
+#securityControls .quizAdmin .quizAdminQuestion>summary:focus-visible{outline:2px solid var(--ui-accent);outline-offset:-3px}
+#securityControls .quizAdmin .quizAdminQuestionNumber{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;min-height:28px;border-radius:7px;background:var(--ui-raised);color:var(--ui-muted);font-size:12px;font-weight:600}
+#securityControls .quizAdmin .quizAdminQuestionTitle{min-width:0;font-size:14px;line-height:1.6;overflow-wrap:anywhere;padding-top:2px}
+#securityControls .quizAdmin .quizAdminQuestionContent{display:grid;gap:16px;border-top:1px solid var(--ui-border);padding:18px}
+#securityControls .quizAdmin .quizAdminQuestionMetadata{display:grid;grid-template-columns:minmax(0,2fr) minmax(120px,1fr);gap:16px}
+#securityControls .quizAdmin .quizReview{display:grid;grid-template-columns:20px minmax(0,1fr);align-items:start;gap:12px;margin:20px 0 0;padding:14px;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-raised);cursor:pointer;box-sizing:border-box;min-height:48px}
+#securityControls .quizAdmin .quizReview input[type=checkbox]{appearance:auto;-webkit-appearance:checkbox;display:block;width:20px;height:20px;min-width:20px;min-height:20px;max-width:20px;max-height:20px;margin:1px 0 0;padding:0;flex:none;accent-color:var(--ui-button);cursor:pointer;box-sizing:border-box}
+#securityControls .quizAdmin .quizReview span{font-size:14px;font-weight:400;line-height:1.55;overflow-wrap:anywhere}
+#securityControls .quizAdmin .quizReview input:focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
+#securityControls .quizAdmin button{font-size:14px;line-height:1.4;padding:10px 14px;min-height:44px;max-width:100%;white-space:normal}
+#securityControls .quizAdmin .quizAdminAdd{margin:14px 0 0;border-style:dashed;color:var(--ui-accent)}
+#securityControls .quizAdmin .quizAdminActions{display:flex;flex-wrap:wrap;align-items:center;gap:10px;margin:18px 0 0;padding-top:18px;border-top:1px solid var(--ui-border)}
+#securityControls .quizAdmin .quizAdminPublish{background:var(--ui-button);color:var(--ui-on-button);border-color:var(--ui-button);font-weight:600}
+#securityControls .quizAdmin .quizAdminDisable,#securityControls .quizAdmin .quizAdminRemove{color:var(--ui-danger);border-color:var(--ui-border);background:var(--ui-surface)}
+#securityControls .quizAdmin .quizAdminDisable{margin-left:auto}
+#securityControls .quizAdmin .quizAdminRemove{justify-self:start}
+#securityControls .quizAdmin button:disabled{opacity:.55;cursor:wait}
+@media(max-width:640px){#securityControls .quizAdmin .quizAdminLibrary,#securityControls .quizAdmin .quizAdminEditor{padding:14px}#securityControls .quizAdmin .quizAdminMetadata,#securityControls .quizAdmin .quizAdminQuestionMetadata{grid-template-columns:minmax(0,1fr)}#securityControls .quizAdmin .quizAdminHeading h3{font-size:18px}#securityControls .quizAdmin .quizAdminQuestion>summary{padding:12px;gap:10px}#securityControls .quizAdmin .quizAdminQuestionContent{padding:14px}#securityControls .quizAdmin .quizAdminActions{display:grid;grid-template-columns:minmax(0,1fr)}#securityControls .quizAdmin .quizAdminActions button{width:100%;margin:0}#securityControls .quizAdmin .quizAdminPublish{grid-row:1}}
+#securityControls .quizAdmin .quizAdminMetadata,#securityControls .quizAdmin .quizAdminQuestionMetadata{align-items:end}
+#securityControls .quizAdmin .quizField input:not([type=file]){height:44px}
