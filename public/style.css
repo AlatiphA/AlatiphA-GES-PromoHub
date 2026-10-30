@@ -1684,7 +1684,7 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .accountBody .profileSettingsHeading{position:absolute;width:1px;height:1px;overflow:hidden;clip-path:inset(50%);white-space:nowrap}
 .accountBody .profileSetting,.accountBody details[data-profile-setting]{min-width:0;margin:0;padding:0;border:0;border-bottom:1px solid var(--ui-border,#ccc)}
 .accountBody #myAccountPanel>details:last-child{border-bottom:0}
-.accountBody #myAccountPanel>details>summary{display:flex;align-items:center;gap:12px;min-height:56px;box-sizing:border-box;padding:12px 14px;margin:0;list-style:none;cursor:pointer;font-size:15px;font-weight:500;line-height:1.4;color:var(--ui-text,#222);background:var(--ui-surface,#fff)}
+.accountBody #myAccountPanel>details>summary{display:grid;grid-template-columns:22px minmax(0,1fr) 18px;align-items:center;gap:12px;min-height:56px;box-sizing:border-box;padding:14px 16px;margin:0;list-style:none;cursor:pointer;font-size:15px;font-weight:600;line-height:1.4;color:var(--ui-text,#222);background:var(--ui-surface,#fff)}
 .accountBody #myAccountPanel>details>summary::-webkit-details-marker{display:none}
 .accountBody #myAccountPanel>details>summary::marker{content:""}
 .accountBody #myAccountPanel>details>summary:hover{background:var(--ui-raised,#f1f2ef)}
@@ -1712,3 +1712,31 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .profileStartupPanel button:focus-visible{outline:2px solid var(--ui-accent,#956433);outline-offset:3px}
 
 .accountPanel.profileRefreshing #myAccountPanel>details:not(#profileAccountSettings):not(#profileAppearanceSettings):not(#profileAboutSettings),.accountPanel.profileRefreshing #profileAccountSettings .syncStatus{display:none!important}
+
+/* GES Pasco profile rows and About cards. */
+.accountBody #myAccountPanel>details>summary>span{min-width:0;overflow-wrap:anywhere}
+.accountBody #myAccountPanel>details>summary>.profileSettingIcon{width:22px;height:22px;margin:0;stroke-width:1.8}
+.accountBody #myAccountPanel>details>summary>.profileSettingChevron{width:18px;height:18px;margin:0;justify-self:end}
+.accountHeader #accountClose{box-sizing:border-box;display:grid;place-items:center;width:44px;height:44px;min-width:44px;min-height:44px;padding:0;border:1px solid var(--ui-border,#d4d9d4);border-radius:50%;background:var(--ui-surface,#fff);color:var(--ui-text,#242b29)}
+.accountHeader #accountClose svg{width:22px;height:22px}
+.accountHeader #accountClose:hover{background:var(--ui-raised,#faf8f4)}
+.accountBody #logoutBtn{min-height:44px;padding:10px 14px;border:1px solid var(--ui-border,#d4d9d4);border-radius:10px;background:var(--ui-raised,#faf8f4);color:var(--ui-text,#242b29);font:inherit;font-size:13px;line-height:1.4;cursor:pointer}
+.accountBody #logoutBtn:hover{background:var(--ui-selected,#f4e9dc)}
+.accountBody .profileSettingContent.aboutPanelContent{padding:14px;display:grid;gap:14px;font-size:13px}
+.accountBody .aboutIdentity{display:flex;align-items:center;gap:12px;min-width:0}
+.accountBody .aboutIdentity img{width:44px;height:44px;flex:0 0 44px;border-radius:10px}
+.accountBody .aboutIdentity strong{display:block;font-size:16px;line-height:1.5}
+.accountBody .aboutIdentity p{margin:2px 0 0;color:var(--ui-muted,#606b66);font-size:12px}
+.accountBody .aboutPanelContent>p{margin:0;overflow-wrap:anywhere}
+.accountBody .aboutCard{padding:14px;border:1px solid var(--ui-border,#d4d9d4);border-radius:12px;background:var(--ui-surface,#fff);min-width:0}
+.accountBody .aboutCard>strong{display:block;font-size:13px;font-weight:600}
+.accountBody .aboutCard p{margin:8px 0 0;font-size:13px;line-height:1.6;overflow-wrap:anywhere;color:var(--ui-muted,#606b66)}
+.accountBody .aboutUpdateActions{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:8px;margin-top:12px}
+.accountBody #securityControls .aboutUpdateActions button{box-sizing:border-box;width:100%;min-height:44px;margin:0;padding:10px 14px;border:1px solid var(--ui-border,#d4d9d4);border-radius:10px;background:var(--ui-surface,#fff);color:var(--ui-text,#242b29);font:inherit;font-size:13px;line-height:1.4;cursor:pointer}
+.accountBody #securityControls .aboutUpdateActions #aboutInstallUpdate{background:#956433;color:#fff;border-color:#956433}
+.accountBody #securityControls .aboutUpdateActions button:hover:not(:disabled){border-color:var(--ui-accent,#805025)}
+.accountBody #securityControls .aboutUpdateActions button:disabled{opacity:.5;cursor:default}
+.accountBody #securityControls .aboutUpdateActions button[hidden]{display:none}
+.accountBody #myAccountPanel>details>summary:focus-visible,.accountBody #logoutBtn:focus-visible,.accountBody .aboutUpdateActions button:focus-visible{outline:2px solid var(--ui-accent,#805025);outline-offset:-3px}
+@media(max-width:480px){.accountBody #myAccountPanel>details>summary{min-height:56px;padding:13px 14px;gap:12px}}
+@media(max-width:380px){.accountBody .profileSettingContent.aboutPanelContent{padding:12px}}
