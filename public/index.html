@@ -578,14 +578,12 @@
       <p>Removes your cloud account and reading data. Local copies remain.</p><button data-security="delete">Start account deletion</button>
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </div></details>
-    <details id="profileAboutSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>About</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
-      <h3>AlatiphA PromoHub</h3>
+    <details id="profileAboutSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>About</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent aboutPanelContent">
+      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.15</span></p></div></div>
       <p>Prepare for GES promotion examinations with past questions, study books, practice tests and revision tools. Save books for offline reading, track your progress and revisit bookmarks. Paid plans include cloud saving and device syncing.</p>
-      <p>Version <strong id="aboutAppVersion">1.11.14</strong></p>
       <p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia.</p>
-      <div class="securityActions"><button id="aboutCheckUpdates" type="button">Check for updates</button><button id="aboutInstallUpdate" type="button" hidden>Install update</button><button id="aboutInstallApp" type="button">Install app</button></div>
-      <p id="aboutUpdateStatus" role="status" aria-live="polite"></p>
-      <p id="aboutInstallStatus" role="status" aria-live="polite"></p>
+      <section class="aboutCard aboutInstallCard" aria-labelledby="aboutInstallHeading"><strong id="aboutInstallHeading">App installation</strong><p id="aboutInstallStatus" role="status" aria-live="polite">Add AlatiphA PromoHub to this device.</p><div class="aboutUpdateActions"><button id="aboutInstallApp" type="button">Install app</button></div></section>
+      <section class="aboutCard aboutUpdatesCard" aria-labelledby="aboutUpdatesHeading"><strong id="aboutUpdatesHeading">App updates</strong><p id="aboutUpdateStatus" role="status" aria-live="polite">Checking update support...</p><div class="aboutUpdateActions"><button id="aboutCheckUpdates" type="button">Check for updates</button><button id="aboutInstallUpdate" type="button" hidden>Install update</button></div></section>
     </div></details>
   </section>
 

@@ -1,5 +1,5 @@
 /* PromoHub release version, shared by the app and application-shell cache. */
-const APP_VERSION='v1.11.14';
+const APP_VERSION='v1.11.15';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';
@@ -86,6 +86,9 @@ async function activateRequestedUpdate(event){
  try{
   const source=new URL(event.source.url),root=new URL('./',self.registration.scope);
   if(source.origin!==root.origin||![root.pathname,new URL('index.html',root).pathname].includes(source.pathname))return;
-  await self.skipWaiting();
+  const activation=self.skipWaiting();
+  // Acknowledge the scoped handover so navigation can release old live connections.
+  event.ports?.[0]?.postMessage({activationRequested:true,version:APP_VERSION});
+  await activation;
  }catch(error){console.warn('Update activation:',error);}
 }

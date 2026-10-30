@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.14";
+const APP_VERSION = "1.11.15";
 
 const versionEl =
   document.getElementById(
@@ -2311,7 +2311,7 @@ if (
         await navigator
           .serviceWorker
           .register(
-            "./sw.js"
+            "./sw.js", { updateViaCache: "none" }
           );
 
       }
