@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.16";
+const APP_VERSION = "1.11.17";
 
 const versionEl =
   document.getElementById(
@@ -229,7 +229,8 @@ const readerTitle =
 
 document.querySelectorAll(".bookCard")
   .forEach(card => {
-    card.addEventListener("click", () => {
+    card.addEventListener("click", event => {
+      if (event?.target?.closest?.("button, a, input, select, textarea")) return;
       selectedBookFile = card.dataset.file;
       localStorage.setItem("lastBook", selectedBookFile);
 
