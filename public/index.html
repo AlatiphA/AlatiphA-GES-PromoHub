@@ -103,7 +103,6 @@
   <div class="libraryGrid">
     <div id="readingDashboard" aria-label="Reading dashboard"></div>
 
-    <div class="libraryDownloadTools" role="group" aria-label="Book downloads"><button id="downloadsOpen" type="button" class="libraryDownloadsButton" aria-label="Downloads" title="Downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span>Downloads</span></button></div>
 
     <div class="bookCard" data-file="./library/gespasco.epub">
       <div class="bookCover">
@@ -578,6 +577,9 @@
     </div></details>
     <details class="securityBlock" id="pushNotificationControls" name="profile-settings" data-profile-setting><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9M10 21h4"/></svg><span>Notifications</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent"><p>Optional alerts for messages, approved payments and renewal reminders. Details remain in your signed-in inbox.</p><p id="pushNotificationStatus" role="status" aria-live="polite"></p><label><input type="checkbox" id="pushCategory-messages" checked> Messages and announcements</label><label><input type="checkbox" id="pushCategory-payments" checked> Payment approval</label><label><input type="checkbox" id="pushCategory-reminders" checked> Subscription reminders</label><div class="communicationActions"><button id="pushEnable" type="button" disabled>Enable / Save preferences</button><button id="pushDisable" type="button" disabled>Disable on this browser</button><button id="pushRefresh" type="button">Refresh status</button></div></div></details>
     <details class="securityBlock securityDanger profileDataActions" name="profile-settings" data-profile-setting><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><ellipse cx="12" cy="5" rx="8" ry="3"/><path d="M4 5v14c0 4 16 4 16 0V5M4 12c0 4 16 4 16 0"/></svg><span>Data and account</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent">
+      <h4>Book downloads</h4>
+      <p>Check saved books, download all books or remove downloaded copies. Reading progress and bookmarks are kept.</p>
+      <button id="downloadsOpen" type="button" class="profileDownloadsButton">Manage downloads</button>
       <h4>On this device</h4>
       <p>Remove PromoHub reading progress, bookmarks, practice results, settings and downloaded books from this browser. Unsynced changes will be lost.</p>
       <p>Your account, subscription and trial dates remain. Cloud-saved data may return when syncing resumes.</p>
@@ -587,7 +589,7 @@
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </div></details>
     <details id="profileAboutSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>About</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent aboutPanelContent">
-      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.17</span></p></div></div>
+      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.18</span></p></div></div>
       <p>Prepare for GES promotion examinations with past questions, study books, practice tests and revision tools. Save books for offline reading, track your progress and revisit bookmarks. Paid plans include cloud saving and device syncing.</p>
       <p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia.</p>
       <section class="aboutCard aboutInstallCard" aria-labelledby="aboutInstallHeading"><strong id="aboutInstallHeading">App installation</strong><p id="aboutInstallStatus" role="status" aria-live="polite">Add AlatiphA PromoHub to this device.</p><div class="aboutUpdateActions"><button id="aboutInstallApp" type="button">Install app</button></div></section>
