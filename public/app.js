@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.15";
+const APP_VERSION = "1.11.16";
 
 const versionEl =
   document.getElementById(
@@ -1031,6 +1031,7 @@ function startReader() {
   rendition.hooks.content.register(contents => {
     const base = window.location.href.replace(/\/[^/]*$/, "");
     const doc = contents.document;
+    installPinchTextZoom(doc);
     const style = doc.createElement("style");
     style.id = "custom-fonts";
     style.textContent = `
@@ -2927,27 +2928,91 @@ document.addEventListener("touchmove", e => {
 document.addEventListener("touchend", () => {profileTouch=null;}, { passive:true, capture:true });
 document.addEventListener("touchcancel", () => {profileTouch=null;}, { passive:true, capture:true });
 
-/* ---------- Pinch changes EPUB text size only ---------- */
+/* ---------- Pinch changes EPUB text size once, on release ---------- */
+let readerPinchSequence = 0;
 function installPinchTextZoom(doc) {
   if (!doc || doc.__gesPinchInstalled) return;
   doc.__gesPinchInstalled = true;
-  let startDistance=0, startFont=fontSize, pinching=false;
-  const dist = touches => Math.hypot(touches[0].clientX-touches[1].clientX, touches[0].clientY-touches[1].clientY);
-  doc.addEventListener("touchstart", e => {
-    if (e.touches.length !== 2) return;
-    pinching=true; startDistance=dist(e.touches); startFont=fontSize;
-  }, { passive:true });
-  doc.addEventListener("touchmove", e => {
-    if (!pinching || e.touches.length !== 2 || !startDistance) return;
-    e.preventDefault();
-    const scale=dist(e.touches)/startDistance;
-    const next=Math.max(70, Math.min(200, Math.round((startFont*scale)/5)*5));
-    if (next !== fontSize) { fontSize=next; rendition.themes.fontSize(fontSize+"%"); localStorage.setItem("fontSize", String(fontSize)); }
-  }, { passive:false });
-  doc.addEventListener("touchend", e => {
-    if (!pinching) return;
-    if (e.touches.length < 2) { pinching=false; markPreferencesChanged(); }
-  }, { passive:true });
+  // Set before input begins, inside the EPUB document, not just on its iframe.
+  const style = doc.createElement("style");
+  style.id = "readerTextPinchStyle";
+  style.textContent = "html,body{touch-action:pan-y !important}";
+  doc.head.appendChild(style);
+  let gesture = null, blockedUntil = 0;
+  const distance = touches => Math.hypot(touches[0].clientX-touches[1].clientX, touches[0].clientY-touches[1].clientY);
+  const consume = event => {
+    if (event.cancelable) event.preventDefault();
+    event.stopImmediatePropagation();
+  };
+  const isCurrent = g => g && rendition === g.reader && book === g.book &&
+    securityLocalOwner === g.owner && selectedBookFile === g.file &&
+    readerLoadGeneration === g.generation && readerPinchSequence === g.sequence;
+  const rememberScale = touches => {
+    if (!gesture || touches.length !== 2 || gesture.cancelled || !gesture.distance) return;
+    const size = gesture.font * distance(touches) / gesture.distance;
+    if (Number.isFinite(size)) gesture.next = Math.max(70, Math.min(200, Math.round(size/5)*5));
+  };
+  doc.addEventListener("touchstart", event => {
+    if (event.touches.length < 2 && !gesture) return;
+    consume(event);
+    if (gesture) {
+      if (event.touches.length !== 2) gesture.cancelled = true;
+      return;
+    }
+    gesture = {
+      reader: rendition, book, owner: securityLocalOwner, file: selectedBookFile,
+      generation: readerLoadGeneration, sequence: ++readerPinchSequence,
+      distance: event.touches.length === 2 ? distance(event.touches) : 0,
+      font: fontSize, next: fontSize, anchor: currentLocation?.start?.cfi || null,
+      cancelled: event.touches.length !== 2
+    };
+  }, { passive:false, capture:true });
+  doc.addEventListener("touchmove", event => {
+    if (!gesture) return;
+    consume(event);
+    if (event.touches.length > 2) gesture.cancelled = true;
+    rememberScale(event.touches);
+  }, { passive:false, capture:true });
+  doc.addEventListener("touchend", event => {
+    if (!gesture) return;
+    consume(event);
+    blockedUntil = Date.now()+800;
+    // Keep the remaining finger from becoming a swipe or tap.
+    if (event.touches.length) return;
+    const done = gesture;
+    gesture = null;
+    if (done.cancelled || !isCurrent(done) || fontSize !== done.font || done.next === fontSize) return;
+    try {
+      done.reader.themes.fontSize(done.next+"%");
+      fontSize = done.next;
+      try { localStorage.setItem("fontSize", String(fontSize)); }
+      catch (error) { console.warn("Pinch preference:", error); }
+      // One layout change, followed by restoration of the original passage.
+      if (done.anchor) requestAnimationFrame(() => {
+        if (!isCurrent(done)) return;
+        try { Promise.resolve(done.reader.display(done.anchor)).catch(error => console.warn("Pinch position:", error)); }
+        catch (error) { console.warn("Pinch position:", error); }
+      });
+      markPreferencesChanged();
+    } catch (error) { console.warn("Pinch text size:", error); }
+  }, { passive:false, capture:true });
+  doc.addEventListener("touchcancel", event => {
+    if (!gesture) return;
+    consume(event);
+    gesture.cancelled = true;
+    blockedUntil = Date.now()+800;
+    if (!event.touches.length) gesture = null;
+  }, { passive:false, capture:true });
+  // Safari also exposes native gesture events. Never affect single-touch input.
+  for (const name of ["gesturestart", "gesturechange", "gestureend"]) {
+    doc.addEventListener(name, event => {
+      consume(event);
+      blockedUntil = Date.now()+800;
+    }, { passive:false, capture:true });
+  }
+  doc.addEventListener("click", event => {
+    if (gesture || Date.now() < blockedUntil) consume(event);
+  }, { capture:true });
 }
 
 /* Sync the selected book whenever a book is opened. */

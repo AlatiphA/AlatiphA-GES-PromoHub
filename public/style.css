@@ -1740,3 +1740,6 @@ dialog.readerAccessDialog{position:fixed;inset:0;margin:auto;width:min(520px,cal
 .accountBody #myAccountPanel>details>summary:focus-visible,.accountBody #logoutBtn:focus-visible,.accountBody .aboutUpdateActions button:focus-visible{outline:2px solid var(--ui-accent,#805025);outline-offset:-3px}
 @media(max-width:480px){.accountBody #myAccountPanel>details>summary{min-height:56px;padding:13px 14px;gap:12px}}
 @media(max-width:380px){.accountBody .profileSettingContent.aboutPanelContent{padding:12px}}
+
+/* EPUB input owns pinch-to-text; other app panels retain browser zoom. */
+#viewer { touch-action:pan-y; }
