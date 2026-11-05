@@ -88,7 +88,7 @@
 
   <div class="libraryHeader">
     <div class="headerActions libraryActions" role="group" aria-label="App controls">
-<button id="downloadsOpen" type="button" class="downloadManagerBtn" aria-label="Downloads" title="Downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg></button>
+
 
     <button type="button" class="iconBtn inboxBell" data-open-inbox aria-label="Notifications"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 7-3 9h18c0-2-3-2-3-9Z"/><path d="M10 21h4"/></svg><span class="inboxBadge" data-inbox-badge hidden></span></button>
     <button id="libraryProfileBtn" class="libraryDayNightBtn profileBtn" aria-label="Account">
@@ -103,6 +103,8 @@
   <div class="libraryGrid">
     <div id="readingDashboard" aria-label="Reading dashboard"></div>
 
+    <div class="libraryDownloadTools" role="group" aria-label="Book downloads"><button id="downloadsOpen" type="button" class="libraryDownloadsButton" aria-label="Downloads" title="Downloads"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3v12m-5-5 5 5 5-5M4 16v5h16v-5"/></svg><span>Downloads</span></button></div>
+
     <div class="bookCard" data-file="./library/gespasco.epub">
       <div class="bookCover">
         <i class="fa-solid fa-book-open"></i>
@@ -111,6 +113,7 @@
         <div class="bookTitle">GES Promotion Aptitude Test Pasco</div>
         <div class="bookMeta">Past Questions & Answers</div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download GES Promotion Aptitude Test Pasco">Download</button></div>
     </div>
 
     <div class="bookCard" data-file="./library/mat1.epub">
@@ -121,6 +124,7 @@
         <div class="bookTitle">Model Aptitude Test for GES 1</div>
         <div class="bookMeta">Model Questions & Answers</div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download Model Aptitude Test for GES 1">Download</button></div>
     </div>
 
     <div class="bookCard" data-file="./library/mat2.epub">
@@ -131,6 +135,7 @@
         <div class="bookTitle">Model Aptitude Test for GES 2</div>
         <div class="bookMeta">Model Questions & Answers</div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download Model Aptitude Test for GES 2">Download</button></div>
     </div>
 
     <div class="bookCard" data-file="./library/etmala.epub">
@@ -141,6 +146,7 @@
         <div class="bookTitle">Effective Teaching Methods - Overview</div>
         <div class="bookMeta">Review, Questions & Answers</div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download Effective Teaching Methods - Overview">Download</button></div>
     </div>
 
     <div class="bookCard" data-file="./library/nfatfges.epub">
@@ -151,6 +157,7 @@
         <div class="bookTitle">Notes for Aptitude Test for GES</div>
         <div class="bookMeta">Notes</div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download Notes for Aptitude Test for GES">Download</button></div>
     </div>
 
     <div class="bookCard" data-file="./library/eigala.epub">
@@ -161,6 +168,7 @@
         <div class="bookTitle">Education in Ghana</div>
         <div class="bookMeta">Notes </div>
       </div>
+      <div class="libraryBookActions"><button type="button" class="bookDownloadButton" disabled aria-label="Download Education in Ghana">Download</button></div>
     </div>
 
   </div>
@@ -579,7 +587,7 @@
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </div></details>
     <details id="profileAboutSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>About</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent aboutPanelContent">
-      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.16</span></p></div></div>
+      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.17</span></p></div></div>
       <p>Prepare for GES promotion examinations with past questions, study books, practice tests and revision tools. Save books for offline reading, track your progress and revisit bookmarks. Paid plans include cloud saving and device syncing.</p>
       <p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia.</p>
       <section class="aboutCard aboutInstallCard" aria-labelledby="aboutInstallHeading"><strong id="aboutInstallHeading">App installation</strong><p id="aboutInstallStatus" role="status" aria-live="polite">Add AlatiphA PromoHub to this device.</p><div class="aboutUpdateActions"><button id="aboutInstallApp" type="button">Install app</button></div></section>

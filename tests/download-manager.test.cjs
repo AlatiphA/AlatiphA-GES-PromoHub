@@ -7,11 +7,12 @@ function setup(){
  const caches={keys:async()=>[...stores.keys()],open:async name=>{if(!stores.has(name))stores.set(name,new Map());const m=stores.get(name);return {match:async key=>m.get(String(key))?.clone(),put:async(key,res)=>{if(quota)throw Object.assign(new Error('full'),{name:'QuotaExceededError'});m.set(String(key),res.clone());},delete:async key=>m.delete(String(key))};}};
  class Channel{constructor(){this.port1={close(){},onmessage:null};this.port2={postMessage:data=>this.port1.onmessage({data})};}}
  const navigator={onLine:true,serviceWorker:{controller:{postMessage:(type,ports)=>ports[0].postMessage({bookCache:'alatipha-ges-promohub-books-v1'})},addEventListener(){}},storage:{estimate:async()=>({usage:1024,quota:1048576})}};
- const document={baseURI:'https://example.test/AlatiphA-GES-PromoHub/',activeElement:new Element(),visibilityState:'visible',getElementById:id=>ids[id],createElement:()=>new Element(),querySelectorAll:()=>[],addEventListener(){}};
+ const cards=['./library/mat1.epub','./library/mat2.epub'].map(file=>{const card=new Element(),info=new Element(),button=new Element();card.dataset={file};card.querySelector=selector=>selector==='.bookInfo'?info:selector==='.bookDownloadButton'?button:info.children.find(n=>n.className==='offlineBookStatus');card.button=button;card.info=info;return card;});
+ const document={baseURI:'https://example.test/AlatiphA-GES-PromoHub/',activeElement:new Element(),visibilityState:'visible',getElementById:id=>ids[id],createElement:()=>new Element(),querySelectorAll:()=>cards,addEventListener(){}};
  const BOOKS=[{title:'Book One',file:'./library/mat1.epub'},{title:'Book Two',file:'./library/mat2.epub'}];
  const context={window:{caches,addEventListener(){}},document,navigator,caches,BOOKS,MessageChannel:Channel,setTimeout,clearTimeout,URL,Date,AbortController,Blob,Headers,Response,ReadableStream,Uint8Array,Map,confirm:()=>confirm,fetch:async(url,options)=>{requests.push({url,options});return fetcher(url,options);},JSZip:{loadAsync:async(blob,options)=>{assert.equal(options.checkCRC32,true);if(!zipValid)throw new Error('Corrupt ZIP');return {file:path=>path==='META-INF/container.xml'?{}:path==='mimetype'?{async:async()=> 'application/epub+zip'}:null};}}};
  vm.runInNewContext(fs.readFileSync(require.resolve('../public/downloads.js'),'utf8'),context);
- return {api:context.window.PromoHubDownloads,ids,stores,requests,navigator,setQuota:v=>quota=v,setConfirm:v=>confirm=v,setZip:v=>zipValid=v,setFetch:v=>fetcher=v,context,BOOKS};
+ return {api:context.window.PromoHubDownloads,ids,stores,requests,navigator,setQuota:v=>quota=v,setConfirm:v=>confirm=v,setZip:v=>zipValid=v,setFetch:v=>fetcher=v,context,BOOKS,cards};
 }
 const cache='alatipha-ges-promohub-books-v1',url='https://example.test/AlatiphA-GES-PromoHub/library/mat1.epub';
 const row=s=>s.ids.downloadsList.children[0],state=s=>row(s).children[1].textContent;
@@ -45,4 +46,27 @@ test('old workers cannot report offline downloads ready for a cache they do not 
 test('streaming downloads expose byte progress and only become stored after completion',async()=>{
  const s=await prepared();let finish;s.setFetch(async()=>new Response(new ReadableStream({start(c){c.enqueue(new Uint8Array([80,75,3,4]));finish=()=>{c.enqueue(new Uint8Array([0,1]));c.close();};}}),{headers:{'Content-Length':'6','Content-Type':'application/epub+zip'}}));
  const work=s.api.download('./library/mat1.epub');await new Promise(r=>setImmediate(r));assert.match(state(s),/Downloading/);assert.equal(row(s).children[2].hidden,false);assert.equal(s.stores.get(cache).has(url),false);finish();await work;assert.ok(s.stores.get(cache).has(url));
+});
+
+test('individual book Download saves only that book and consumes the card click',async()=>{
+ const s=setup();await s.api.scan();const button=s.cards[0].button;assert.equal(button.textContent,'Download');assert.equal(button.disabled,false);let stopped=0;await button.events.click({stopPropagation(){stopped++;}});
+ assert.equal(stopped,1);assert.equal(s.requests.length,1);assert.equal(s.requests[0].url,url);assert.equal(button.textContent,'Downloaded');assert.equal(s.cards[1].button.textContent,'Download');assert.equal(s.ids.downloadsDialog.open,false);
+});
+test('Downloaded opens management and removing the copy restores its Download action',async()=>{
+ const s=setup();await s.api.scan();await s.api.download(s.BOOKS[0].file);const button=s.cards[0].button;await button.events.click({stopPropagation(){}});assert.equal(s.ids.downloadsDialog.open,true);await s.api.remove(s.BOOKS[0].file);assert.equal(button.textContent,'Download');assert.equal(button.disabled,false);
+});
+test('offline book actions disable new downloads but allow managing a saved copy',async()=>{
+ const s=setup();await s.api.scan();await s.api.download(s.BOOKS[0].file);s.navigator.onLine=false;await s.api.scan();assert.equal(s.cards[0].button.disabled,false);assert.equal(s.cards[1].button.disabled,true);const count=s.requests.length;await s.cards[1].button.events.click({stopPropagation(){}});assert.equal(s.requests.length,count);
+});
+test('individual controls share the existing transfer lock and show downloading state',async()=>{
+ const s=setup();await s.api.scan();let release;s.setFetch(()=>new Promise(r=>release=r));const first=s.cards[0].button.events.click({stopPropagation(){}});assert.equal(s.cards[0].button.textContent,'Downloading…');assert.equal(s.cards[1].button.disabled,true);await s.cards[1].button.events.click({stopPropagation(){}});assert.equal(s.requests.length,1);
+ release(new Response(new Uint8Array([80,75,3,4,0,1]),{headers:{'Content-Type':'application/epub+zip'}}));await first;assert.equal(s.cards[0].button.textContent,'Downloaded');assert.equal(s.cards[1].button.disabled,false);
+});
+test('failed individual downloads stay retryable and show their existing failure status',async()=>{
+ const s=setup();await s.api.scan();s.setFetch(async()=>new Response('<html>failure</html>',{headers:{'Content-Type':'text/html'}}));await s.cards[0].button.events.click({stopPropagation(){}});assert.equal(s.cards[0].button.textContent,'Download');assert.equal(s.cards[0].button.disabled,false);assert.match(s.cards[0].info.children[0].textContent,/page instead of an EPUB/);
+});
+test('book-card reading handler ignores an interactive download action',()=>{
+ const source=fs.readFileSync(require.resolve('../public/app.js'),'utf8');const start=source.indexOf('document.querySelectorAll(".bookCard")');const end=source.indexOf('if (backBtn)',start);let click,opens=0;const card={dataset:{file:'book'},addEventListener:(type,fn)=>click=fn};
+ const ctx={document:{querySelectorAll:()=>[card]},BOOKS:[{file:'book',title:'Book'}],localStorage:{setItem(){}},readerTitle:{},openReader:()=>opens++};vm.runInNewContext(source.slice(start,end),ctx);
+ click({target:{closest:()=>({})}});assert.equal(opens,0);click({target:{closest:()=>null}});assert.equal(opens,1);
 });
