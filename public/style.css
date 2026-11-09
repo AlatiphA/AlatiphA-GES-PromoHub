@@ -1313,7 +1313,8 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 }
 
 .bookInfo {
-  flex: 1;
+  flex: 1 1 auto;
+  min-width: 0;
 }
 
 .bookTitle {
