@@ -46,6 +46,10 @@ async function readerSessionClaim(renew=false){
  }
  if(!cloudUser){const saved=readerSessionSavedGrant(uid,deviceId);if(saved)return saved;throw new Error('Your account is still connecting. Wait a moment, then tap Retry.');}
  if(typeof securityActivationPending!=='undefined'&&securityActivationPending?.uid===uid&&!securityProfile){
+  // A device-bound session grant is already a locally verified permission.
+  // Use it to open the saved workspace while account/owner hydration continues.
+  // New devices and expired, strict, or mismatched grants still wait for server verification.
+  const saved=readerSessionSavedGrant(uid,deviceId);if(saved)return saved;
   let timer;try{await Promise.race([securityActivationPending.promise,new Promise((_,reject)=>{timer=setTimeout(()=>{const e=Error('Account confirmation is taking longer than expected. Tap Retry to try again.');e.code='functions/deadline-exceeded';reject(e);},12000);})]);}
   catch(e){const saved=epoch===readerSessionEpoch&&cloudUser?.uid===uid&&readerSessionTransient(e)&&readerSessionSavedGrant(uid,deviceId);if(saved)return saved;throw e;}finally{clearTimeout(timer);}
   if(epoch!==readerSessionEpoch||(cloudUser?.uid||securityLocalOwner)!==uid)throw Error('Account changed while opening the reader.');

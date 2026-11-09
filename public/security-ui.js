@@ -89,6 +89,13 @@ function securitySwitchLocal(user){
 }
 /* Integrates account security into the existing v1.6.0 profile panel. */
 let securityProfile=null,securityClaims={},securityEpoch=0,securityStop=null,securityRegistering=false;
+let securityReconnectTimer=null,securityReconnectDelay=30000;
+function securityDeadline(work,milliseconds,message){let timer;return Promise.race([Promise.resolve().then(work),new Promise((_,reject)=>{timer=setTimeout(()=>{const error=Error(message);error.code='functions/deadline-exceeded';reject(error);},milliseconds);})]).finally(()=>clearTimeout(timer));}
+function securityScheduleReconnect(){
+ if(securityReconnectTimer||!cloudAuth||!cloudUser)return;
+ const delay=securityReconnectDelay;securityReconnectDelay=Math.min(300000,securityReconnectDelay*2);
+ securityReconnectTimer=setTimeout(()=>{securityReconnectTimer=null;if(navigator.onLine&&cloudUser)securityWork(()=>securityAuthChanged(cloudAuth.currentUser));},delay);
+}
 function securityMessage(text){document.getElementById('securityMessage').textContent=text;}
 async function securityCall(name,data={}){return (await firebase.app().functions('us-central1').httpsCallable(name)(data)).data;}
 async function securityWork(work){try{await work();}catch(e){securityMessage(e.message || 'Operation failed.');}}
@@ -115,16 +122,20 @@ function securityActivate(user){
 async function securityActivateCore(user){
  const epoch=securityEpoch;
  cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();if(!user?.emailVerified){securityProfile=null;securityRender();securityMessage('Verify your email, then select Check verification.');return false;}
- const claims=(await user.getIdTokenResult()).claims;
+ const claims=(await securityDeadline(()=>user.getIdTokenResult(),15000,'Account verification is taking longer than expected.')).claims;
  if(epoch!==securityEpoch)return false;
- const profile=await securityCall('initializePromoHubAccount');
+ const profile=await securityDeadline(()=>securityCall('initializePromoHubAccount'),15000,'Account verification is taking longer than expected.');
  if(epoch!==securityEpoch)return false;
  securityClaims=claims;securityProfile=profile;
  securityCacheAdminReading(user,claims,profile);
  cloudReady=subscriptionCloudAllowed();securityRender();
  if(securityStop)securityStop();
- securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityProfile=s.data();securityCacheAdminReading(user,securityClaims,securityProfile);const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityWork(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();await syncCurrentBookCloud();});if(!cloudReady)securityMessage('Cloud syncing is paused while offline, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);});
+ securityStop=cloudDb.doc(`users/${user.uid}`).onSnapshot(s=>{if(epoch!==securityEpoch)return;securityReconnectDelay=30000;clearTimeout(securityReconnectTimer);securityReconnectTimer=null;securityProfile=s.data();securityCacheAdminReading(user,securityClaims,securityProfile);const wasReady=cloudReady;cloudReady=subscriptionCloudAllowed();securityRender();if(!wasReady && cloudReady)securityHydrateInBackground(epoch);if(!cloudReady)securityMessage('Cloud syncing is paused while offline, during trial or after expiry. Local reading data is retained.');},e=>{cloudReady=false;if(typeof bookmarkLiveStop==='function')bookmarkLiveStop();securityMessage(e.message);if(typeof readerSessionTransient==='function'&&readerSessionTransient(e))securityScheduleReconnect();});
  return cloudReady;
+}
+function securityHydrateInBackground(epoch){
+ securityDeadline(async()=>{if(epoch!==securityEpoch)return;await mergePreferencesFromCloud();if(epoch!==securityEpoch)return;await syncCurrentBookCloud();},15000,'Saved workspace is available locally; cloud hydration timed out.')
+  .catch(error=>console.warn('Background Firestore hydration:',error.message));
 }
 async function securityAuthChanged(user,explicit=false){
  explicit=explicit || securityExplicitSignOut;securityExplicitSignOut=false;
@@ -167,8 +178,8 @@ async function securityAuthChanged(user,explicit=false){
  const authEpoch=securityEpoch;
  if(window.PromoHubInbox)window.PromoHubInbox.prepare(user);
  resumeReaderAfterStartup();
- try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;if(continueReading){if(typeof readerSessionHeartbeat==='function')await readerSessionHeartbeat();if(typeof quizRefreshLease==='function')await quizRefreshLease();if(authEpoch!==securityEpoch)return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready){await mergePreferencesFromCloud();await syncCurrentBookCloud();}else if(!subscriptionReadable())accountPanel.classList.add('open');}
- catch(e){if(authEpoch!==securityEpoch)return;if(!/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||'')) && typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;securityOfflineStatusRender();hideAuth();return;}if(/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||''))){securityClearAdminReading();try{localStorage.removeItem('ges-promohub-reader-grant-'+user.uid);}catch{}}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient!=='function'||!readerSessionTransient(e))accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
+ try{const ready=await securityActivate(user);if(authEpoch!==securityEpoch)return;securityReconnectDelay=30000;clearTimeout(securityReconnectTimer);securityReconnectTimer=null;if(continueReading){if(typeof readerSessionHeartbeat==='function')await readerSessionHeartbeat();if(typeof quizRefreshLease==='function')await quizRefreshLease();if(authEpoch!==securityEpoch)return;}if(window.PromoHubInbox)window.PromoHubInbox.start(user);updateAccountUI(user);if(authEpoch!==securityEpoch)return;securityRender();securityWork(subscriptionMyPayment);if(ready)securityHydrateInBackground(authEpoch);else if(!subscriptionReadable())accountPanel.classList.add('open');}
+ catch(e){if(authEpoch!==securityEpoch)return;if(!/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||'')) && typeof navigator!=='undefined' && (!navigator.onLine || typeof readerSessionTransient==='function'&&readerSessionTransient(e)) && securityOfflineReadingAllowed()){securityOfflineDeferred=true;cloudReady=false;securityOfflineStatusRender();hideAuth();securityScheduleReconnect();return;}if(/^(functions\/)?(permission-denied|unauthenticated)$/.test(String(e?.code||''))){securityClearAdminReading();try{localStorage.removeItem('ges-promohub-reader-grant-'+user.uid);}catch{}}if(window.PromoHubInbox)window.PromoHubInbox.start(user);cloudReady=false;if(typeof readerSessionTransient==='function'&&readerSessionTransient(e))securityScheduleReconnect();else accountPanel.classList.add('open');securityMessage(e.message);securityRender();}
 }
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securitySelectTab(){const panel=document.getElementById('myAccountPanel');if(panel)panel.hidden=false;}
@@ -189,4 +200,4 @@ const securityActions={
 document.getElementById('securityControls').addEventListener('click',e=>{const a=e.target.closest('[data-security]')?.dataset.security;if(a)securityWork(securityActions[a]);});
 document.getElementById('authResetBtn').onclick=async()=>{try{await cloudAuth.sendPasswordResetEmail(authEmail.value.trim());authError.textContent='If the account exists, a password reset email will be sent.';}catch(e){authError.textContent=e.message;}};
 
-if(typeof window!=='undefined' && window.addEventListener)window.addEventListener('online',()=>{if(securityOfflineDeferred && cloudAuth)securityWork(()=>securityAuthChanged(cloudAuth.currentUser));});
+if(typeof window!=='undefined' && window.addEventListener)window.addEventListener('online',()=>{if(securityOfflineDeferred && cloudAuth){clearTimeout(securityReconnectTimer);securityReconnectTimer=null;securityWork(()=>securityAuthChanged(cloudAuth.currentUser));}});
