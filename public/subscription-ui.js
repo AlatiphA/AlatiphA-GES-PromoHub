@@ -4,7 +4,8 @@ const subscriptionMemory=new Map();
 function subscriptionLocalRead(key){try{return localStorage.getItem(key);}catch{return subscriptionMemory.get(key)||null;}}
 function subscriptionLocalWrite(key,value){subscriptionMemory.set(key,value);try{localStorage.setItem(key,value);}catch{}}
 const subscriptionPlans={m1:{months:1,price:20,label:'1 month'},m3:{months:3,price:50,label:'3 months'},m6:{months:6,price:80,label:'6 months'},m12:{months:12,price:100,label:'12 months'}};
-const subscriptionTrialMs=7*24*60*60*1000;
+const subscriptionGuestTrialMs=3*24*60*60*1000;
+const subscriptionGuestBookFile='./library/mat1.epub';
 function subscriptionLegacy(p){return p?.subscriptionSchema!==1 && p?.securitySchemaVersion===2 && p?.accountTier==='premium';}
 function subscriptionComplimentary(p){return p?.complimentaryReadingAccess===true;}
 function subscriptionPaid(p){return p?.subscriptionSchema===1 && p.accountTier==='premium' && Number(p.subscriptionEndsAtMs)>Date.now();}
@@ -21,7 +22,36 @@ function subscriptionReadable(){
  const trialKey='ges-promohub-guest-trial-start'+(securityLocalOwner?'-'+securityLocalOwner:'');
  let start=Number(subscriptionLocalRead(trialKey));
  if(!start){start=Date.now();subscriptionLocalWrite(trialKey,String(start));}
- return Date.now()<start+subscriptionTrialMs;
+ return Date.now()<start+subscriptionGuestTrialMs;
+}
+function subscriptionFullLibraryAccess(){
+ if(typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return true;
+ if(cloudUser&&typeof securityIsAdmin==='function'&&securityIsAdmin())return true;
+ const p=securityProfile||subscriptionCachedProfile();
+ return !!(p?.accountStatus==='active'&&(subscriptionPaid(p)||subscriptionLegacy(p)||subscriptionComplimentary(p)));
+}
+function subscriptionBookAllowed(file){return subscriptionReadable()&&(subscriptionFullLibraryAccess()||file===subscriptionGuestBookFile);}
+function subscriptionBookAccessMessage(file){
+ if(subscriptionBookAllowed(file))return '';
+ if(!subscriptionReadable())return 'Your free reading period has ended. Subscribe to continue reading.';
+ return 'Free trial access includes only Model Aptitude Test for GES 1. Subscribe to unlock this book and the rest of the library.';
+}
+function subscriptionPromptBookAccess(file){
+ const message=subscriptionBookAccessMessage(file);if(!message)return false;
+ if(cloudUser||securityLocalOwner){openAccount();securitySelectTab('account');securityMessage(message);}
+ else{showAuth();authError.textContent=message;}
+ return true;
+}
+function subscriptionRenderBookLocks(){
+ if(typeof document.querySelectorAll!=='function')return;
+ const readable=subscriptionReadable(),full=subscriptionFullLibraryAccess();
+ for(const card of document.querySelectorAll('.bookCard')){
+  const file=card.dataset.file,locked=!readable||!full&&file!==subscriptionGuestBookFile;
+  card.classList?.toggle('bookLocked',locked);
+  const action=card.querySelector('.bookDownloadButton');if(!action)continue;
+  if(locked){action.textContent='Locked';action.disabled=true;action.title=subscriptionBookAccessMessage(file);action.setAttribute('aria-label',action.title);}
+ }
+ window.PromoHubDownloads?.render?.();
 }
 function subscriptionRemaining(ms,now=Date.now()){
  const left=Number(ms)-now;if(!Number.isFinite(left)||left<=0)return 'Expired';
@@ -34,6 +64,7 @@ function subscriptionRenew(){
 }
 function subscriptionDate(ms){return Number(ms)>0?new Date(Number(ms)).toLocaleDateString(undefined,{year:'numeric',month:'short',day:'numeric'}):'Not active';}
 function subscriptionSidebarRender(){
+ subscriptionRenderBookLocks();
  const status=document.getElementById('sidebarSubscriptionStatus'),button=document.getElementById('sidebarSubscriptionButton'),hint=document.getElementById('sidebarSubscriptionHint');
  if(!status || !button || !hint)return;
  const p=securityProfile || subscriptionCachedProfile();
@@ -48,7 +79,7 @@ function subscriptionSidebarRender(){
  if(cloudUser || securityLocalOwner){status.textContent='Checking account access...';return;}
  subscriptionReadable();
  const start=Number(subscriptionLocalRead('ges-promohub-guest-trial-start'));
- status.textContent=Date.now()<start+subscriptionTrialMs?`Guest trial · ends ${subscriptionDate(start+subscriptionTrialMs)} · device only`:'Guest trial expired';
+ status.textContent=Date.now()<start+subscriptionGuestTrialMs?`Guest trial · ends ${subscriptionDate(start+subscriptionGuestTrialMs)} · device only`:'Guest trial expired';
  button.textContent='Sign in / View plans';
 }
 function subscriptionRender(){
@@ -67,7 +98,7 @@ function subscriptionRender(){
  const text=securityIsAdmin()?'Administrator access':subscriptionLegacy(p)?'Existing Premium access':subscriptionComplimentary(p)?'Complimentary reading access · local only':subscriptionPaid(p)?`Paid subscription · ${subscriptionRemaining(p.subscriptionEndsAtMs)} · expires ${subscriptionDate(p.subscriptionEndsAtMs)}`:Number(p.trialEndsAtMs)>Date.now()?`Free trial · ends ${subscriptionDate(p.trialEndsAtMs)} · local reading only`:'Trial/subscription expired · renew to continue';
  document.getElementById('subscriptionStatus').textContent=text;
  const admin=securityIsAdmin(),purchaseControls=document.getElementById('subscriptionPurchaseControls');if(purchaseControls)purchaseControls.hidden=admin;
- document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.'+(adminReadingReady===true?' Reading is ready on this device.':adminReadingReady===false?' Device reading could not be prepared. Keep the connection on and reopen My Account.':''):subscriptionComplimentary(p)?'An administrator granted local reading access. Paid plans enable cloud saving and device syncing.':'The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.';
+ document.getElementById('subscriptionHint').textContent=admin?'Full access. No subscription purchase required.'+(adminReadingReady===true?' Reading is ready on this device.':adminReadingReady===false?' Device reading could not be prepared. Keep the connection on and reopen My Account.':''):subscriptionComplimentary(p)?'An administrator granted local reading access. Paid plans enable cloud saving and device syncing.':'Your 7-day account trial includes local reading of Model Aptitude Test for GES 1 only. Paid plans unlock all books; trial reading data stays on this device.';
  document.getElementById('accountType').textContent=text;
  const premium=document.getElementById('securityPremiumButton');premium.textContent='Submit payment for review';
  document.getElementById('subscriptionPaymentDetails').textContent=`Pay GH₵${subscriptionPlans[document.getElementById('subscriptionPlan').value].price} to MTN MoMo 0243443688, Abdul-Latif Ahmed. Then enter the unique MoMo transaction ID from your SMS or receipt below, not the payment description.`;
@@ -87,9 +118,10 @@ const subscriptionOpenReader=openReader;
 openReader=function(){
  if(!subscriptionReadable()){
   if(cloudUser){accountPanel.classList.add('open');securitySelectTab('account');securityMessage('Your trial/subscription has expired. Select a plan and submit a payment.');}
-  else{showAuth();authError.textContent='Your device trial has expired. Sign in or create an account to select a paid plan.';}
+  else{showAuth();authError.textContent='Your 3-day guest trial has ended. Sign in to select a paid plan.';}
   return false;
  }
+ if(!subscriptionBookAllowed(selectedBookFile)){subscriptionPromptBookAccess(selectedBookFile);return false;}
  return subscriptionOpenReader();
 };
 function subscriptionCheckExpiry(){

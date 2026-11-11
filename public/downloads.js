@@ -7,13 +7,16 @@
  let running=false,controller=null,ready=false,supported=!!window.caches&&!!navigator.serviceWorker,assetsReady=false,opener=null,scanEpoch=0,cancelled=false;
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  const connected=()=>navigator.onLine!==false;
+ const bookAllowed=file=>typeof subscriptionBookAllowed!=='function'||subscriptionBookAllowed(file);
+ const accessMessage=file=>typeof subscriptionBookAccessMessage==='function'?subscriptionBookAccessMessage(file):'This book is not available with your current access.';
  const urlFor=file=>new URL(file,document.baseURI).href;
  const valid=async blob=>{const magic=new Uint8Array(await blob.slice(0,4).arrayBuffer());return blob.size>=4&&magic[0]===80&&magic[1]===75&&magic[2]===3&&magic[3]===4;};
  function text(file){const s=states.get(file)||{};if(s.busy)return 'Downloading '+size(s.received||0)+(s.total?' of '+size(s.total)+' ('+Math.min(99,Math.round((s.received||0)/s.total*100))+'%)':'');if(s.error)return s.error+(s.bytes?' Previous download retained.':'');return s.bytes?(assetsReady?'Downloaded':'Book downloaded; reader setup incomplete')+' · '+size(s.bytes):'Not downloaded';}
  function render(){
-  for(const [file,row] of rows){const s=states.get(file)||{};row.state.textContent=text(file);row.progress.hidden=!s.busy;row.progress.removeAttribute('value');if(s.total)row.progress.value=Math.min(99,(s.received||0)/s.total*100);row.download.textContent=s.bytes?'Download again':'Download';row.download.disabled=!supported||!ready||!connected()||running;row.remove.hidden=!s.bytes;row.remove.disabled=running;}
-  for(const card of document.querySelectorAll('.bookCard')){const file=card.dataset.file;if(!catalog.has(file))continue;let label=card.querySelector('.offlineBookStatus');if(!label){label=document.createElement('div');label.className='offlineBookStatus';card.querySelector('.bookInfo')?.append(label);}label.textContent=text(file);const action=card.querySelector('.bookDownloadButton');if(action){const saved=!!states.get(file)?.bytes,busy=!!states.get(file)?.busy;action.textContent=busy?'Downloading…':saved?'Downloaded':'Download';action.setAttribute('aria-label',(saved?'Manage download of ':'Download ')+catalog.get(file).title);action.title=saved?'Manage this downloaded book':'Download this book';action.disabled=!supported||(!saved&&(!ready||!connected()||running));}}
-  document.getElementById('downloadsAll').disabled=!supported||!ready||!connected()||running;
+  const available=BOOKS.filter(book=>bookAllowed(book.file));
+  for(const [file,row] of rows){const s=states.get(file)||{},allowed=bookAllowed(file);row.state.textContent=allowed?text(file):accessMessage(file);row.progress.hidden=!allowed||!s.busy;row.progress.removeAttribute('value');if(s.total)row.progress.value=Math.min(99,(s.received||0)/s.total*100);row.download.textContent=allowed?(s.bytes?'Download again':'Download'):'Locked';row.download.title=allowed?'Download this book':accessMessage(file);row.download.setAttribute('aria-label',row.download.title);row.download.disabled=!allowed||!supported||!ready||!connected()||running;row.remove.hidden=!s.bytes;row.remove.disabled=running;}
+  for(const card of document.querySelectorAll('.bookCard')){const file=card.dataset.file;if(!catalog.has(file))continue;const allowed=bookAllowed(file);card.classList?.toggle('bookLocked',!allowed);let label=card.querySelector('.offlineBookStatus');if(!label){label=document.createElement('div');label.className='offlineBookStatus';card.querySelector('.bookInfo')?.append(label);}label.textContent=allowed?text(file):typeof subscriptionReadable==='function'&&!subscriptionReadable()?'Reading access expired':'Subscription required';const action=card.querySelector('.bookDownloadButton');if(action){const saved=!!states.get(file)?.bytes,busy=!!states.get(file)?.busy;action.textContent=!allowed?'Locked':busy?'Downloading…':saved?'Downloaded':'Download';action.setAttribute('aria-label',!allowed?accessMessage(file):(saved?'Manage download of ':'Download ')+catalog.get(file).title);action.title=!allowed?accessMessage(file):saved?'Manage this downloaded book':'Download this book';action.disabled=!allowed||!supported||(!saved&&(!ready||!connected()||running));}}
+  const allButton=document.getElementById('downloadsAll');allButton.textContent=available.length===BOOKS.length?'Download all books':available.length===1?'Download available book':'No books available';allButton.disabled=!available.length||!supported||!ready||!connected()||running;
   document.getElementById('downloadsCancel').hidden=!running;
   document.getElementById('downloadsRefresh').disabled=running;
  }
@@ -28,13 +31,14 @@
    for(const url of dependencies){let found=false;for(const name of allNames){if(await (await caches.open(name)).match(url)){found=true;break;}}if(!found)allAssets=false;}
    if(epoch!==scanEpoch)return;assetsReady=allAssets;
    for(const book of BOOKS){const response=await cache.match(urlFor(book.file));let bytes=0;if(response?.ok){const blob=await response.blob();if(await valid(blob))bytes=blob.size;}if(epoch!==scanEpoch)return;states.set(book.file,{bytes});}
-   const count=[...states.values()].filter(s=>s.bytes).length,total=[...states.values()].reduce((n,s)=>n+(s.bytes||0),0);
-   status.textContent=!ready?'Reopen PromoHub to finish the update before downloading books.':count+' of '+BOOKS.length+' books downloaded'+(total?' · '+size(total):'')+'. '+(!assetsReady?'Reader setup is incomplete. Connect and reopen PromoHub to cache its reader files.':!connected()?'No internet connection. Downloaded books remain available with valid reading access.':'Reader files are cached. Choose the books you need.');
+   const available=BOOKS.filter(book=>bookAllowed(book.file)),count=available.filter(book=>states.get(book.file)?.bytes).length,total=available.reduce((n,book)=>n+(states.get(book.file)?.bytes||0),0);
+   status.textContent=!ready?'Reopen PromoHub to finish the update before downloading books.':!available.length?'No books are available with your current access. Select a subscription to unlock the library.':count+' of '+available.length+' available '+(available.length===1?'book':'books')+' downloaded'+(total?' · '+size(total):'')+'. '+(!assetsReady?'Reader setup is incomplete. Connect and reopen PromoHub to cache its reader files.':!connected()?'No internet connection. Downloaded books remain available with valid reading access.':'Choose from the books available to your account.');
    if(navigator.storage?.estimate){const estimate=await navigator.storage.estimate();if(epoch!==scanEpoch)return;document.getElementById('downloadsStorage').textContent=estimate.quota?'Browser storage: '+size(estimate.usage||0)+' used of about '+size(estimate.quota)+'. Shared with other data on this site.':'';}
   }catch(e){if(epoch!==scanEpoch)return;ready=false;status.textContent='Could not check browser storage: '+(e.message||'storage is unavailable.');}
   if(epoch===scanEpoch)render();
  }
  async function transfer(file){
+  if(!bookAllowed(file))throw new Error(accessMessage(file));
   const book=catalog.get(file);if(!book)throw new Error('Unknown book.');
   const previous=states.get(file)?.bytes||0;controller=new AbortController();states.set(file,{bytes:previous,busy:true,received:0});render();
   try{
@@ -56,8 +60,8 @@
   }catch(e){const error=controller?.signal.aborted||cancelled?'Download cancelled.':e.name==='QuotaExceededError'?'Storage is full. Remove an unused download and retry.':(e.message||'Download failed.');states.set(file,{bytes:previous,error});status.textContent=error;throw e;}
   finally{controller=null;render();}
  }
- async function download(file){if(running||!supported||!ready||!connected())return;if(!catalog.has(file))return;scanEpoch++;running=true;cancelled=false;try{await transfer(file);}catch(_){}finally{running=false;render();}}
- async function downloadAll(){if(running||!supported||!ready||!connected())return;scanEpoch++;running=true;cancelled=false;try{for(const b of BOOKS){if(cancelled)break;if(states.get(b.file)?.bytes)continue;await transfer(b.file);}}catch(_){}finally{running=false;render();}}
+ async function download(file){if(!catalog.has(file))return;if(!bookAllowed(file)){status.textContent=accessMessage(file);render();return;}if(running||!supported||!ready||!connected())return;scanEpoch++;running=true;cancelled=false;try{await transfer(file);}catch(e){status.textContent=e.message||'Download failed.';}finally{running=false;render();}}
+ async function downloadAll(){const available=BOOKS.filter(book=>bookAllowed(book.file));if(!available.length){status.textContent='No books are available with your current access. Select a subscription to unlock the library.';render();return;}if(running||!supported||!ready||!connected())return;scanEpoch++;running=true;cancelled=false;try{for(const b of available){if(cancelled)break;if(states.get(b.file)?.bytes)continue;await transfer(b.file);}}catch(e){status.textContent=e.message||'Download failed.';}finally{running=false;render();}}
  async function remove(file){if(running||!catalog.has(file)||!supported)return;if(!confirm('Remove the downloaded copy of '+catalog.get(file).title+'? Your reading progress and bookmarks will remain.'))return;scanEpoch++;try{await (await caches.open(CACHE)).delete(urlFor(file));states.set(file,{bytes:0});status.textContent='Downloaded book removed. Progress and bookmarks retained.';render();}catch(e){status.textContent='Could not remove the download: '+e.message;}}
  function open(){opener=document.activeElement;if(typeof resetPullRefresh==='function')resetPullRefresh();if(!dialog.open)dialog.showModal();scan();}
  function close(){dialog.close();opener?.focus?.();}
@@ -69,5 +73,5 @@
  for(const event of ['online','offline'])window.addEventListener(event,()=>{render();if(!running)scan();});
  navigator.serviceWorker?.addEventListener('controllerchange',scan);
  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')scan();});
- window.PromoHubDownloads={open,scan,download,downloadAll,remove};render();scan();
+ window.PromoHubDownloads={open,scan,download,downloadAll,remove,render};render();scan();
 })();

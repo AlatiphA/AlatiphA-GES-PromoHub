@@ -117,7 +117,7 @@ openReader=function(){
  if(securityIsAdmin()||typeof securityOfflineAdminReading==='function'&&securityOfflineAdminReading())return readerSessionOpenLocal();
  if(!cloudUser&&!readerSessionPaid()){
   const opened=readerSessionOpenLocal(),p=securityProfile||subscriptionCachedProfile();
-  const until=Number(p?.trialEndsAtMs)||(!securityLocalOwner&&typeof subscriptionTrialMs!=='undefined'?Number(localStorage.getItem('ges-promohub-guest-trial-start'))+subscriptionTrialMs:0);
+  const until=Number(p?.trialEndsAtMs)||(!securityLocalOwner&&typeof subscriptionGuestTrialMs!=='undefined'?Number(localStorage.getItem('ges-promohub-guest-trial-start'))+subscriptionGuestTrialMs:0);
   if(opened!==false&&until>0){readerSessionGrant={exempt:true,reason:'trial',offlineUntilMs:until};readerSessionWatchExpiry();}
   return opened;
  }

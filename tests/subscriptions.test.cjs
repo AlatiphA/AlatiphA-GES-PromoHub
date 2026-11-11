@@ -25,7 +25,7 @@ test('client and server agree on trial, paid and expired access and guest expiry
  assert.equal(vm.runInContext('subscriptionCloudAllowed()',scope),false);assert.equal(vm.runInContext('subscriptionReadable()',scope),true);
  scope.securityProfile.trialEndsAtMs=Date.now()-1;assert.equal(vm.runInContext('subscriptionReadable()',scope),false);
  scope.securityProfile.accountTier='premium';scope.securityProfile.subscriptionEndsAtMs=Date.now()+86400000;assert.equal(vm.runInContext('subscriptionCloudAllowed()',scope),true);
- scope.cloudUser=null;scope.securityLocalOwner='';scope.securityProfile=null;assert.equal(vm.runInContext('subscriptionReadable()',scope),true);store.set('ges-promohub-guest-trial-start',String(Date.now()-8*86400000));assert.equal(vm.runInContext('subscriptionReadable()',scope),false);
+ scope.cloudUser=null;scope.securityLocalOwner='';scope.securityProfile=null;assert.equal(vm.runInContext('subscriptionReadable()',scope),true);store.set('ges-promohub-guest-trial-start',String(Date.now()-4*86400000));assert.equal(vm.runInContext('subscriptionReadable()',scope),false);
 });
 test('client recognizes complimentary access as local-only and keeps its status visible',()=>{
  const source=fs.readFileSync(require.resolve('../public/subscription-ui.js'),'utf8'),store=new Map(),elements={subscriptionPlan:{value:'m1'}},scope={cloudUser:{uid:'u',emailVerified:true},securityProfile:{accountStatus:'active',accountTier:'free',subscriptionSchema:1,trialEndsAtMs:1,subscriptionEndsAtMs:0,complimentaryReadingAccess:true},securityLocalOwner:'u',securityIsAdmin:()=>false,localStorage:{getItem:k=>store.get(k),setItem:(k,v)=>store.set(k,v)},document:{getElementById:id=>elements[id]||={}},Date,JSON,Number,Map};

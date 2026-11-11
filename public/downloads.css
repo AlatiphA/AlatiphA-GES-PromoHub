@@ -18,11 +18,11 @@
 .offlineBookStatus{font-size:12px;color:var(--ui-muted);margin-top:6px;line-height:1.4}
 @media(max-width:520px){#downloadsList{grid-template-columns:minmax(0,1fr)}.downloadsHeading{padding:14px 16px}.downloadsBody{padding:0 16px 16px}.downloadsHeading h2{font-size:19px}}
 
-.bookDownloadButton{display:inline-flex;align-items:center;gap:8px;min-height:44px;max-width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-surface);color:var(--ui-text);font:inherit;cursor:pointer}
+.bookDownloadButton{display:inline-flex;align-items:center;gap:4px;min-height:32px;max-width:100%;box-sizing:border-box;padding:4px 9px;border:1px solid var(--ui-border);border-radius:7px;background:var(--ui-surface);color:var(--ui-text);font:inherit;cursor:pointer}
 .bookDownloadButton:focus-visible{outline:2px solid var(--ui-accent);outline-offset:3px}
 
 .libraryBookActions{flex:0 0 auto;display:flex;justify-content:flex-end;min-width:0;margin:0}
-.bookDownloadButton{font-size:14px}
+.bookDownloadButton{font-size:12px;line-height:1.2}
 .bookDownloadButton:disabled{opacity:.55;cursor:default}
 
 /* Download management is a neutral action alongside the separate deletion actions. */

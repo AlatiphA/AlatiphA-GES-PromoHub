@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.23";
+const APP_VERSION = "1.11.24";
 
 const versionEl =
   document.getElementById(
@@ -231,6 +231,10 @@ document.querySelectorAll(".bookCard")
   .forEach(card => {
     card.addEventListener("click", event => {
       if (event?.target?.closest?.("button, a, input, select, textarea")) return;
+      if (typeof subscriptionBookAllowed === "function" && !subscriptionBookAllowed(card.dataset.file)) {
+        subscriptionPromptBookAccess(card.dataset.file);
+        return;
+      }
       selectedBookFile = card.dataset.file;
       localStorage.setItem("lastBook", selectedBookFile);
 
