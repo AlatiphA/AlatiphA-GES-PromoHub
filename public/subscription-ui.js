@@ -121,7 +121,7 @@ openReader=function(){
   else{showAuth();authError.textContent='Your 3-day guest trial has ended. Sign in to select a paid plan.';}
   return false;
  }
- if(!subscriptionBookAllowed(selectedBookFile)){subscriptionPromptBookAccess(selectedBookFile);return false;}
+ if(typeof subscriptionBookAllowed==='function'&&!subscriptionBookAllowed(selectedBookFile)){if(typeof subscriptionPromptBookAccess==='function')subscriptionPromptBookAccess(selectedBookFile);return false;}
  return subscriptionOpenReader();
 };
 function subscriptionCheckExpiry(){
