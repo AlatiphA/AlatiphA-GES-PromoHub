@@ -28,7 +28,7 @@ module.exports=({onCall,options,HttpsError,db,admin,policy})=>{
    return transact(req,({who,p,state,tx,ref,now})=>{
     if(who.admin)return {exempt:true,reason:'administrator'};
     if(!subscriptions.readable(p,now))throw new HttpsError('permission-denied','Your trial or subscription has expired.');
-    if(!subscriptions.cloud(p,now))return {exempt:true,reason:'trial',offlineUntilMs:Number(p.trialEndsAtMs)};
+    if(!subscriptions.cloud(p,now))return {exempt:true,reason:subscriptions.complimentary(p)?'complimentary':'trial',offlineUntilMs:subscriptions.complimentary(p)?253402300799000:Number(p.trialEndsAtMs)};
     const devices=Array.isArray(state.devices)?state.devices:[];
     let device=devices.find(d=>d.id===deviceId);
     if((renew||resume)&&!device)throw new HttpsError('permission-denied','This device was removed. Open My Account to register again.');

@@ -39,7 +39,7 @@ async function readerSessionClaim(renew=false){
  const deviceId=readerDeviceId(),sessionId=readerBrowserSessionId;
  if(!navigator.onLine){
   const p=securityProfile||subscriptionCachedProfile();
-  if(!subscriptionPaid(p)&&!subscriptionLegacy(p)){if(typeof subscriptionReadable==='function'&&!subscriptionReadable())throw Error('Your trial or subscription has expired. Open My Account to renew.');return {exempt:true,reason:'trial',offlineUntilMs:Number(p?.trialEndsAtMs)};}
+  if(!subscriptionPaid(p)&&!subscriptionLegacy(p)){if(typeof subscriptionReadable==='function'&&!subscriptionReadable())throw Error('Your trial or subscription has expired. Open My Account to renew.');const complimentary=p?.complimentaryReadingAccess===true;return {exempt:true,reason:complimentary?'complimentary':'trial',offlineUntilMs:complimentary?253402300799000:Number(p?.trialEndsAtMs)};}
   const saved=readerSessionSavedGrant(uid,deviceId);
   if(!saved)throw new Error('This browser needs one online access check before it can read offline. Connect and tap Retry.');
   return saved;

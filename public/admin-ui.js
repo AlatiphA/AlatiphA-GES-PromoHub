@@ -60,10 +60,11 @@ async function securityUsers(direction=false){
   securityCursor=result.cursor || null;state.host.replaceChildren();
   for(const u of result.users){
    const row=document.createElement('article');row.className='securityRecord securityUserRow';securityIdentity(row,u);
-   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'} · Automatic reading`;row.append(status);
+   const status=document.createElement('p');status.className='securityStatus';status.textContent=`${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'}${u.complimentaryReadingAccess?' · complimentary reading':''} · Automatic reading`;row.append(status);
    const details=document.createElement('details');details.className='securityUserManage';const summary=document.createElement('summary');summary.textContent='Manage';details.append(summary);
    const actions=document.createElement('div');actions.className='securityActions';
-   for(const [action,label] of [['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Set to Free']]){
+   const userActions=[['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Remove paid access'],[u.complimentaryReadingAccess?'revokeFreeReading':'grantFreeReading',u.complimentaryReadingAccess?'Revoke free reading':'Grant free reading']];
+   for(const [action,label] of userActions){
     const b=document.createElement('button');b.textContent=label;b.disabled=u.uid===cloudUser.uid;
     if(b.disabled)b.title='Your administrator account must be managed by the project owner.';
     b.onclick=()=>securityWork(async()=>{
@@ -86,7 +87,7 @@ async function securityRecords(kind){
  const state=securityAdminStart(kind,kind==='audit'?'Recent audit':'Premium requests');
  try{
   const result=await securityCall('getPromoHubAdminRecords',{kind});if(!securityAdminCurrent(state))return;state.host.replaceChildren();
-  const labels={'account.readingMode':'Reading access mode changed','subscription.request':'Subscription payment submitted','subscription.approved':'Subscription activated','subscription.rejected':'Subscription payment rejected','premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free'};
+  const labels={'account.readingMode':'Reading access mode changed','subscription.request':'Subscription payment submitted','subscription.approved':'Subscription activated','subscription.rejected':'Subscription payment rejected','premium.request':'Premium requested','premium.approved':'Premium approved','premium.rejected':'Premium rejected','account.suspend':'Account suspended','account.reactivate':'Account reactivated','account.disable':'Sign-in disabled','account.free':'Changed to Free','account.freeReading.granted':'Free reading granted','account.freeReading.revoked':'Free reading revoked'};
   for(const r of result.records){
    const row=document.createElement('article');row.className='securityRecord';
    if(kind==='audit'){

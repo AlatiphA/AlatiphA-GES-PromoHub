@@ -54,6 +54,12 @@ test('rejection leaves Free tier intact and suspension blocks Premium requests',
  await s.output.requestPremiumAccess(s.request('u'));await s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'rejected'}));assert.equal(s.data.get('users/u').accountTier,'free');
  await s.output.managePromoHubUser(s.request('a',{promohubAdmin:true},{uid:'u',action:'suspend'}));await assert.rejects(s.output.requestPremiumAccess(s.request('u')),e=>e.code==='permission-denied');
 });
+test('administrator can grant and revoke complimentary reading without changing subscription history',async()=>{
+ const subscriptions=require('../functions/subscriptions.cjs'),s=adminSetup();s.authUsers.set('u',{customClaims:{}});s.data.set('users/u',{accountStatus:'active',accountTier:'free',subscriptionSchema:1,subscriptionEndsAtMs:0,trialEndsAtMs:1});
+ await s.output.managePromoHubUser(s.request('a',{promohubAdmin:true},{uid:'u',action:'grantFreeReading'}));let p=s.data.get('users/u');assert.equal(p.complimentaryReadingAccess,true);assert.equal(subscriptions.readable(p),true);assert.equal(subscriptions.cloud(p),false);assert.equal(p.trialEndsAtMs,1);
+ await s.output.managePromoHubUser(s.request('a',{promohubAdmin:true},{uid:'u',action:'revokeFreeReading'}));p=s.data.get('users/u');assert.equal(p.complimentaryReadingAccess,false);assert.equal(subscriptions.readable(p),false);
+ const audit=[...s.data.entries()].filter(([path])=>path.startsWith('auditLogs/')).map(([,value])=>value.action);assert.deepEqual(audit,['account.freeReading.granted','account.freeReading.revoked']);
+});
 test('stale admin claim cannot override removal in Firebase Auth',async()=>{
  const s=setup();s.data.set('users/a',{accountStatus:'active'});s.authUsers.set('a',{customClaims:{}});
  await assert.rejects(s.output.reviewPremiumRequest(s.request('a',{promohubAdmin:true},{uid:'u',decision:'approved'})),e=>e.code==='permission-denied');

@@ -7,11 +7,12 @@ function addMonths(time,months){
 }
 function paid(p,now=Date.now()){return p?.subscriptionSchema===1 && p.accountTier==='premium' && Number(p.subscriptionEndsAtMs)>now;}
 function legacy(p){return p?.subscriptionSchema!==1 && p?.securitySchemaVersion===2 && p?.accountTier==='premium';}
+function complimentary(p){return p?.complimentaryReadingAccess===true;}
 function cloud(p,now=Date.now()){return p?.accountStatus==='active' && (paid(p,now)||legacy(p));}
-function readable(p,now=Date.now()){return p?.accountStatus==='active' && (paid(p,now)||legacy(p)||Number(p.trialEndsAtMs)>now);}
+function readable(p,now=Date.now()){return p?.accountStatus==='active' && (paid(p,now)||legacy(p)||complimentary(p)||Number(p.trialEndsAtMs)>now);}
 function initial(p,now=Date.now()){
  if(p.subscriptionSchema===1 || legacy(p))return {};
  return {subscriptionSchema:1,trialStartedAtMs:now,trialEndsAtMs:now+trialMs,subscriptionEndsAtMs:0,subscriptionPlan:'',subscriptionStatus:'trial'};
 }
 function reference(text){if(typeof text!=='string')return null;const r=text.trim().toUpperCase();return /^[A-Z0-9-]{6,80}$/.test(r)?r:null;}
-module.exports={plans,trialMs,addMonths,paid,legacy,cloud,readable,initial,reference};
+module.exports={plans,trialMs,addMonths,paid,legacy,complimentary,cloud,readable,initial,reference};

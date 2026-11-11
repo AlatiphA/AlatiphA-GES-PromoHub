@@ -42,6 +42,11 @@ test('automatic trial grants end at the server trial expiry without registering 
  const s=setup(),until=Date.now()+50000;s.rows.get('users/u').subscriptionEndsAtMs=0;s.rows.get('users/u').trialEndsAtMs=until;
  const grant=await s.claim();assert.equal(grant.reason,'trial');assert.equal(grant.offlineUntilMs,until);assert.equal(s.rows.has('users/u/access/reader'),false);
 });
+test('complimentary grant keeps an expired account readable locally without device registration',async()=>{
+ const s=setup();Object.assign(s.rows.get('users/u'),{accountTier:'free',subscriptionEndsAtMs:0,trialEndsAtMs:1,complimentaryReadingAccess:true});
+ const result=await s.claim();assert.equal(result.exempt,true);assert.equal(result.reason,'complimentary');assert.equal(result.offlineUntilMs,253402300799000);assert.equal(s.rows.has('users/u/access/reader'),false);
+ s.rows.get('users/u').complimentaryReadingAccess=false;await assert.rejects(s.claim(),e=>e.code==='permission-denied');
+});
 test('legacy mode API requests normalize to automatic and cannot disable online concurrency',async()=>{
  const s=setup();await s.api.setMyPromoHubReadingMode(s.req({mode:'offline'}));assert.equal(s.rows.get('users/u').readingAccessMode,'auto');await s.claim();await assert.rejects(s.claim('b','2'),e=>e.code==='already-exists');
 });

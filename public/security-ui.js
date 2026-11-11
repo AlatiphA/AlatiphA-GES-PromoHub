@@ -43,7 +43,7 @@ function securityOfflineAdminReading(){
 function securityOfflineStatusRender(){
  if(!securityOfflineDeferred)return;
  const p=subscriptionCachedProfile(),admin=securityOfflineAdminReading();
- document.getElementById('accountType').textContent=admin?'Administrator reading access · offline':subscriptionPaid(p)?'Paid subscription · offline · expires '+subscriptionDate(p.subscriptionEndsAtMs):subscriptionLegacy(p)?'Existing Premium access · offline':'Local reading access · offline';
+ document.getElementById('accountType').textContent=admin?'Administrator reading access · offline':subscriptionPaid(p)?'Paid subscription · offline · expires '+subscriptionDate(p.subscriptionEndsAtMs):subscriptionLegacy(p)?'Existing Premium access · offline':p?.complimentaryReadingAccess===true?'Complimentary reading access · offline':'Local reading access · offline';
  document.getElementById('accountPanel')?.classList?.remove('profileRefreshing');
 }
 function securityOfflineReadingAllowed(){
@@ -51,7 +51,7 @@ function securityOfflineReadingAllowed(){
  if(!securityLocalOwner)return securityGuestChosen && subscriptionReadable();
  const p=securityProfile || subscriptionCachedProfile();
  if(!p || p.accountStatus!=='active')return false;
- if(!subscriptionPaid(p) && !subscriptionLegacy(p))return Number(p.trialEndsAtMs)>Date.now();
+ if(!subscriptionPaid(p) && !subscriptionLegacy(p))return p.complimentaryReadingAccess===true || Number(p.trialEndsAtMs)>Date.now();
  try{
   const g=JSON.parse(localStorage.getItem('ges-promohub-reader-grant-'+securityLocalOwner));
   return g?.uid===securityLocalOwner && ['auto','offline'].includes(g.readingAccessMode) && g.deviceId===localStorage.getItem('ges-promohub-device-id') && /^[a-f0-9]{32}$/.test(g.deviceId||'') && Number.isFinite(g.offlineUntilMs) && g.offlineUntilMs>Date.now();
