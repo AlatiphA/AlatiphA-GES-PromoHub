@@ -1,6 +1,6 @@
 let securityCursor=null,securityAdminView='',securityAdminEpoch=0;
 let securityUserPage=0,securityUserStarts=[null],securityUserQuery=null;
-const securityUserComplimentaryOverrides=new Map();
+const securityUserRowOverrides=new Map();
 function securityIsAdmin(){return cloudUser?.emailVerified===true && securityClaims.promohubAdmin===true && securityProfile?.accountStatus==='active';}
 function securityAccountLabel(account){return account?.displayName || account?.email || 'Account unavailable';}
 function securityIdentity(row,account,prefix=''){
@@ -22,6 +22,7 @@ function securityAdminStart(view,title){
 function securityAdminCurrent(state){return state.adminEpoch===securityAdminEpoch && state.authEpoch===securityEpoch && securityIsAdmin();}
 function securityResetAdmin(){
  securityCursor=null;securityUserPage=0;securityUserStarts=[null];securityUserQuery=null;document.getElementById('securityUserFilters').hidden=true;securityAdminView='';securityAdminEpoch++;
+ securityUserRowOverrides.clear();
  document.getElementById('securityRecords').replaceChildren();document.getElementById('securitySummary').textContent='';
  document.getElementById('securityRecordsTitle').textContent='Choose a view above';
  document.getElementById('securityPagination').hidden=true;document.getElementById('securityNextPage').disabled=true;
@@ -60,16 +61,19 @@ async function securityUsers(direction=false){
   securityUserQuery=query;securityUserPage=page;securityUserStarts[page]=cursor;
   securityCursor=result.cursor || null;state.host.replaceChildren();
   for(const u of result.users){
-   if(securityUserComplimentaryOverrides.has(u.uid)){
-    const granted=securityUserComplimentaryOverrides.get(u.uid);
-    if(u.complimentaryReadingAccess===granted)securityUserComplimentaryOverrides.delete(u.uid);
-    else u.complimentaryReadingAccess=granted;
+   const override=securityUserRowOverrides.get(u.uid);
+   if(override){
+    if(Object.entries(override).every(([key,value])=>u[key]===value))securityUserRowOverrides.delete(u.uid);
+    else Object.assign(u,override);
    }
    const row=document.createElement('article');row.className='securityRecord securityUserRow';securityIdentity(row,u);
    const status=document.createElement('p');status.className='securityStatus';status.textContent=securityUserStatusText(u);row.append(status);
    const details=document.createElement('details');details.className='securityUserManage';const summary=document.createElement('summary');summary.textContent='Manage';details.append(summary);
+   const help=document.createElement('p');help.className='securityActionsHelp';help.textContent='Paid subscription and free reading are separate. Removing paid access keeps any free-reading grant. Suspend blocks account use; Activate restores account status but does not add reading access.';details.append(help);
    const actions=document.createElement('div');actions.className='securityActions';
-   const userActions=[['suspend','Suspend'],['reactivate','Reactivate'],['disable','Disable sign-in'],['free','Remove paid access'],[u.complimentaryReadingAccess?'revokeFreeReading':'grantFreeReading',u.complimentaryReadingAccess?'Revoke free reading':'Grant free reading']];
+   const userActions=[[u.accountStatus==='active'?'suspend':'reactivate',u.accountStatus==='active'?'Suspend':'Activate']];
+   if(securityUserHasPaidAccess(u))userActions.push(['free','Remove paid access']);
+   userActions.push([u.complimentaryReadingAccess?'revokeFreeReading':'grantFreeReading',u.complimentaryReadingAccess?'Revoke free reading':'Grant free reading']);
    for(const [action,label] of userActions){
     const b=document.createElement('button');b.textContent=label;b.dataset.action=action;b.disabled=u.uid===cloudUser.uid;
     if(b.disabled)b.title='Your administrator account must be managed by the project owner.';
@@ -79,11 +83,19 @@ async function securityUsers(direction=false){
      b.disabled=true;try{
       await securityCall('managePromoHubUser',{uid:u.uid,action:selectedAction});
       if(!securityAdminCurrent(state))return;
-      if(['grantFreeReading','revokeFreeReading','free'].includes(selectedAction)){
-       const granted=selectedAction==='grantFreeReading';securityUserComplimentaryOverrides.set(u.uid,granted);u.complimentaryReadingAccess=granted;status.textContent=securityUserStatusText(u);
-       if(selectedAction==='grantFreeReading'||selectedAction==='revokeFreeReading'){b.dataset.action=granted?'revokeFreeReading':'grantFreeReading';b.textContent=granted?'Revoke free reading':'Grant free reading';}
+      if(['grantFreeReading','revokeFreeReading','suspend','reactivate','free'].includes(selectedAction)){
+       const patch={};
+       if(selectedAction==='grantFreeReading')patch.complimentaryReadingAccess=true;
+       if(selectedAction==='revokeFreeReading')patch.complimentaryReadingAccess=false;
+       if(selectedAction==='suspend')patch.accountStatus='suspended';
+       if(selectedAction==='reactivate')patch.accountStatus='active';
+       if(selectedAction==='free'){patch.accountTier='free';patch.subscriptionSchema=1;patch.subscriptionEndsAtMs=0;}
+       securityUserRowOverrides.set(u.uid,{...securityUserRowOverrides.get(u.uid),...patch});Object.assign(u,patch);status.textContent=securityUserStatusText(u);
+       if(selectedAction==='grantFreeReading'||selectedAction==='revokeFreeReading'){b.dataset.action=patch.complimentaryReadingAccess?'revokeFreeReading':'grantFreeReading';b.textContent=patch.complimentaryReadingAccess?'Revoke free reading':'Grant free reading';}
+       if(selectedAction==='suspend'||selectedAction==='reactivate'){b.dataset.action=patch.accountStatus==='active'?'suspend':'reactivate';b.textContent=patch.accountStatus==='active'?'Suspend':'Activate';}
+       if(selectedAction==='free')b.remove();
       }
-      if(selectedAction!=='grantFreeReading'&&selectedAction!=='revokeFreeReading')await securityUsers('refresh');
+      if(selectedAction==='free')await securityUsers('refresh');
      }finally{if(securityAdminCurrent(state))b.disabled=false;}
     });actions.append(b);
    }if(typeof notificationCompose==='function' && u.accountStatus==='active'){const message=document.createElement('button');message.type='button';message.textContent='Send message';message.onclick=()=>{if(securityAdminCurrent(state))notificationCompose(u);};actions.append(message);}
@@ -97,7 +109,14 @@ async function securityUsers(direction=false){
   if(securityAdminCurrent(state))document.getElementById('securitySummary').textContent=`Users: ${summary.users} · Premium profiles: ${summary.premium} · Pending requests: ${summary.pending}`;
  }catch(e){if(securityAdminCurrent(state)){securityMessage(e.message || 'Unable to load users.');state.host.textContent='Unable to load users. Select Users to retry.';document.getElementById('securityPageLabel').textContent='';}}
 }
-function securityUserStatusText(u){return `${u.accountTier || 'free'} · ${u.accountStatus || 'unknown'}${u.complimentaryReadingAccess?' · complimentary reading':''} · Automatic reading`;}
+function securityUserHasPaidAccess(u){return u.accountTier==='premium'&&(Number(u.subscriptionSchema)===1?Number(u.subscriptionEndsAtMs)>Date.now():Number(u.securitySchemaVersion)===2);}
+function securityUserStatusText(u){
+ const entitlements=[];
+ if(securityUserHasPaidAccess(u))entitlements.push('paid subscription · cloud sync');
+ if(u.complimentaryReadingAccess)entitlements.push('free-reading grant · no cloud sync');
+ if(!entitlements.length&&Number(u.trialEndsAtMs)>Date.now())entitlements.push('trial · no cloud sync');
+ return `${u.accountTier==='premium'?'Premium':'Free'} profile · account ${u.accountStatus || 'unknown'} · ${entitlements.join(' + ') || 'no current reading entitlement'}`;
+}
 async function securityRecords(kind){
  if(!securityIsAdmin())return;
  const state=securityAdminStart(kind,kind==='audit'?'Recent audit':'Premium requests');

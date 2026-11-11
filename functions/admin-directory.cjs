@@ -1,6 +1,6 @@
 'use strict';
 function normalize(value){return typeof value==='string'?value.trim().normalize('NFKC').toLowerCase():'';}
-function entry(uid,p){return {uid,displayName:String(p.displayName||p.name||'').slice(0,100),email:String(p.email||'').slice(0,254),nameKey:normalize(p.displayName||p.name).slice(0,100),emailKey:normalize(p.email).slice(0,254),accountTier:p.accountTier==='premium'?'premium':'free',accountStatus:['active','suspended','disabled'].includes(p.accountStatus)?p.accountStatus:'unknown',readingAccessMode:p.readingAccessMode==='offline'?'offline':'strict',complimentaryReadingAccess:p.complimentaryReadingAccess===true,subscriptionSchema:p.subscriptionSchema||0,subscriptionEndsAtMs:Number(p.subscriptionEndsAtMs)||0,trialEndsAtMs:Number(p.trialEndsAtMs)||0};}
+function entry(uid,p){return {uid,displayName:String(p.displayName||p.name||'').slice(0,100),email:String(p.email||'').slice(0,254),nameKey:normalize(p.displayName||p.name).slice(0,100),emailKey:normalize(p.email).slice(0,254),accountTier:p.accountTier==='premium'?'premium':'free',accountStatus:['active','suspended','disabled'].includes(p.accountStatus)?p.accountStatus:'unknown',readingAccessMode:p.readingAccessMode==='offline'?'offline':'strict',complimentaryReadingAccess:p.complimentaryReadingAccess===true,subscriptionSchema:p.subscriptionSchema||0,securitySchemaVersion:Number(p.securitySchemaVersion)||0,subscriptionEndsAtMs:Number(p.subscriptionEndsAtMs)||0,trialEndsAtMs:Number(p.trialEndsAtMs)||0};}
 module.exports=({onCall,onDocumentWritten,options,HttpsError,db,admin,member})=>{
  const meta=db.doc('adminDirectoryStatus/users'),collection='adminUserDirectory';
  const validUid=v=>typeof v==='string'&&/^[A-Za-z0-9_-]{1,128}$/.test(v);
@@ -19,7 +19,7 @@ module.exports=({onCall,onDocumentWritten,options,HttpsError,db,admin,member})=>
    await db.runTransaction(async tx=>{
     const current=await Promise.all(page.docs.map(d=>tx.get(db.doc(`users/${d.id}`))));
     for(let i=0;i<page.docs.length;i++){const dest=db.doc(`${collection}/${page.docs[i].id}`);if(current[i].exists)tx.set(dest,entry(page.docs[i].id,current[i].data()));else tx.delete(dest);}
-    if(page.size<100)tx.set(meta,{schema:1,ready:true});
+    if(page.size<100)tx.set(meta,{schema:2,ready:true});
    });
    return {processed:page.size,cursor:page.size===100?page.docs.at(-1).id:null};
   }),
@@ -27,7 +27,7 @@ module.exports=({onCall,onDocumentWritten,options,HttpsError,db,admin,member})=>
    await member(req,true);
    const data=req.data||{},search=normalize(data.search||''),searchField=data.searchField||'name',tier=data.tier||'all',status=data.status||'all',mode=data.mode||'all';
    if(search.length>100||!['name','email'].includes(searchField)||!['all','free','premium'].includes(tier)||!['all','active','suspended','disabled'].includes(status)||!['all','strict','offline'].includes(mode))throw new HttpsError('invalid-argument','Invalid search or filter.');
-   if(!(await meta.get()).data()?.ready)return {users:[],cursor:null,needsDirectory:true};
+   const directory= (await meta.get()).data();if(!directory?.ready||directory.schema!==2)return {users:[],cursor:null,needsDirectory:true};
    const field=searchField==='email'?'emailKey':'nameKey',signature=JSON.stringify([search,searchField,tier,status,mode]);
    let q=db.collection(collection);
    for(const [key,value] of [['accountTier',tier],['accountStatus',status],['readingAccessMode',mode]])if(value!=='all')q=q.where(key,'==',value);

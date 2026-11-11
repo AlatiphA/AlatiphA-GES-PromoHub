@@ -27,6 +27,7 @@ body.adminPage{display:block;position:static;width:100%;height:auto;min-height:1
 .adminShell .securityUserRow .securityStatus{font-size:13px;margin:0;padding:6px 8px;border-radius:8px;background:var(--ui-raised);color:var(--ui-text)}
 .adminShell .securityUserManage{width:100%;margin-top:2px}
 .adminShell .securityUserManage summary{min-height:44px;width:100%;padding:10px 12px;font-size:14px;color:var(--ui-accent)}
+.adminShell .securityUserManage .securityActionsHelp{font-size:13px;color:var(--ui-muted);padding:8px 10px;border-left:3px solid var(--ui-accent);background:var(--ui-raised);border-radius:6px}
 .adminShell .securityUserManage[open] .securityActions{margin-top:12px}
 .adminShell #securityPagination{padding:16px 0 0;border-top:1px solid var(--ui-border);margin-top:24px;gap:12px}
 .adminShell #securityPageLabel{font-size:14px}

@@ -95,7 +95,7 @@ exports.managePromoHubUser = onCall(options,async req => {
   if (!policy.administrator(req.auth.token,a.data())) throw new HttpsError('permission-denied','Administrator access required.');
   if (!u.exists) throw new HttpsError('not-found','Account not found.');
   const changes={updatedAt:stamp()};
-  if(action==='free'){changes.accountTier='free';changes.subscriptionSchema=1;changes.subscriptionEndsAtMs=0;changes.subscriptionStatus='cancelled';changes.complimentaryReadingAccess=false;}
+  if(action==='free'){changes.accountTier='free';changes.subscriptionSchema=1;changes.subscriptionEndsAtMs=0;changes.subscriptionStatus='cancelled';}
   else if(action==='grantFreeReading')changes.complimentaryReadingAccess=true;
   else if(action==='revokeFreeReading')changes.complimentaryReadingAccess=false;
   else changes.accountStatus={suspend:'suspended',disable:'disabled',reactivate:'active'}[action];
