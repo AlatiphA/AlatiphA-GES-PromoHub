@@ -1124,8 +1124,8 @@ function startReader() {
       .then(() => {
         if (!isCurrentReader()) return;
         locationsReady = true;
-        resolvePendingBookmarkProgress(readingFile);
         updateReadingLocationDisplay(currentLocation, true);
+        resolvePendingBookmarkProgress(readingFile);
       })
       .catch(err => console.warn("Locations:", err));
 
