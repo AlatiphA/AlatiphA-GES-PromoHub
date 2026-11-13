@@ -1,5 +1,5 @@
 /* PromoHub release version, shared by the app and application-shell cache. */
-const APP_VERSION='v1.11.24';
+const APP_VERSION='v1.11.25';
 const PREFIX='alatipha-ges-promohub-';
 const CACHE_NAME=PREFIX+APP_VERSION;
 const PUSH_CACHE=PREFIX+'push-bind-v1';

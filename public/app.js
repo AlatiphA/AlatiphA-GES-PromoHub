@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.24";
+const APP_VERSION = "1.11.25";
 
 const versionEl =
   document.getElementById(
@@ -433,6 +433,41 @@ function loadReaderData() {
    BOOKMARKS
 ================== */
 
+function bookmarkProgressForCfi(cfi) {
+  const locations = book?.locations;
+  if (!cfi || !(Number(locations?.total) > 0)) return null;
+  try {
+    const value = locations.percentageFromCfi(cfi);
+    return Number.isFinite(value) && value >= 0 && value <= 1
+      ? Math.floor(value * 100)
+      : null;
+  } catch (_) {
+    return null;
+  }
+}
+
+function resolvePendingBookmarkProgress(file = selectedBookFile) {
+  if (file !== selectedBookFile || !(Number(book?.locations?.total) > 0)) return false;
+  const key = getBookmarksKey();
+  const bookmarks = bookmarkRead(key);
+  let changed = false;
+
+  for (const bookmark of bookmarks) {
+    if (typeof bookmark.progress === 'number' && Number.isFinite(bookmark.progress)) continue;
+    const progress = bookmarkProgressForCfi(bookmark.cfi);
+    if (progress === null) continue;
+    bookmark.progress = progress;
+    changed = true;
+  }
+
+  if (!changed) return false;
+  localStorage.setItem(key, JSON.stringify(bookmarks));
+  loadBookmarks();
+  window.PromoHubSync?.dirty('bookmarks|' + file);
+  setTimeout(() => bookmarkSync(file), 0);
+  return true;
+}
+
 /* SAVE BOOKMARK */
 function saveBookmark() {
 
@@ -457,15 +492,7 @@ function saveBookmark() {
       currentLocation.start.href
     );
 
-  const rawPct =
-    book.locations.total > 0
-      ? book.locations.percentageFromCfi(
-          currentLocation.start.cfi
-        )
-      : 0;
-
-  const percent =
-    Math.floor((rawPct || 0) * 100);
+  const percent = bookmarkProgressForCfi(currentLocation.start.cfi);
 
   bookmarks.push({
 
@@ -566,8 +593,10 @@ function loadBookmarks() {
       item.textContent =
         bookmark.chapter +
         " (" +
-        bookmark.progress +
-        "%)";
+        (typeof bookmark.progress === "number" && Number.isFinite(bookmark.progress)
+          ? bookmark.progress + "%"
+          : "Calculating…") +
+        ")";
 
       item.addEventListener(
         "click",
@@ -1095,6 +1124,7 @@ function startReader() {
       .then(() => {
         if (!isCurrentReader()) return;
         locationsReady = true;
+        resolvePendingBookmarkProgress(readingFile);
         updateReadingLocationDisplay(currentLocation, true);
       })
       .catch(err => console.warn("Locations:", err));
@@ -2628,6 +2658,7 @@ function bookmarkReconcile(scope,records){
 }
 async function bookmarkSync(file=selectedBookFile){
  const scope=bookmarkSyncScope(file);if(!scope.uid||!cloudDb||!scope.valid())return;
+ if(bookmarkRead(scope.key).some(b=>typeof b.progress!=='number'||!Number.isFinite(b.progress)))return;
  const col=cloudDb.collection('users').doc(scope.uid).collection('bookmarks');
  const syncToken=window.PromoHubSync?.begin('bookmarks|'+file);
  try{
@@ -2706,7 +2737,13 @@ async function syncCurrentBookCloud() {
 /* Existing bookmark actions stay local-first. These observers mirror the
    final local state to Firestore after add/delete without changing UI flow. */
 const _saveBookmarkLocal = saveBookmark;
-saveBookmark = function() { const before=localStorage.getItem(getBookmarksKey());_saveBookmarkLocal();if(before!==localStorage.getItem(getBookmarksKey()))window.PromoHubSync?.dirty('bookmarks|'+selectedBookFile);setTimeout(syncLocalBookmarksToCloud, 0); };
+saveBookmark = function() {
+ const key=getBookmarksKey(),before=localStorage.getItem(key);_saveBookmarkLocal();
+ if(before===localStorage.getItem(key))return;
+ const bookmarks=bookmarkRead(key),latest=bookmarks[bookmarks.length-1];
+ if(typeof latest?.progress!=='number'||!Number.isFinite(latest.progress))return;
+ window.PromoHubSync?.dirty('bookmarks|'+selectedBookFile);setTimeout(syncLocalBookmarksToCloud,0);
+};
 
 const _loadBookmarksLocal = loadBookmarks;
 loadBookmarks = function() { _loadBookmarksLocal(); };
