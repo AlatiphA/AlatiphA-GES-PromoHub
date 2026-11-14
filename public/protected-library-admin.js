@@ -20,7 +20,7 @@
   const button=document.createElement('button');button.type='button';button.textContent='Upload and protect books';
   const status=document.createElement('p');status.setAttribute('role','status');status.setAttribute('aria-live','polite');
   button.addEventListener('click',()=>{void upload(state,input,status,button);});
-  host.append(intro,steps,input,button,status);
+  const panel=document.createElement('div');panel.className='protectedLibraryUpload';panel.append(intro,steps,input,button,status);host.append(panel);
  }
  async function upload(state,input,status,button){
   if(!securityAdminCurrent(state)||!input.files?.length)return;

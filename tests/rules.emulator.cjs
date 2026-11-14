@@ -2,19 +2,59 @@
 const {test,before,after}=require('node:test'),fs=require('node:fs'),path=require('node:path');
 // Dependencies live under functions so deployment excludes test tooling.
 const {initializeTestEnvironment,assertSucceeds,assertFails}=require('../functions/node_modules/@firebase/rules-unit-testing');
-const {doc,setDoc,getDoc,updateDoc,serverTimestamp}=require('../functions/node_modules/firebase/firestore');
+const {doc,setDoc,getDoc,updateDoc,serverTimestamp,Bytes,collection,getDocs}=require('../functions/node_modules/firebase/firestore');
 let env;
 before(async()=>{
  env=await initializeTestEnvironment({projectId:'demo-promohub',firestore:{rules:fs.readFileSync(path.join(__dirname,'../firestore.rules'),'utf8')}});
  await env.withSecurityRulesDisabled(async context=>{
   const seedDb=context.firestore();
   for(const uid of ['alice','bob','suspended','trial','expired','paid'])await setDoc(doc(seedDb,'users',uid),{displayName:uid,photoURL:'',accountStatus:uid==='suspended'?'suspended':'active',accountTier:'premium',securitySchemaVersion:2});
-  for(const uid of ['trial','expired','paid'])await updateDoc(doc(seedDb,'users',uid),{subscriptionSchema:1,accountTier:uid==='paid'?'premium':'free',trialEndsAtMs:Date.now()+604800000,subscriptionEndsAtMs:uid==='paid'?Date.now()+86400000:Date.now()-1000});
+  for(const uid of ['trial','expired','paid'])await updateDoc(doc(seedDb,'users',uid),{subscriptionSchema:1,accountTier:uid==='trial'?'free':'premium',trialEndsAtMs:Date.now()+604800000,subscriptionEndsAtMs:uid==='paid'?Date.now()+86400000:Date.now()-1000});
+  await setDoc(doc(seedDb,'users/complimentary'),{accountStatus:'active',accountTier:'free',subscriptionSchema:1,subscriptionEndsAtMs:0,complimentaryReadingAccess:true});
+  await setDoc(doc(seedDb,'protectedLibrary/current'),{schema:1,books:{}});
+  await setDoc(doc(seedDb,'protectedLibraryChunks/book'),{bookId:'gespasco',data:Bytes.fromUint8Array(new Uint8Array([80,75,3,4]))});
  });
 });
 after(async()=>{if(env)await env.cleanup();});
 function client(uid,verified=true){return env.authenticatedContext(uid,{email_verified:verified}).firestore();}
 function progress(){return {bookId:'mat1',location:'epubcfi(/6/2)',chapter:'one',progress:10,updatedAt:serverTimestamp()};}
+
+test('protected books deny unauthenticated, unverified, trial, expired and suspended readers',async()=>{
+ for(const db of [env.unauthenticatedContext().firestore(),client('paid',false),client('trial'),client('expired'),client('suspended')]){
+  await assertFails(getDoc(doc(db,'protectedLibrary/current')));
+  await assertFails(getDoc(doc(db,'protectedLibraryChunks/book')));
+ }
+});
+test('protected books allow paid, legacy Premium, complimentary and active administrators',async()=>{
+ const adminDb=env.authenticatedContext('trial',{email_verified:true,promohubAdmin:true}).firestore();
+ for(const db of [client('paid'),client('alice'),client('complimentary'),adminDb]){
+  await assertSucceeds(getDoc(doc(db,'protectedLibrary/current')));
+  await assertSucceeds(getDoc(doc(db,'protectedLibraryChunks/book')));
+  await assertFails(getDocs(collection(db,'protectedLibraryChunks')));
+ }
+});
+test('readers cannot upload protected chunks or publish a library manifest',async()=>{
+ await assertFails(setDoc(doc(client('paid'),'protectedLibraryChunks/fake'),{bookId:'gespasco',data:Bytes.fromUint8Array(new Uint8Array([1]))}));
+ await assertFails(setDoc(doc(client('complimentary'),'protectedLibrary/current'),{schema:1,books:{}}));
+});
+test('revoking complimentary access immediately denies further protected book reads',async()=>{
+ await env.withSecurityRulesDisabled(c=>updateDoc(doc(c.firestore(),'users/complimentary'),{complimentaryReadingAccess:false}));
+ try{await assertFails(getDoc(doc(client('complimentary'),'protectedLibraryChunks/book')));}
+ finally{await env.withSecurityRulesDisabled(c=>updateDoc(doc(c.firestore(),'users/complimentary'),{complimentaryReadingAccess:true}));}
+});
+test('admin publication requires the complete protected book set',async()=>{
+ const db=env.authenticatedContext('trial',{email_verified:true,promohubAdmin:true}).firestore();
+ const books=Object.fromEntries(['gespasco','mat2','etmala','nfatfges','eigala'].map(id=>[id,{file:'./library/'+id+'.epub'}]));
+ await assertFails(setDoc(doc(db,'protectedLibrary/current'),{schema:1,updatedAtMs:Date.now(),books:{gespasco:books.gespasco}}));
+ await assertSucceeds(setDoc(doc(db,'protectedLibrary/current'),{schema:1,updatedAtMs:Date.now(),books}));
+});
+test('only a verified active administrator can upload bounded protected chunks',async()=>{
+ const data={bookId:'gespasco',sha256:'a'.repeat(64),index:0,total:1,data:Bytes.fromUint8Array(new Uint8Array([80,75,3,4]))};
+ const adminDb=env.authenticatedContext('trial',{email_verified:true,promohubAdmin:true}).firestore();
+ await assertSucceeds(setDoc(doc(adminDb,'protectedLibraryChunks/admin-upload'),data));
+ await assertFails(setDoc(doc(adminDb,'protectedLibraryChunks/oversized'),{...data,data:Bytes.fromUint8Array(new Uint8Array(307201))}));
+ await assertFails(setDoc(doc(env.authenticatedContext('suspended',{email_verified:true,promohubAdmin:true}).firestore(),'protectedLibraryChunks/suspended-upload'),data));
+});
 test('verified active owner can save own progress',()=>assertSucceeds(setDoc(doc(client('alice'),'users/alice/readerData/mat1'),progress())));
 test('owner cannot change tier',()=>assertFails(updateDoc(doc(client('alice'),'users/alice'),{accountTier:'premium'})));
 test('unverified token cannot access progress',()=>assertFails(getDoc(doc(client('alice',false),'users/alice/readerData/mat1'))));

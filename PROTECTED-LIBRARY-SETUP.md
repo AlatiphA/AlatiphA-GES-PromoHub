@@ -6,6 +6,8 @@ Model Aptitude Test for GES 1 (`mat1.epub`) remains the one public guest book fo
 
 ## One-time migration
 
+Production migration completed on 14 November 2026. All five EPUBs were read back from Firestore and their byte counts and SHA-256 hashes matched the local source files before the protected manifest was published. The administration uploader remains available for future replacements.
+
 The five original EPUBs are kept locally in the ignored `protected-library-source` folder. That folder is excluded from Git and website deployment. Do not add those source files back to `public/library` or commit them.
 
 After deploying release 1.11.27 and the included Firestore rules:

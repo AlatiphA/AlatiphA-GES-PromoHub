@@ -11,7 +11,8 @@ test('Hosting serves only public while Functions and rules retain their root pat
 test('service-worker local precache paths still exist at the same deployed URLs',()=>{
  const sw=fs.readFileSync(path.join(publicDir,'sw.js'),'utf8'),core=sw.match(/const CORE=\[([^\]]+)\]/)[1];
  for(const m of core.matchAll(/'([^']+)'/g))assert.ok(fs.existsSync(path.join(publicDir,m[1])),m[1]);
- for(const name of ['gespasco','mat1','mat2','etmala','nfatfges','eigala'])assert.ok(fs.existsSync(path.join(publicDir,'library',name+'.epub')));
+ assert.ok(fs.existsSync(path.join(publicDir,'library','mat1.epub')));
+ for(const name of ['gespasco','mat2','etmala','nfatfges','eigala'])assert.ok(!fs.existsSync(path.join(publicDir,'library',name+'.epub')),'Paid EPUB must not be public: '+name);
 });
 test('HTML scripts, styles and manifest icons resolve inside Hosting root',()=>{
  for(const name of ['index.html','faq.html','user-guide.html']){

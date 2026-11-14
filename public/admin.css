@@ -58,7 +58,7 @@ body.adminPage{display:block;position:static;width:100%;height:auto;min-height:1
 .overviewTableScroll th,.overviewTableScroll td{padding:10px;border-bottom:1px solid var(--ui-border);vertical-align:top;overflow-wrap:anywhere;min-width:110px}
 .overviewWarning{padding:12px;border:1px solid var(--ui-accent);border-radius:10px}
 @media(max-width:640px){.overviewSection{padding:14px}.overviewCard{padding:16px}.overviewExportActions>*{flex:1 1 140px}.overviewCard strong{font-size:24px}}
-.protectedLibraryUpload{display:grid;gap:12px;max-width:760px;padding:18px;border:1px solid var(--border-color,#d7d7d7);border-radius:14px;background:var(--surface-color,#fff)}
-.protectedLibraryUpload input[type=file]{max-width:100%;padding:10px;border:1px solid var(--border-color,#d7d7d7);border-radius:8px}
+.protectedLibraryUpload{display:grid;gap:12px;max-width:760px;padding:18px;border:1px solid var(--ui-border);border-radius:14px;background:var(--ui-surface)}
+.protectedLibraryUpload input[type=file]{max-width:100%;padding:10px;border:1px solid var(--ui-border);border-radius:8px}
 .protectedLibraryUpload p{margin:0;line-height:1.55}
 .protectedLibraryUpload button{justify-self:start}

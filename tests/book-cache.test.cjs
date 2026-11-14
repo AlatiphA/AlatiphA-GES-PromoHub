@@ -20,7 +20,15 @@ test('stable downloaded books are served offline on GitHub subpaths and remain t
  s.handlers.activate({waitUntil:p=>work=p});await work;assert.ok(await saved.match('./library/mat1.epub'));
 });
 test('explicit download requests bypass cached books and absent books cannot fall back to app HTML',async()=>{
- const s=setup();s.handlers.fetch({request:{method:'GET',url:s.root+'library/mat1.epub',headers:{get:()=> '1'}},respondWith:()=>assert.fail('Explicit download was served from cache')});let work;s.handlers.fetch({request:{method:'GET',url:s.root+'library/mat2.epub',mode:'cors'},respondWith:p=>work=p,waitUntil(){}});assert.equal((await work).type,'error');
+ const s=setup();s.handlers.fetch({request:{method:'GET',url:s.root+'library/mat1.epub',headers:{get:()=> '1'}},respondWith:()=>assert.fail('Explicit download was served from cache')});let work;s.handlers.fetch({request:{method:'GET',url:s.root+'library/mat1.epub',mode:'cors'},respondWith:p=>work=p,waitUntil(){}});assert.equal((await work).type,'error');
+});
+test('direct premium EPUB requests never expose a legacy cached download',async()=>{
+ const s=setup(),saved=await s.caches.open(s.stable);
+ for(const name of ['gespasco','mat2','etmala','nfatfges','eigala']){
+  await saved.put('./library/'+name+'.epub',book());
+  s.handlers.fetch({request:{method:'GET',url:s.root+'library/'+name+'.epub',mode:'navigate'},respondWith:()=>assert.fail('Protected EPUB exposed through a direct URL')});
+ }
+ assert.equal(s.fetched.length,0);
 });
 test('installation does not silently redownload books removed by the user',async()=>{
  const source=fs.readFileSync(require.resolve('../public/sw.js'),'utf8'),optional=source.match(/const OPTIONAL=([^;]+);/)[1];assert.doesNotMatch(optional,/\.epub|BOOK_FILES/);

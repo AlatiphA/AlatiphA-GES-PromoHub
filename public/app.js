@@ -678,8 +678,8 @@ async function loadBook() {
 
   try {
 
-    const blob = window.PromoHubProtectedBooks?.isProtected(file)
-      ? await window.PromoHubProtectedBooks.getBlob(file)
+    const blob = globalThis.PromoHubProtectedBooks?.isProtected(file)
+      ? await globalThis.PromoHubProtectedBooks.getBlob(file)
       : await (async () => {
           const response = await fetch(file);
           if (!response.ok) throw new Error("EPUB file not found.");

@@ -24,7 +24,7 @@
  }
  async function getBlob(file,{preferCached=true,onProgress=()=>{},signal}={}){
   const config=BOOKS[file];if(!config)throw new Error('Unknown protected book.');
-  if(typeof subscriptionBookAllowed==='function'&&!subscriptionBookAllowed(file))throw new Error(subscriptionBookAccessMessage(file)||'An active subscription or complimentary reading grant is required.');
+  if(typeof subscriptionBookAllowed!=='function'||!subscriptionBookAllowed(file))throw new Error(typeof subscriptionBookAccessMessage==='function'?subscriptionBookAccessMessage(file)||'An active subscription or complimentary reading grant is required.':'Reading access is not ready. Reopen PromoHub and retry.');
   if(preferCached){const saved=await cached(file);if(saved)return saved.blob();}
   if(navigator.onLine===false)throw new Error('Connect to the internet and download this book first to read it offline.');
   if(!window.firebase?.apps?.length||!cloudUser?.uid||cloudUser.emailVerified!==true)throw new Error('Sign in with a verified PromoHub account to open this book.');
