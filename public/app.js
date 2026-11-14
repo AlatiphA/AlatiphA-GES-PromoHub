@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.26";
+const APP_VERSION = "1.11.27";
 
 const versionEl =
   document.getElementById(
@@ -678,19 +678,13 @@ async function loadBook() {
 
   try {
 
-    const response =
-      await fetch(file);
-
-    if (!response.ok) {
-
-      throw new Error(
-        "EPUB file not found."
-      );
-
-    }
-
-    const blob =
-      await response.blob();
+    const blob = window.PromoHubProtectedBooks?.isProtected(file)
+      ? await window.PromoHubProtectedBooks.getBlob(file)
+      : await (async () => {
+          const response = await fetch(file);
+          if (!response.ok) throw new Error("EPUB file not found.");
+          return response.blob();
+        })();
 
     if (!current()) return;
     book = ePub(blob);
@@ -704,9 +698,7 @@ async function loadBook() {
     if (!current()) return;
     console.error(error);
 
-    alert(
-      "Failed to load EPUB."
-    );
+    alert(error.message || "Failed to load EPUB.");
 
   }
 

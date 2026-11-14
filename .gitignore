@@ -10,3 +10,4 @@ node_modules/
 !.env.example
 *service-account*.json
 *serviceAccount*.json
+protected-library-source/

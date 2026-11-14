@@ -3,7 +3,7 @@
  'use strict';
  const CACHE='alatipha-ges-promohub-books-v1';
  const dialog=document.getElementById('downloadsDialog'),list=document.getElementById('downloadsList'),status=document.getElementById('downloadsStatus');
- const states=new Map(),rows=new Map(),catalog=new Map(BOOKS.map(b=>[b.file,b])),dependencies=['https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js',...['app','auth','firestore','functions'].map(n=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${n}-compat.js`)];
+ const states=new Map(),rows=new Map(),catalog=new Map(BOOKS.map(b=>[b.file,b])),dependencies=['./protected-books.js','https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js','https://cdn.jsdelivr.net/npm/epubjs@0.3.93/dist/epub.min.js',...['app','auth','firestore','functions'].map(n=>`https://www.gstatic.com/firebasejs/10.14.1/firebase-${n}-compat.js`)];
  let running=false,controller=null,ready=false,supported=!!window.caches&&!!navigator.serviceWorker,assetsReady=false,opener=null,scanEpoch=0,cancelled=false;
  const size=n=>n>=1048576?(n/1048576).toFixed(1)+' MB':Math.max(1,Math.round(n/1024))+' KB';
  const connected=()=>navigator.onLine!==false;
@@ -42,12 +42,17 @@
   const book=catalog.get(file);if(!book)throw new Error('Unknown book.');
   const previous=states.get(file)?.bytes||0;controller=new AbortController();states.set(file,{bytes:previous,busy:true,received:0});render();
   try{
-   const response=await fetch(urlFor(file),{cache:'no-store',headers:{'X-PromoHub-Download':'1'},signal:controller.signal});
-   if(!response.ok || response.status!==200)throw new Error('Book download failed (HTTP '+response.status+').');
-   if(/(?:text\/html|application\/json)/i.test(response.headers.get('Content-Type')||''))throw new Error('The server returned a page instead of an EPUB book.');
-   const total=Number(response.headers.get('Content-Length'))||0;let blob;
-   if(response.body?.getReader){const reader=response.body.getReader(),parts=[];let received=0,last=0;try{while(true){const chunk=await reader.read();if(chunk.done)break;if(controller.signal.aborted)throw new Error('Download cancelled.');parts.push(chunk.value);received+=chunk.value.byteLength;states.set(file,{bytes:previous,busy:true,received,total});if(Date.now()-last>150){render();last=Date.now();}}}finally{reader.releaseLock();}blob=new Blob(parts,{type:'application/epub+zip'});}
-   else blob=await response.blob();
+   let blob;
+   if(window.PromoHubProtectedBooks?.isProtected(file)){
+    blob=await window.PromoHubProtectedBooks.getBlob(file,{preferCached:false,signal:controller.signal,onProgress:(received,total)=>{states.set(file,{bytes:previous,busy:true,received,total});render();}});
+   }else{
+    const response=await fetch(urlFor(file),{cache:'no-store',headers:{'X-PromoHub-Download':'1'},signal:controller.signal});
+    if(!response.ok || response.status!==200)throw new Error('Book download failed (HTTP '+response.status+').');
+    if(/(?:text\/html|application\/json)/i.test(response.headers.get('Content-Type')||''))throw new Error('The server returned a page instead of an EPUB book.');
+    const total=Number(response.headers.get('Content-Length'))||0;
+    if(response.body?.getReader){const reader=response.body.getReader(),parts=[];let received=0,last=0;try{while(true){const chunk=await reader.read();if(chunk.done)break;if(controller.signal.aborted)throw new Error('Download cancelled.');parts.push(chunk.value);received+=chunk.value.byteLength;states.set(file,{bytes:previous,busy:true,received,total});if(Date.now()-last>150){render();last=Date.now();}}}finally{reader.releaseLock();}blob=new Blob(parts,{type:'application/epub+zip'});}
+    else blob=await response.blob();
+   }
    if(controller.signal.aborted || cancelled)throw new Error('Download cancelled.');
    if(!await valid(blob))throw new Error('Incomplete or invalid EPUB download.');
    if(typeof JSZip==='undefined')throw new Error('Reader ZIP library is unavailable. Reconnect and reopen PromoHub.');

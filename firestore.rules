@@ -12,6 +12,21 @@ service cloud.firestore {
     || (p.get('subscriptionSchema',0)==1 && p.accountTier=='premium' && p.get('subscriptionEndsAtMs',0)>request.time.toMillis())
     || (p.get('subscriptionSchema',0)!=1 && p.get('securitySchemaVersion',0)==2 && p.accountTier=='premium'));
   }
+  function protectedLibraryAccess() {
+   return verified() && active(request.auth.uid) && (
+    request.auth.token.get('promohubAdmin',false)==true
+    || get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('complimentaryReadingAccess',false)==true
+    || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('subscriptionSchema',0)==1
+      && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('accountTier','')=='premium'
+      && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('subscriptionEndsAtMs',0)>request.time.toMillis())
+    || (get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('subscriptionSchema',0)!=1
+      && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('securitySchemaVersion',0)==2
+      && get(/databases/$(database)/documents/users/$(request.auth.uid)).data.get('accountTier','')=='premium')
+   );
+  }
+  function protectedLibraryAdmin() {
+   return verified() && active(request.auth.uid) && request.auth.token.get('promohubAdmin',false)==true;
+  }
   function readerDataValid() {
    return request.resource.data.keys().hasOnly(['bookId','location','progress','chapter','updatedAt'])
     && request.resource.data.bookId is string && request.resource.data.bookId.size() <= 100
@@ -87,6 +102,31 @@ service cloud.firestore {
   }
   match /announcements/{noticeId} { allow read: if verified() && active(request.auth.uid); allow write: if false; }
   match /premiumRequests/{uid} { allow read: if owner(uid); allow write: if false; }
+  match /protectedLibrary/{documentId} {
+   allow get: if documentId=='current' && protectedLibraryAccess();
+   allow list: if false;
+   allow create, update: if documentId=='current' && protectedLibraryAdmin()
+    && request.resource.data.keys().hasOnly(['schema','updatedAtMs','books'])
+    && request.resource.data.schema==1
+    && request.resource.data.updatedAtMs is number
+    && request.resource.data.books is map
+    && request.resource.data.books.keys().hasAll(['gespasco','mat2','etmala','nfatfges','eigala'])
+    && request.resource.data.books.keys().hasOnly(['gespasco','mat2','etmala','nfatfges','eigala']);
+   allow delete: if false;
+  }
+  match /protectedLibraryChunks/{chunkId} {
+   allow get: if protectedLibraryAccess();
+   allow list: if false;
+   allow create, update: if protectedLibraryAdmin()
+    && request.resource.data.keys().hasOnly(['bookId','sha256','index','total','data'])
+    && request.resource.data.bookId in ['gespasco','mat2','etmala','nfatfges','eigala']
+    && request.resource.data.sha256 is string && request.resource.data.sha256.matches('^[a-f0-9]{64}$')
+    && request.resource.data.index is int && request.resource.data.index>=0
+    && request.resource.data.total is int && request.resource.data.total>0 && request.resource.data.total<=100
+    && request.resource.data.index<request.resource.data.total
+    && request.resource.data.data is bytes && request.resource.data.data.size()<=307200;
+   allow delete: if protectedLibraryAdmin();
+  }
   match /{document=**} { allow read, write: if false; }
  }
 }
