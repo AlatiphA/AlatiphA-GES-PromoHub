@@ -1469,6 +1469,9 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 .authLabelRow label { margin:0; }
 .authCard .authModeBtn { background:none;border:0;padding:10px 4px;min-height:44px;color:#202c25;font-size:14px;font-weight:600;cursor:pointer; }
 .authLabelRow .authModeBtn { padding:0 2px;min-height:32px; }
+.authInputWrap { position:relative;display:block; }
+.authInputWrap > i:first-child { position:absolute;z-index:1;left:16px;top:50%;transform:translateY(-50%);color:#68746d;pointer-events:none; }
+.authCard .authInputWrap input { padding-left:46px; }
 .authPasswordField { position:relative; }
 .authPasswordField input { padding-right:54px; }
 #authPasswordToggle { position:absolute;right:6px;top:4px;min-width:44px;min-height:44px;background:none;border:0;color:#68746d;cursor:pointer;display:flex;align-items:center;justify-content:center;border-radius:10px; }
@@ -1483,6 +1486,7 @@ body.night .momoCard { background: rgba(255,196,0,0.04); }
 .authCard .authGuestNote { border-top:1px solid #d8d4c6;padding-top:20px;margin:0;text-align:center;color:#68746d;font-size:13px;line-height:1.7;opacity:1; }
 .authCard .authError { color:#9c3a26;font-size:14px;line-height:1.5;opacity:1;margin:12px 0 0!important;min-height:0; }
 .authCard .authError:empty { display:none; }
+@media(max-width:600px) { #securityVerification .securityActions button { flex:0 1 auto; } }
 @media(max-width:380px) { .authCard { padding:26px 20px; }.authBrand { font-size:15px;gap:10px; }.authCard h2 { font-size:29px; }.authDivider { font-size:10px;gap:8px; } }
 
 /* Suppress native browser refresh; the explicit app refresh gesture remains guarded. */
@@ -1561,19 +1565,44 @@ html { -webkit-text-size-adjust:100%;text-size-adjust:100%; }
  .securityActions button { flex:1 1 100px; }
 }
 
-.sidebarSubscription { padding:12px 4px;border-top:1px solid var(--ui-border);margin-top:8px;flex-shrink:0; }
-.sidebarSubscription h3 { font-size:14px;margin-bottom:6px;color:var(--ui-accent); }
-.sidebarSubscription p { font-size:12px;line-height:1.45;margin:5px 0;overflow-wrap:anywhere; }
+.sidebarSubscription { display:flex;align-items:center;gap:16px;padding:16px 4px;border-top:1px solid var(--ui-border);margin-top:8px;flex:0 0 auto; }
+.sidebarSubscriptionText { flex:1;min-width:0; }
+.sidebarSubscription h3 { font-size:14px;line-height:1.4;margin:0 0 6px;color:var(--ui-accent); }
+.sidebarSubscription p { font-size:12px;line-height:1.5;margin:4px 0;overflow-wrap:anywhere; }
 #sidebarSubscriptionHint { color:var(--ui-muted); }
-#sidebarSubscriptionButton { min-height:44px;max-width:100%;margin-top:6px;padding:8px 12px;border:1px solid var(--ui-border);border-radius:8px;background:var(--ui-raised);color:var(--ui-text);font-size:13px;white-space:normal; }
+#sidebarSubscriptionButton { flex:0 0 auto;min-height:44px;max-width:100%;margin:0;padding:10px 12px;border:1px solid var(--ui-border);border-radius:10px;background:var(--ui-raised);color:var(--ui-text);font-size:13px;white-space:nowrap; }
 #sidebarSubscriptionButton[hidden] { display:none; }
+@media(max-width:380px){.sidebarSubscription{gap:10px;padding:12px 2px}.sidebarSubscription p{font-size:11px}#sidebarSubscriptionButton{padding:8px 9px;font-size:12px}}
 
 .accountSecurity summary { cursor:pointer;min-height:44px;padding:10px 0;font-weight:600; }
 .accountSecurity form { margin:12px 0;padding:10px 0;border-top:1px solid var(--ui-border); }
 #accountSecuritySection input,#accountSecuritySection button { max-width:100%;min-width:0; }
 #accountSecuritySection p { margin:6px 0; }
+#accountSecuritySection form { display:grid;gap:8px; }
+#accountSecuritySection .accountSecurityField { display:grid;gap:6px;min-width:0; }
+#accountSecuritySection form > button[type="submit"] { justify-self:end; }
+#securityVerification .securityActions { justify-content:flex-end; }
+.accountPasswordWrap { position:relative;display:flex;align-items:center;min-width:0; }
+#accountSecuritySection .accountPasswordWrap input { padding-right:52px; }
+#accountSecuritySection .accountPasswordWrap .passwordToggle { position:absolute;right:4px;display:grid;place-items:center;width:40px;height:40px;min-height:0;margin:0;padding:0;border:0;border-radius:8px;background:transparent;color:var(--ui-muted);font-size:16px;box-shadow:none; }
+#accountSecuritySection .accountPasswordWrap .passwordToggle:hover { background:var(--ui-selected); }
+#accountSecuritySection .accountPasswordWrap .passwordToggle:focus-visible { outline:2px solid var(--ui-accent);outline-offset:1px; }
 #accountSecuritySection a { color:var(--ui-accent);overflow-wrap:anywhere; }
 #accountSecurityStatus:empty,#accountSecurityPending:empty { display:none; }
+
+/* Keep the payment recipient and its yellow copy action together. */
+.momoRecipientCard { display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px;border:1px solid rgba(255,196,0,.35);border-radius:10px;background:rgba(255,196,0,.08); }
+.momoRecipientDetails { flex:1;min-width:0;display:grid;gap:4px; }
+.momoRecipientDetails strong { color:#805b00;font-size:13px; }
+.momoRecipientNumber { font-size:18px;font-weight:800;letter-spacing:.025em;white-space:nowrap; }
+.momoRecipientDetails span:last-child { color:var(--ui-muted);font-size:12px; }
+.momoRecipientCopy { flex:0 0 auto;max-width:116px;min-height:44px;padding:10px 12px;border:1px solid #ffcc00;border-radius:8px;background:#ffcc00;color:#111;font-size:12px;font-weight:700;line-height:1.4; }
+.momoRecipientCopy:hover { background:#e6b800;border-color:#e6b800; }
+.momoRecipientCopy:focus-visible { outline:2px solid var(--ui-accent);outline-offset:3px; }
+.momoRecipientStatus { min-height:0;font-size:12px;color:var(--ui-muted); }
+.momoRecipientStatus:empty { display:none; }
+html[data-ui-theme="dark"] .momoRecipientDetails strong { color:#ffcc00; }
+@media(max-width:380px){.momoRecipientCard{gap:10px;padding:10px}.momoRecipientNumber{font-size:16px;letter-spacing:0}.momoRecipientCopy{max-width:94px;padding:8px 10px;font-size:11px}}
 
 .readingModeControl { align-items:flex-end;max-width:100%; }
 .readingModeControl label { flex:1 1 180px;min-width:0; }

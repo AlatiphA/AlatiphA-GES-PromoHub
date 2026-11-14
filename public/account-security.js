@@ -11,7 +11,10 @@ function accountSecurityError(error){
  if(/network-request-failed|unavailable/.test(code))return 'Connect to the internet and retry. Credential changes are not queued offline.';
  return error?.message || 'The change could not be completed.';
 }
-function accountSecurityClearPasswords(){document.querySelectorAll('#accountSecuritySection input[type="password"]').forEach(input=>input.value='');}
+function accountSecurityClearPasswords(){
+ document.querySelectorAll('#accountSecuritySection input[autocomplete="current-password"],#accountSecuritySection input[autocomplete="new-password"]').forEach(input=>{input.value='';input.type='password';});
+ document.querySelectorAll('#accountSecuritySection .passwordToggle').forEach(button=>{button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','Show '+(button.dataset.passwordLabel||'password'));button.innerHTML='<i class="fa-regular fa-eye" aria-hidden="true"></i>';});
+}
 function accountSecurityReset(){
  accountSecurityOperation=null;accountSecurityClearPasswords();
  const status=document.getElementById('accountSecurityStatus');if(status)status.textContent='';
@@ -85,6 +88,13 @@ document.getElementById('accountSecurityEmailForm').addEventListener('submit',e=
  e.preventDefault();const f=e.currentTarget.elements;
  accountSecurityPerform(async(user,epoch)=>{const email=await requestPromoHubLoginEmail(user,f.currentPassword.value,f.newEmail.value,epoch);return 'Verification link sent to '+email+'. Open it, then return and select Refresh verified email. If asked to sign in again, use the verified address.';});
 });
+document.querySelectorAll('#accountSecuritySection .passwordToggle').forEach(button=>button.addEventListener('click',()=>{
+ const input=document.getElementById(button.dataset.target);if(!input)return;
+ const showing=input.type==='password';input.type=showing?'text':'password';
+ const label=button.dataset.passwordLabel||'password';
+ button.setAttribute('aria-label',(showing?'Hide ':'Show ')+label);button.setAttribute('aria-pressed',String(showing));
+ button.innerHTML=showing?'<i class="fa-regular fa-eye-slash" aria-hidden="true"></i>':'<i class="fa-regular fa-eye" aria-hidden="true"></i>';
+}));
 document.getElementById('accountSecurityRefresh').addEventListener('click',()=>accountSecurityPerform(async(user,epoch)=>{
  const r=await refreshPromoHubLoginEmail(user,epoch);return r.pendingEmail?'Still awaiting verification for '+r.pendingEmail+'.':'Your verified login email is up to date.';
 }));

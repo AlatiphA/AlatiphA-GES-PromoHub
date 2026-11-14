@@ -142,7 +142,7 @@ let fontFamily =
    APP VERSION
    Change this on every release
 ========================= */
-const APP_VERSION = "1.11.25";
+const APP_VERSION = "1.11.26";
 
 const versionEl =
   document.getElementById(
@@ -2780,8 +2780,8 @@ function setAuthMode(mode) {
   document.getElementById("authHeading").textContent = signup ? "Create your account" : "Welcome back";
   document.getElementById("authSubtitle").textContent = signup ? "Create your PromoHub account." : "Sign in to your PromoHub account.";
   document.getElementById("authModePrompt").textContent = signup ? "Already have an account?" : "Don't have an account?";
-  authPrimaryBtn.textContent = signup ? "Create account" : "Sign in";
-  authModeBtn.textContent = signup ? "Sign in" : "Sign up";
+  authPrimaryBtn.textContent = signup ? "Create account" : "Log In";
+  authModeBtn.textContent = signup ? "Sign in" : "Create account";
   authPassword.autocomplete = signup ? "new-password" : "current-password";
   authError.textContent = "";
 }
@@ -2838,12 +2838,16 @@ function resetAuthPasswordVisibility() {
   authPassword.type = "password";
   authPasswordToggle.setAttribute("aria-label", "Show password");
   authPasswordToggle.setAttribute("aria-pressed", "false");
+  authPasswordToggle.innerHTML = '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
 }
 authPasswordToggle.addEventListener("click", () => {
   const show = authPassword.type === "password";
   authPassword.type = show ? "text" : "password";
   authPasswordToggle.setAttribute("aria-label", show ? "Hide password" : "Show password");
   authPasswordToggle.setAttribute("aria-pressed", String(show));
+  authPasswordToggle.innerHTML = show
+    ? '<i class="fa-regular fa-eye-slash" aria-hidden="true"></i>'
+    : '<i class="fa-regular fa-eye" aria-hidden="true"></i>';
 });
 document.getElementById("authForm").addEventListener("submit", e => { e.preventDefault(); authPrimaryBtn.click(); });
 if (authModeBtn) authModeBtn.addEventListener("click", () => setAuthMode(authMode === "login" ? "signup" : "login"));

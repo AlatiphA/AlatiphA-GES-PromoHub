@@ -114,6 +114,11 @@ securityActions.premium=async()=>{
 };
 securityActions.paymentStatus=subscriptionMyPayment;
 document.getElementById('subscriptionPlan').addEventListener('change',subscriptionRender);
+document.getElementById('subscriptionCopyNumber')?.addEventListener?.('click',async event=>{
+ const button=event.currentTarget,status=document.getElementById('subscriptionCopyStatus');
+ try{await navigator.clipboard.writeText('0243443688');button.textContent='Copied';if(status)status.textContent='MoMo number copied.';setTimeout(()=>{if(button.isConnected)button.textContent='Copy number';},2000);}
+ catch{if(status)status.textContent='Copy this number manually: 0243443688';}
+});
 const subscriptionOpenReader=openReader;
 openReader=function(){
  if(!subscriptionReadable()){

@@ -234,9 +234,11 @@
 
     <!-- Subscription access replaces the old donation and key-entry section. -->
     <section class="sidebarSubscription" aria-labelledby="sidebarSubscriptionTitle">
-      <h3 id="sidebarSubscriptionTitle">Subscription</h3>
-      <p id="sidebarSubscriptionStatus" aria-live="polite">Checking access...</p>
-      <p id="sidebarSubscriptionHint">Paid plans include cloud saving and device syncing.</p>
+      <div class="sidebarSubscriptionText">
+        <h3 id="sidebarSubscriptionTitle">Subscription</h3>
+        <p id="sidebarSubscriptionStatus" role="status" aria-live="polite">Checking access...</p>
+        <p id="sidebarSubscriptionHint">Paid plans include cloud saving and device syncing.</p>
+      </div>
       <button id="sidebarSubscriptionButton" type="button">View plans</button>
     </section>
 
@@ -469,16 +471,16 @@
     <h2 id="authHeading">Welcome back</h2>
     <p id="authSubtitle">Sign in to your PromoHub account.</p>
     <form id="authForm">
-      <div id="authNameField" class="authField" hidden><label for="authName">Full name</label><input id="authName" type="text" placeholder="Enter your name" autocomplete="name" style="display:none"></div>
-      <div class="authField"><label for="authEmail">Email</label><input id="authEmail" type="email" placeholder="Enter your email" autocomplete="email" required></div>
+      <div id="authNameField" class="authField" hidden><label for="authName">Full name</label><span class="authInputWrap"><i class="fa-regular fa-user" aria-hidden="true"></i><input id="authName" type="text" placeholder="Enter your name" autocomplete="name" style="display:none"></span></div>
+      <div class="authField"><label for="authEmail">Email</label><span class="authInputWrap"><i class="fa-regular fa-envelope" aria-hidden="true"></i><input id="authEmail" type="email" placeholder="Enter your email" autocomplete="email" required></span></div>
       <div class="authField">
         <div class="authLabelRow"><label for="authPassword">Password</label><button id="authResetBtn" class="authModeBtn" type="button">Forgot password?</button></div>
-        <div class="authPasswordField"><input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required><button id="authPasswordToggle" type="button" aria-label="Show password" aria-pressed="false"><svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12Z"/><circle cx="12" cy="12" r="3"/></svg></button></div>
+        <div class="authPasswordField authInputWrap"><i class="fa-solid fa-lock" aria-hidden="true"></i><input id="authPassword" type="password" placeholder="Enter your password" autocomplete="current-password" required><button id="authPasswordToggle" type="button" aria-label="Show password" aria-pressed="false"><i class="fa-regular fa-eye" aria-hidden="true"></i></button></div>
       </div>
-      <button id="authPrimaryBtn" class="authPrimaryBtn" type="submit">Sign in</button>
+      <button id="authPrimaryBtn" class="authPrimaryBtn" type="submit">Log In</button>
+      <p id="authError" class="authError" role="alert" aria-live="polite"></p>
+      <p class="authSignupRow"><span id="authModePrompt">Don't have an account?</span> <button id="authModeBtn" class="authModeBtn" type="button">Create account</button></p>
     </form>
-    <p id="authError" class="authError" role="status" aria-live="polite"></p>
-    <p class="authSignupRow"><span id="authModePrompt">Don't have an account?</span> <button id="authModeBtn" class="authModeBtn" type="button">Sign up</button></p>
     <div class="authDivider"><span>Or continue with Google</span></div>
     <button id="googleSignInBtn" class="authGoogleBtn" type="button"><span class="authGoogleMark" aria-hidden="true">G</span> Continue with Google</button>
     <button id="authOfflineBtn" class="authModeBtn authOfflineBtn" type="button">Start 3-day guest trial</button>
@@ -530,6 +532,11 @@
 <button id="subscriptionRenewBtn" type="button" hidden>Renew subscription</button><p id="subscriptionHint">The 7-day free trial saves reading data on this device only. Paid plans enable cloud saving and device syncing.</p>
       <div id="subscriptionPurchaseControls">
       <label for="subscriptionPlan">Choose a plan</label><select id="subscriptionPlan"><option value="m1">1 month - GH₵20</option><option value="m3">3 months - GH₵50</option><option value="m6">6 months - GH₵80</option><option value="m12">12 months - GH₵100</option></select>
+      <section class="momoRecipientCard" aria-label="Subscription payment recipient">
+        <div class="momoRecipientDetails"><strong>MTN MoMo</strong><span class="momoRecipientNumber">0243443688</span><span>Abdul-Latif Ahmed</span></div>
+        <button id="subscriptionCopyNumber" class="momoRecipientCopy" type="button" aria-label="Copy subscription MoMo number">Copy number</button>
+      </section>
+      <p id="subscriptionCopyStatus" class="momoRecipientStatus" role="status" aria-live="polite"></p>
       <p id="subscriptionPaymentDetails">Pay to MTN MoMo 0243443688, Abdul-Latif Ahmed.</p>
       <label for="subscriptionReference">MoMo transaction ID</label><input id="subscriptionReference" maxlength="80" autocomplete="off" placeholder="Unique ID from your MoMo SMS or receipt" aria-describedby="subscriptionTransactionIdHelp">
       <p id="subscriptionTransactionIdHelp">Enter the unique transaction ID, not the payment description or your name.</p>
@@ -555,14 +562,14 @@
       <div id="accountSecurityPasswordControls">
         <form id="accountSecurityPasswordForm">
           <h4>Change password</h4>
-          <label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required></label>
-          <label>New password<input name="newPassword" type="password" autocomplete="new-password" minlength="6" required></label>
-          <label>Confirm new password<input name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required></label>
+          <div class="accountSecurityField"><label for="accountSecurityCurrentPassword">Current password</label><span class="accountPasswordWrap"><input id="accountSecurityCurrentPassword" name="currentPassword" type="password" autocomplete="current-password" required><button class="passwordToggle" type="button" data-target="accountSecurityCurrentPassword" data-password-label="current password" aria-controls="accountSecurityCurrentPassword" aria-pressed="false" aria-label="Show current password"><i class="fa-regular fa-eye" aria-hidden="true"></i></button></span></div>
+          <div class="accountSecurityField"><label for="accountSecurityNewPassword">New password</label><span class="accountPasswordWrap"><input id="accountSecurityNewPassword" name="newPassword" type="password" autocomplete="new-password" minlength="6" required><button class="passwordToggle" type="button" data-target="accountSecurityNewPassword" data-password-label="new password" aria-controls="accountSecurityNewPassword" aria-pressed="false" aria-label="Show new password"><i class="fa-regular fa-eye" aria-hidden="true"></i></button></span></div>
+          <div class="accountSecurityField"><label for="accountSecurityConfirmPassword">Confirm new password</label><span class="accountPasswordWrap"><input id="accountSecurityConfirmPassword" name="confirmPassword" type="password" autocomplete="new-password" minlength="6" required><button class="passwordToggle" type="button" data-target="accountSecurityConfirmPassword" data-password-label="confirm new password" aria-controls="accountSecurityConfirmPassword" aria-pressed="false" aria-label="Show confirm new password"><i class="fa-regular fa-eye" aria-hidden="true"></i></button></span></div>
           <button type="submit">Change password</button>
         </form>
         <form id="accountSecurityEmailForm">
           <h4>Change login email</h4>
-          <label>Current password<input name="currentPassword" type="password" autocomplete="current-password" required></label>
+          <div class="accountSecurityField"><label for="accountSecurityEmailPassword">Current password</label><span class="accountPasswordWrap"><input id="accountSecurityEmailPassword" name="currentPassword" type="password" autocomplete="current-password" required><button class="passwordToggle" type="button" data-target="accountSecurityEmailPassword" data-password-label="current password for email change" aria-controls="accountSecurityEmailPassword" aria-pressed="false" aria-label="Show current password for email change"><i class="fa-regular fa-eye" aria-hidden="true"></i></button></span></div>
           <label>New login email<input id="accountSecurityNewEmail" name="newEmail" type="email" autocomplete="email" maxlength="254" required></label>
           <p>A verification link will be sent to the new address. Your login email changes only after verification.</p>
           <button type="submit">Send verification link</button>
@@ -589,7 +596,7 @@
       <div id="securityDeletion" hidden><label for="securityDeleteConfirm">Type DELETE to confirm</label><input id="securityDeleteConfirm" autocomplete="off"><label for="securityPassword">Password, for password accounts</label><input id="securityPassword" type="password" autocomplete="current-password"><button data-security="confirmDelete">Confirm deletion</button></div>
     </div></details>
     <details id="profileAboutSettings" class="profileSetting" name="profile-settings"><summary><svg class="profileSettingIcon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"><circle cx="12" cy="12" r="9"/><path d="M12 11v6M12 7h.01"/></svg><span>About</span><svg class="profileSettingChevron" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true" focusable="false"><path d="m9 5 7 7-7 7"/></svg></summary><div class="profileSettingContent aboutPanelContent">
-      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.25</span></p></div></div>
+      <div class="aboutIdentity"><img src="./icon-192.png" width="44" height="44" alt=""><div><strong>AlatiphA PromoHub</strong><p>Version <span id="aboutAppVersion">1.11.26</span></p></div></div>
       <p>Prepare for GES promotion examinations with past questions, study books, practice tests and revision tools. Save books for offline reading, track your progress and revisit bookmarks. Paid plans include cloud saving and device syncing.</p>
       <p>Developed by Abdul-Latif Ahmed (AlatiphA), AlatiphA Multimedia.</p>
       <section class="aboutCard aboutInstallCard" aria-labelledby="aboutInstallHeading"><strong id="aboutInstallHeading">App installation</strong><p id="aboutInstallStatus" role="status" aria-live="polite">Add AlatiphA PromoHub to this device.</p><div class="aboutUpdateActions"><button id="aboutInstallApp" type="button">Install app</button></div></section>
