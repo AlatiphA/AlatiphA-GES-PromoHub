@@ -439,8 +439,7 @@ html[data-ui-theme] body { --bg:var(--ui-bg);--text:var(--ui-text);--surface:var
     if (e.origin !== location.origin || e.source !== window.parent || window.parent === window || !e.data || e.data.type !== "GES_PROMOHUB_THEME") return;
     var t=e.data.theme;
     if (t !== "light" && t !== "dark") return;
-    document.documentElement.dataset.uiTheme=t;
-    document.documentElement.style.colorScheme=t;
+    window.applyInterfaceTheme(t);
   });
 })();
 </script>

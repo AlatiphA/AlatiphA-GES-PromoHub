@@ -10,7 +10,7 @@ function setup(){
 }
 test('sign-up and sign-in update headings, name field and password autocomplete',()=>{
  const s=setup();s.run("setAuthMode('signup')");assert.equal(s.ids.authNameField.hidden,false);assert.equal(s.ids.authHeading.textContent,'Create your account');assert.equal(s.ids.authPassword.autocomplete,'new-password');assert.equal(s.ids.authPrimaryBtn.textContent,'Create account');
- s.run("setAuthMode('login')");assert.equal(s.ids.authNameField.hidden,true);assert.equal(s.ids.authHeading.textContent,'Welcome back');assert.equal(s.ids.authPassword.autocomplete,'current-password');assert.equal(s.ids.authModeBtn.textContent,'Sign up');
+ s.run("setAuthMode('login')");assert.equal(s.ids.authNameField.hidden,true);assert.equal(s.ids.authHeading.textContent,'Welcome back');assert.equal(s.ids.authPassword.autocomplete,'current-password');assert.equal(s.ids.authPrimaryBtn.textContent,'Log In');assert.equal(s.ids.authModeBtn.textContent,'Create account');
 });
 test('password toggle is accessible and mode switching restores concealed password',()=>{
  const s=setup();s.ids.authPasswordToggle.listeners.click();assert.equal(s.ids.authPassword.type,'text');assert.equal(s.ids.authPasswordToggle.attributes['aria-label'],'Hide password');assert.equal(s.ids.authPasswordToggle.attributes['aria-pressed'],'true');

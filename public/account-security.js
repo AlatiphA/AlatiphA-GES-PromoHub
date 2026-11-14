@@ -12,7 +12,7 @@ function accountSecurityError(error){
  return error?.message || 'The change could not be completed.';
 }
 function accountSecurityClearPasswords(){
- document.querySelectorAll('#accountSecuritySection input[autocomplete="current-password"],#accountSecuritySection input[autocomplete="new-password"]').forEach(input=>{input.value='';input.type='password';});
+ document.querySelectorAll('#accountSecuritySection input[type="password"],#accountSecuritySection input[type="text"][autocomplete="current-password"],#accountSecuritySection input[type="text"][autocomplete="new-password"]').forEach(input=>{input.value='';input.type='password';});
  document.querySelectorAll('#accountSecuritySection .passwordToggle').forEach(button=>{button.setAttribute('aria-pressed','false');button.setAttribute('aria-label','Show '+(button.dataset.passwordLabel||'password'));button.innerHTML='<i class="fa-regular fa-eye" aria-hidden="true"></i>';});
 }
 function accountSecurityReset(){
